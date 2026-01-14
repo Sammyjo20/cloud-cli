@@ -13,6 +13,7 @@ use App\Prompts\WeMustShip;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 use Illuminate\Support\Sleep;
+use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\confirm;
@@ -27,6 +28,8 @@ use function Laravel\Prompts\warning;
 
 class Deploy extends Command
 {
+    use Colors;
+
     protected $signature = 'deploy';
 
     protected $description = 'Deploy the application to Laravel Cloud';
@@ -202,7 +205,7 @@ class Deploy extends Command
         $timeElapsed = $deployment->startedAt?->diffInSeconds(CarbonImmutable::now());
 
         return sprintf(
-            "\e[2m%s:%s\e[22m <info>%s</info>",
+            $this->dim('%s:%s').' <info>%s</info>',
             str_pad(floor($timeElapsed / 60), 2, '0', STR_PAD_LEFT),
             str_pad($timeElapsed % 60, 2, '0', STR_PAD_LEFT),
             $statusMessage,

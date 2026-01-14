@@ -195,7 +195,7 @@ class Ship extends Command
         $timeElapsed = $deployment->startedAt?->diffInSeconds(CarbonImmutable::now());
 
         return sprintf(
-            "\e[2m%s:%s\e[22m <info>%s</info>",
+            $this->dim('%s:%s').' <info>%s</info>',
             str_pad(floor($timeElapsed / 60), 2, '0', STR_PAD_LEFT),
             str_pad($timeElapsed % 60, 2, '0', STR_PAD_LEFT),
             $statusMessage,
