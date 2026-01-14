@@ -2,6 +2,8 @@
 
 namespace App\Prompts;
 
+use App\Enums\TimelineSymbol;
+
 abstract class Renderer extends \Laravel\Prompts\Themes\Default\Renderer
 {
     /**
@@ -9,8 +11,8 @@ abstract class Renderer extends \Laravel\Prompts\Themes\Default\Renderer
      */
     public function __toString()
     {
-        return str_repeat('│'.PHP_EOL, max(2 - $this->prompt->newLinesWritten(), 0))
+        return str_repeat(TimelineSymbol::LINE->value.PHP_EOL, max(2 - $this->prompt->newLinesWritten(), 0))
             .$this->output
-            .(in_array($this->prompt->state, ['submit', 'cancel']) ? '│'.PHP_EOL : '');
+            .(in_array($this->prompt->state, ['submit', 'cancel']) ? TimelineSymbol::LINE->value.PHP_EOL : '');
     }
 }

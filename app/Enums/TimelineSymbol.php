@@ -5,7 +5,7 @@ namespace App\Enums;
 enum TimelineSymbol: string
 {
     case DOT = '•';
-    case LINE = '│';
+    case LINE = "\e[2m│\e[22m";
     case PENDING = '◆';
     case SUCCESS = '✔';
     case FAILURE = '✘';

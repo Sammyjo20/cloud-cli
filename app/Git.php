@@ -80,7 +80,7 @@ class Git
         return basename(getcwd());
     }
 
-    public function remoteUrl(): string
+    public function remoteRepo(): string
     {
         return str($this->run(['git', 'remote', 'get-url', 'origin'])->output())
             ->trim()

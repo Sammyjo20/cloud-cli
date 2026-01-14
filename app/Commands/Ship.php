@@ -4,43 +4,41 @@ namespace App\Commands;
 
 use App\CloudClient;
 use App\ConfigRepository;
+use App\Dto\Application;
 use App\Dto\Deployment;
-use App\Dto\Environment;
+use App\Enums\CloudRegion;
 use App\Enums\DeploymentStatus;
 use App\Git;
-use App\Prompts\DynamicSpinner;
 use App\Prompts\WeMustShip;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
+use Dotenv\Dotenv;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Sleep;
+use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
+use Throwable;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
+use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
 
-class Deploy extends Command
+class Ship extends Command
 {
-    protected $signature = 'deploy';
+    use Colors;
 
-    protected $description = 'Deploy the application to Laravel Cloud';
+    protected $signature = 'ship';
 
-    protected array $regions = [
-        'us-east-1' => 'US East (Virginia)',
-        'us-east-2' => 'US East (Ohio)',
-        'ca-central-1' => 'CA Central (Central)',
-        'eu-central-1' => 'EU Central (Frankfurt)',
-        'eu-west-1' => 'EU West (Ireland)',
-        'eu-west-2' => 'EU West (London)',
-        'ap-southeast-1' => 'Asia Pacific (Singapore)',
-        'ap-southeast-2' => 'Asia Pacific (Sydney)',
-    ];
+    protected $description = 'Ship the application to Laravel Cloud';
+
+    protected CloudClient $client;
 
     public function handle(ConfigRepository $config, Git $git)
     {
@@ -48,7 +46,7 @@ class Deploy extends Command
         (new WeMustShip)->animate();
         $this->newLine();
 
-        intro('Deploying to Laravel Cloud');
+        intro('Shipping to Laravel Cloud');
 
         $apiKey = $config->get('api_key');
 
@@ -66,89 +64,43 @@ class Deploy extends Command
             info('API key saved to '.$config->path());
         }
 
+        $this->client = new CloudClient($apiKey);
+
         $this->ensureGitHubRepo($git);
-
-        $client = new CloudClient($apiKey);
-
-        $this->ensureCloudApplication($client, $git);
+        $this->createCloudApplication($git);
     }
 
-    protected function ensureCloudApplication(CloudClient $client, Git $git): void
+    protected function createCloudApplication(Git $git): void
     {
         $repository = $git->remoteRepo();
 
         $applications = spin(
-            fn () => $client->listApplications(),
+            fn () => $this->client->listApplications(),
             'Checking for existing application...'
         );
 
-        $existingApp = collect($applications->data ?? [])
-            ->first(
-                fn ($app) => $app->repositoryFullName === $repository
-            );
-
-        if ($existingApp) {
-            answered(label: 'Application', answer: "{$existingApp->name}");
-
-            $environments = spin(
-                fn () => $client->listEnvironments($existingApp->id),
-                'Checking for existing environments...'
-            );
-
-            $defaultEnvironmentName = $git->getDefaultBranch();
-
-            $existingEnvironment = collect($environments['data'] ?? [])
-                ->map(fn ($env) => Environment::fromApiResponse($env))
-                ->first(fn ($env) => $env->name === $defaultEnvironmentName);
-
-            if ($existingEnvironment) {
-                answered(label: 'Environment', answer: "{$existingEnvironment->name}");
-
-                $deployment = $client->initiateDeployment($existingEnvironment->id);
-                info('Deployment initiated at '.$deployment->startedAt?->toDateTimeString());
-
-                (new DynamicSpinner($this->getDeploymentMessage($deployment)))->spin(function (callable $updateMessage) use ($client, $deployment) {
-                    $checkApi = true;
-                    $total = 0;
-                    $checkInterval = 3;
-                    $updateInterval = .9;
-
-                    do {
-                        if ($checkApi) {
-                            $deploymentStatus = $client->getDeployment($deployment->id);
-                        }
-
-                        $updateMessage($this->getDeploymentMessage($deploymentStatus));
-                        Sleep::for(CarbonInterval::seconds($updateInterval));
-                        $total += $updateInterval;
-                        $checkApi = round($total) % $checkInterval === 0;
-                    } while (! $deploymentStatus->isCompleted());
-                });
-
-                $deployment = $client->getDeployment($deployment->id);
-
-                info('Deployment completed in '.$deployment->totalTime()->format('%I:%S'));
-            } else {
-                info('No existing environment found. Creating new environment...');
-
-                $newEnvironment = spin(
-                    fn () => $client->createEnvironment($existingApp->id, $defaultEnvironmentName),
-                    'Creating new environment...'
-                );
-
-                info("Environment created: {$newEnvironment->name}");
-            }
-
-            return;
-        }
-
-        $createApp = confirm(
-            label: 'No Laravel Cloud application found for this repository. Would you like to create one?',
-            default: true,
+        $existingApps = collect($applications->data)->filter(
+            fn (Application $app) => $app->repositoryFullName === $repository
         );
 
-        if (! $createApp) {
-            return;
+        if ($existingApps->isNotEmpty()) {
+            info('Found '.$existingApps->count().' existing applications for this repository.');
+
+            $options = $existingApps->mapWithKeys(fn (Application $app) => [$app->id => 'Deploy '.$app->name]);
+            $options->prepend('Create new application', 'new');
+
+            $selection = select(
+                label: 'Select an application',
+                options: $options,
+            );
+
+            if ($selection !== 'new') {
+                Artisan::call('deploy', [
+                    'application' => $selection,
+                ]);
+
+                return;
+            }
         }
 
         $appName = text(
@@ -157,25 +109,66 @@ class Deploy extends Command
             required: true,
         );
 
-        // TODO: Default region from config
+        $mostUsedRegion = collect($applications->data)->pluck('region')->countBy()->sortDesc()->keys()->first();
+        $defaultRegion = CloudRegion::tryFrom($mostUsedRegion ?? '')?->value ?? CloudRegion::US_EAST_2->value;
+
         $region = select(
-            label: 'Select a region',
-            options: $this->regions,
-            default: 'us-east-2',
+            label: 'Application region',
+            options: collect(CloudRegion::cases())->mapWithKeys(fn (CloudRegion $region) => [$region->value => $region->label()]),
+            default: $defaultRegion,
         );
 
         $application = spin(
-            fn () => $client->createApplication($repository, $appName, $region),
+            fn () => $this->client->createApplication($repository, $appName, $region),
             'Creating application...'
         );
 
-        if (isset($application['data']['id'])) {
-            info("Application created: {$application['data']['name']}");
+        if ($application) {
+            info("Application created: {$application->name}");
         } else {
             error('Failed to create application: '.($application['message'] ?? 'Unknown error'));
 
             exit(1);
         }
+
+        $application = $this->client->getApplication($application->id);
+
+        $envPath = getcwd().'/.env';
+
+        if (file_exists($envPath)) {
+            try {
+                $variables = Dotenv::parse(file_get_contents($envPath));
+            } catch (Throwable $e) {
+                //
+            }
+
+            $diff = array_diff(array_keys($variables), config('env.laravel'));
+
+            if (count($diff) > 0) {
+                $diffVariables = collect($diff)->mapWithKeys(fn ($key) => [
+                    $key => $key.$this->dim(str($variables[$key])->limit(5)->prepend(' (')->append(')')),
+                ]);
+                $varsToAdd = multiselect('Add local environment variables to Cloud environment?', options: $diffVariables);
+
+                if (count($varsToAdd) > 0) {
+                    $varsToAdd = collect($varsToAdd)->mapWithKeys(fn ($key) => [$key => $variables[$key]]);
+
+                    spin(
+                        function () use ($application, $varsToAdd) {
+                            while (count($application->environmentIds) === 0) {
+                                $application = $this->client->getApplication($application->id);
+                                Sleep::for(CarbonInterval::seconds(1));
+                            }
+
+                            $this->client->replaceEnvironmentVariables($application->environmentIds[0], $varsToAdd->toArray());
+                        },
+                        'Adding selected variables to Cloud environment...'
+                    );
+                }
+            }
+        }
+
+        info(sprintf('https://cloud.laravel.com/%s/%s', $application->organizationId, $application->slug));
     }
 
     protected function getDeploymentMessage(Deployment $deployment): string

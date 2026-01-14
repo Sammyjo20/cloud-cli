@@ -8,3 +8,10 @@ if (! function_exists('answered')) {
         (new Answered(label: $label, answer: $answer))->display();
     }
 }
+
+if (! function_exists('success')) {
+    function success(string $message): void
+    {
+        (new NoteWithIcon(message: $message))->display();
+    }
+}
