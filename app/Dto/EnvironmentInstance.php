@@ -29,8 +29,6 @@ class EnvironmentInstance
         $attributes = $data['attributes'] ?? [];
         $relationships = $data['relationships'] ?? [];
 
-        dump($data);
-
         return new self(
             id: $data['id'],
             name: $attributes['name'],

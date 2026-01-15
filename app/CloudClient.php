@@ -103,8 +103,6 @@ class CloudClient
     {
         $response = $this->client->patch("/instances/{$instanceId}", $data);
 
-        dump($response);
-
         return EnvironmentInstance::fromApiResponse($response->json()['data']);
     }
 
@@ -122,20 +120,12 @@ class CloudClient
     {
         $response = $this->post("/environments/{$environmentId}/deployments");
 
-        if (! ($response['data'] ?? null)) {
-            dump($response);
-        }
-
         return Deployment::fromApiResponse($response['data']);
     }
 
     public function getDeployment(string $deploymentId): Deployment
     {
         $response = $this->get("/deployments/{$deploymentId}");
-
-        if (! ($response['data'] ?? null)) {
-            dump($response);
-        }
 
         return Deployment::fromApiResponse($response['data']);
     }
