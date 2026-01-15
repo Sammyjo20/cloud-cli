@@ -14,7 +14,7 @@ class NoteRenderer extends Renderer
     {
         $lines = explode(PHP_EOL, $note->message);
 
-        $spacer = str_repeat(' ', 3);
+        $spacer = str_repeat(' ', 2);
 
         switch ($note->type) {
             case 'intro':
@@ -24,7 +24,7 @@ class NoteRenderer extends Renderer
 
                 foreach ($lines as $line) {
                     $line = str_pad($line, $longest, ' ');
-                    $this->line($this->cyan(TimelineSymbol::DOT->value.$spacer.$line));
+                    $this->line($this->cyan(TimelineSymbol::CIRCLE->value.$spacer.$line));
                 }
 
                 return $this;

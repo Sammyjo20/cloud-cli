@@ -15,6 +15,7 @@ use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\intro;
+use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
@@ -97,22 +98,39 @@ class Deploy extends Command
             $total = 0;
             $checkInterval = 3;
             $updateInterval = 900;
+            $dotFrames = ['', '.', '..', '...', '...'];
+            $lastMessage = '';
+            $dotFrameIndex = 0;
 
             do {
                 if ($checkApi) {
                     $deploymentStatus = $this->client->getDeployment($deployment->id);
                 }
 
-                $updateMessage($this->getDeploymentMessage($deploymentStatus));
+                $newMessage = $this->getDeploymentMessage($deploymentStatus);
+
+                if ($lastMessage !== $deployment->status->label()) {
+                    $dotFrameIndex = 0;
+                }
+
+                $lastMessage = $deployment->status->label();
+
+                if (! str_ends_with($lastMessage, '!')) {
+                    $newMessage .= $this->dim($dotFrames[$dotFrameIndex % count($dotFrames)]);
+                }
+
+                $updateMessage($newMessage);
+
                 Sleep::for(CarbonInterval::milliseconds($updateInterval));
                 $total++;
+                $dotFrameIndex++;
                 $checkApi = $total % $checkInterval === 0;
             } while (! $deploymentStatus->isCompleted());
         });
 
         $deployment = $this->client->getDeployment($deployment->id);
 
-        success('Deployment completed in '.$deployment->totalTime()->format('%I:%S'));
+        outro('Deployment completed in <info>'.$deployment->totalTime()->format('%I:%S').'</info>');
     }
 
     protected function getDeploymentMessage(Deployment $deployment): string

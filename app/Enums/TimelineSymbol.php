@@ -10,16 +10,16 @@ enum TimelineSymbol: string
     case SUCCESS = '✔';
     case FAILURE = '✘';
     case WARNING = '⚠';
+    case CIRCLE = '●';
 
     public static function color(self $symbol): string
     {
         return match ($symbol) {
-            self::DOT => 'cyan',
+            self::DOT, self::CIRCLE => 'cyan',
             self::LINE => 'gray',
-            self::PENDING => 'yellow',
+            self::PENDING, self::WARNING => 'yellow',
             self::SUCCESS => 'green',
             self::FAILURE => 'red',
-            self::WARNING => 'yellow',
         };
     }
 }

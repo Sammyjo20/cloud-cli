@@ -5,11 +5,8 @@ namespace App\Commands;
 use App\Concerns\HasAClient;
 use App\ConfigRepository;
 use App\Dto\Application;
-use App\Dto\Deployment;
 use App\Enums\CloudRegion;
-use App\Enums\DeploymentStatus;
 use App\Git;
-use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 use Dotenv\Dotenv;
 use Illuminate\Support\Facades\Artisan;
@@ -149,37 +146,6 @@ class Ship extends Command
         }
 
         info(sprintf('https://cloud.laravel.com/%s/%s', $application->organizationId, $application->slug));
-    }
-
-    protected function getDeploymentMessage(Deployment $deployment): string
-    {
-        $statusMessage = match ($deployment->status) {
-            DeploymentStatus::BUILD_PENDING => 'Building...',
-            DeploymentStatus::BUILD_CREATED => 'Build created...',
-            DeploymentStatus::BUILD_QUEUED => 'Build queued...',
-            DeploymentStatus::BUILD_RUNNING => 'Build running...',
-            DeploymentStatus::BUILD_SUCCEEDED => 'Build succeeded...',
-            DeploymentStatus::BUILD_FAILED => 'Build failed...',
-            DeploymentStatus::DEPLOYMENT_PENDING => 'Deploying...',
-            DeploymentStatus::DEPLOYMENT_CREATED => 'Deployment created...',
-            DeploymentStatus::DEPLOYMENT_QUEUED => 'Deployment queued...',
-            DeploymentStatus::DEPLOYMENT_RUNNING => 'Deployment running...',
-            DeploymentStatus::DEPLOYMENT_SUCCEEDED => 'Deployment succeeded...',
-            DeploymentStatus::DEPLOYMENT_FAILED => 'Deployment failed...',
-            DeploymentStatus::CANCELLED => 'Cancelled...',
-            DeploymentStatus::FAILED => 'Failed!',
-            DeploymentStatus::PENDING => 'Pending...',
-            default => $deployment->status,
-        };
-
-        $timeElapsed = $deployment->startedAt?->diffInSeconds(CarbonImmutable::now());
-
-        return sprintf(
-            $this->dim('%s:%s').' <info>%s</info>',
-            str_pad(floor($timeElapsed / 60), 2, '0', STR_PAD_LEFT),
-            str_pad($timeElapsed % 60, 2, '0', STR_PAD_LEFT),
-            $statusMessage,
-        );
     }
 
     protected function ensureGitHubRepo(Git $git): void
