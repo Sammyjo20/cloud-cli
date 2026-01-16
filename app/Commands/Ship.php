@@ -5,6 +5,7 @@ namespace App\Commands;
 use App\Concerns\HasAClient;
 use App\Concerns\RequiresRemoteGitRepo;
 use App\Dto\Application;
+use App\Dto\Database;
 use App\Dto\Environment;
 use App\Enums\CloudRegion;
 use App\Git;
@@ -17,6 +18,7 @@ use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 use Throwable;
 
+use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
@@ -118,6 +120,7 @@ class Ship extends Command
         $enableOptions = [
             'scheduler' => 'Laravel Scheduler',
             'hibernation' => 'Hibernation',
+            'database' => 'Database',
         ];
 
         if ($composer->hasPackage('inertiajs/inertia-laravel')) {
@@ -137,18 +140,19 @@ class Ship extends Command
             return;
         }
 
-        $params = [];
+        $instanceParams = [];
+        $environmentParams = [];
 
         if (in_array('scheduler', $selectedOptions)) {
-            $params['uses_scheduler'] = true;
+            $instanceParams['uses_scheduler'] = true;
         }
 
         if (in_array('octane', $selectedOptions)) {
-            $params['uses_octane'] = true;
+            $instanceParams['uses_octane'] = true;
         }
 
         if (in_array('inertia_ssr', $selectedOptions)) {
-            $params['uses_inertia_ssr'] = true;
+            $instanceParams['uses_inertia_ssr'] = true;
         }
 
         if (in_array('hibernation', $selectedOptions)) {
@@ -160,16 +164,85 @@ class Ship extends Command
                 hint: 'The number of minutes without HTTP requests received before your application hibernates (1-60)',
             );
 
-            $params['uses_sleep_mode'] = true;
-            $params['sleep_timeout'] = $hibernateFor;
+            $instanceParams['uses_sleep_mode'] = true;
+            $instanceParams['sleep_timeout'] = $hibernateFor;
+        }
+
+        if (in_array('database', $selectedOptions)) {
+            $database = $this->getDatabase();
+
+            if ($database) {
+                $database = $this->client->getDatabase($database->id);
+                dump($database);
+                $schema = $this->getDatabaseSchema($database);
+                dump($schema);
+                $environmentParams['database_schema_id'] = $schema['id'];
+            }
         }
 
         dynamicSpinner(
-            function () use ($environment, $params) {
-                $this->client->updateInstance($environment->instances[0], $params);
+            function () use ($environment, $instanceParams, $environmentParams) {
+                if (count($instanceParams) > 0) {
+                    $this->client->updateInstance($environment->instances[0], $instanceParams);
+                }
+
+                if (count($environmentParams) > 0) {
+                    $this->client->updateEnvironment($environment->id, $environmentParams);
+                }
             },
             'Updating environment'
         );
+    }
+
+    protected function getDatabaseSchema(Database $database): array
+    {
+        $options = collect($database->schemas)->mapWithKeys(fn ($schema) => [$schema['id'] => $schema['name']]);
+        $options->prepend('Create new schema', 'new');
+
+        $schema = select(
+            label: 'Select a schema',
+            options: $options,
+            required: true,
+        );
+
+        if ($schema === 'new') {
+            dd('Implement create schema');
+        }
+
+        return collect($database->schemas)->firstWhere('id', $schema);
+    }
+
+    protected function getDatabase(): ?Database
+    {
+        $databases = $this->client->listDatabases();
+
+        if (count($databases->data) === 0) {
+            info('No databases found!');
+
+            $createDatabase = confirm('Do you want to create a new database?');
+
+            if ($createDatabase) {
+                dd('Implement create database');
+                // $database = $this->client->createDatabase($environment->id);
+            }
+
+            return null;
+        }
+
+        $options = collect($databases->data)->mapWithKeys(fn (Database $database) => [$database->id => $database->name]);
+        $options->prepend('Create new database', 'new');
+
+        $database = select(
+            label: 'Select a database',
+            options: $options,
+            required: true,
+        );
+
+        if ($database === 'new') {
+            dd('Implement create database');
+        }
+
+        return collect($databases->data)->firstWhere('id', $database);
     }
 
     protected function pushCustomEnvironmentVariables(Application $application): void

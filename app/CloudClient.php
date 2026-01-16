@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Dto\Application;
+use App\Dto\Database;
 use App\Dto\Deployment;
 use App\Dto\Environment;
 use App\Dto\EnvironmentInstance;
@@ -92,6 +93,15 @@ class CloudClient
         return Environment::fromApiResponse($response['data']);
     }
 
+    public function updateEnvironment(string $environmentId, array $data): Environment
+    {
+        $response = $this->client->patch("/environments/{$environmentId}", $data);
+
+        dump($response, $response->json());
+
+        return Environment::fromApiResponse($response->json()['data']);
+    }
+
     public function getInstance(string $instanceId): EnvironmentInstance
     {
         $response = $this->get("/instances/{$instanceId}");
@@ -142,5 +152,31 @@ class CloudClient
         $response = $this->client->post($endpoint, $data);
 
         return $response->json() ?? [];
+    }
+
+    /**
+     * @return Paginated<Database>
+     */
+    public function listDatabases(): Paginated
+    {
+        $response = $this->get('/databases', [
+            'include' => implode(',', ['schemas']),
+        ]);
+
+        dump($response);
+
+        return new Paginated(
+            data: array_map(fn ($item) => Database::fromApiResponse($item, $response), $response['data']),
+            links: $response['links'],
+        );
+    }
+
+    public function getDatabase(string $databaseId): Database
+    {
+        $response = $this->get("/databases/{$databaseId}", [
+            'include' => implode(',', ['schemas']),
+        ]);
+
+        return Database::fromApiResponse($response['data'], $response);
     }
 }
