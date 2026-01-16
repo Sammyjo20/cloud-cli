@@ -24,7 +24,7 @@ trait HasAClient
         $apiKey = $config->get('api_key');
 
         if ($apiKey) {
-            return $apiKey;
+            return $apiKey[0];
         }
 
         info('No API key found!');
@@ -35,7 +35,7 @@ trait HasAClient
             required: true,
         );
 
-        $config->set('api_key', $apiKey);
+        $config->set('api_key', [$apiKey]);
 
         info('API key saved to '.$config->path());
 
