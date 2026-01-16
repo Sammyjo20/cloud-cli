@@ -82,57 +82,54 @@ class Ship extends Command
             }
         }
 
-        appName:
-        $this->appName = text(
-            label: 'Application name',
-            default: $this->appName ?? $git->currentDirectoryName(),
-            required: true,
-        );
-
         $mostUsedRegion = collect($applications->data)->pluck('region')->countBy()->sortDesc()->keys()->first();
         $defaultRegion = CloudRegion::tryFrom($mostUsedRegion ?? '')?->value ?? CloudRegion::US_EAST_2->value;
 
-        region:
-        $this->region = select(
-            label: 'Application region',
-            options: collect(CloudRegion::cases())->mapWithKeys(fn (CloudRegion $region) => [$region->value => $region->label()]),
-            default: $this->region ?? $defaultRegion,
-        );
+        $application = null;
+        $errors = [];
 
-        try {
-            $application = dynamicSpinner(
-                fn () => $this->client->createApplication($repository, $this->appName, $this->region),
-                'Creating application'
-            );
-        } catch (RequestException $e) {
-            if ($e->response->status() === 422) {
-                $errors = $e->response->json()['errors'] ?? [];
-
-                if (count($errors) === 0) {
-                    error('Failed to create application: '.$errors['message']);
-                }
-
-                foreach ($errors as $field => $messages) {
-                    error(ucwords($field).': '.implode(', ', $messages));
-                }
-
-                if (($errors['name'] ?? false)) {
-                    goto appName;
-                }
-
-                if (($errors['region'] ?? false)) {
-                    goto region;
-                }
+        while (! $application) {
+            if (! $this->appName || isset($errors['name'])) {
+                $this->appName = text(
+                    label: 'Application name',
+                    default: $this->appName ?? $git->currentDirectoryName(),
+                    required: true,
+                );
             }
 
-            error('Failed to create application: '.$e->getMessage());
-            goto appName;
-        }
+            if (! $this->region || isset($errors['region'])) {
+                $this->region = select(
+                    label: 'Application region',
+                    options: collect(CloudRegion::cases())->mapWithKeys(fn (CloudRegion $region) => [$region->value => $region->label()]),
+                    default: $this->region ?? $defaultRegion,
+                );
+            }
 
-        if (! $application) {
-            error('Failed to create application: '.($application['message'] ?? 'Unknown error'));
+            try {
+                $application = dynamicSpinner(
+                    fn () => $this->client->createApplication($repository, $this->appName, $this->region),
+                    'Creating application'
+                );
+            } catch (RequestException $e) {
+                $errors = [];
 
-            exit(1);
+                if ($e->response?->status() === 422) {
+                    $errors = $e->response->json()['errors'] ?? [];
+
+                    if (count($errors) > 0) {
+                        foreach ($errors as $field => $messages) {
+                            error(ucwords($field).': '.implode(', ', $messages));
+                        }
+                    } else {
+                        $message = $e->response->json()['message'] ?? 'Unknown validation error';
+                        error('Failed to create application: '.$message);
+                        $errors['name'] = true;
+                    }
+                } else {
+                    error('Failed to create application: '.$e->getMessage());
+                    $errors['name'] = true;
+                }
+            }
         }
 
         success('Application created!');

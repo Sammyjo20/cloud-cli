@@ -188,8 +188,20 @@ class DynamicSpinner extends Prompt
         pcntl_async_signals($originalAsync);
         pcntl_signal(SIGINT, SIG_DFL);
 
+        $this->killChildProcess();
         $this->closeSockets();
         $this->eraseRenderedLines();
+    }
+
+    /**
+     * Kill the child process if it exists.
+     */
+    protected function killChildProcess(): void
+    {
+        if (! empty($this->pid) && $this->pid > 0) {
+            posix_kill($this->pid, SIGHUP);
+            pcntl_waitpid($this->pid, $status, WNOHANG);
+        }
     }
 
     /**
@@ -269,11 +281,8 @@ class DynamicSpinner extends Prompt
      */
     public function __destruct()
     {
+        $this->killChildProcess();
         $this->closeSockets();
-
-        if (! empty($this->pid)) {
-            posix_kill($this->pid, SIGHUP);
-        }
 
         parent::__destruct();
     }
