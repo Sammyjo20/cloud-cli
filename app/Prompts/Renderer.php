@@ -7,6 +7,36 @@ use App\Enums\TimelineSymbol;
 abstract class Renderer extends \Laravel\Prompts\Themes\Default\Renderer
 {
     /**
+     * Render a warning message.
+     */
+    protected function warning(string $message): self
+    {
+        return $this->line(TimelineSymbol::LINE->value.$this->yellow("   {$message}"));
+    }
+
+    /**
+     * Render an error message.
+     */
+    protected function error(string $message): self
+    {
+        return $this->line(TimelineSymbol::LINE->value.$this->red("   {$message}"));
+    }
+
+    /**
+     * Render an hint message.
+     */
+    protected function hint(string $message): self
+    {
+        if ($message === '') {
+            return $this;
+        }
+
+        $message = $this->truncate($message, $this->prompt->terminal()->cols() - 6);
+
+        return $this->line(TimelineSymbol::LINE->value.$this->gray("   {$message}"));
+    }
+
+    /**
      * Render the output with a blank line above and below.
      */
     public function __toString()

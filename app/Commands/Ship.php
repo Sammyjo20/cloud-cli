@@ -4,14 +4,15 @@ namespace App\Commands;
 
 use App\Concerns\HasAClient;
 use App\Concerns\RequiresRemoteGitRepo;
+use App\Concerns\Validates;
 use App\Dto\Application;
 use App\Dto\Database;
 use App\Dto\Environment;
+use App\Dto\ValidationErrors;
 use App\Enums\CloudRegion;
 use App\Git;
 use Carbon\CarbonInterval;
 use Dotenv\Dotenv;
-use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Composer;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Sleep;
@@ -20,7 +21,6 @@ use LaravelZero\Framework\Commands\Command;
 use Throwable;
 
 use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
@@ -34,6 +34,7 @@ class Ship extends Command
     use Colors;
     use HasAClient;
     use RequiresRemoteGitRepo;
+    use Validates;
 
     protected $signature = 'ship';
 
@@ -43,15 +44,19 @@ class Ship extends Command
 
     protected ?string $region = null;
 
+    protected Git $git;
+
     public function handle(Git $git)
     {
+        $this->git = $git;
+
         slideIn('WE MUST *SHIP*');
         intro('Shipping application to Laravel Cloud');
 
         $this->ensureClient();
         $this->ensureRemoteGitRepo();
 
-        $repository = $git->remoteRepo();
+        $repository = $this->git->remoteRepo();
 
         $applications = spin(
             fn () => $this->client->listApplications(),
@@ -85,62 +90,58 @@ class Ship extends Command
         $mostUsedRegion = collect($applications->data)->pluck('region')->countBy()->sortDesc()->keys()->first();
         $defaultRegion = CloudRegion::tryFrom($mostUsedRegion ?? '')?->value ?? CloudRegion::US_EAST_2->value;
 
-        $application = null;
-        $errors = [];
-
-        while (! $application) {
-            if (! $this->appName || isset($errors['name'])) {
-                $this->appName = text(
-                    label: 'Application name',
-                    default: $this->appName ?? $git->currentDirectoryName(),
-                    required: true,
-                );
-            }
-
-            if (! $this->region || isset($errors['region'])) {
-                $this->region = select(
-                    label: 'Application region',
-                    options: collect(CloudRegion::cases())->mapWithKeys(fn (CloudRegion $region) => [$region->value => $region->label()]),
-                    default: $this->region ?? $defaultRegion,
-                );
-            }
-
-            try {
-                $application = dynamicSpinner(
-                    fn () => $this->client->createApplication($repository, $this->appName, $this->region),
-                    'Creating application'
-                );
-            } catch (RequestException $e) {
-                $errors = [];
-
-                if ($e->response?->status() === 422) {
-                    $errors = $e->response->json()['errors'] ?? [];
-
-                    if (count($errors) > 0) {
-                        foreach ($errors as $field => $messages) {
-                            error(ucwords($field).': '.implode(', ', $messages));
-                        }
-                    } else {
-                        $message = $e->response->json()['message'] ?? 'Unknown validation error';
-                        error('Failed to create application: '.$message);
-                        $errors['name'] = true;
-                    }
-                } else {
-                    error('Failed to create application: '.$e->getMessage());
-                    $errors['name'] = true;
-                }
-            }
-        }
+        $application = $this->loopUntilValid(
+            fn ($errors) => $this->createApplication($errors, $defaultRegion, $repository),
+        );
 
         success('Application created!');
 
         $application = $this->client->getApplication($application->id);
         $environment = $this->client->getEnvironment($application->defaultEnvironmentId ?? '');
 
-        $this->pushCustomEnvironmentVariables($application);
-        $this->collectOptionsToEnable($environment);
+        $this->loopUntilValid(
+            fn () => $this->pushCustomEnvironmentVariables($application),
+        );
+
+        $this->loopUntilValid(
+            fn () => $this->collectOptionsToEnable($environment),
+        );
 
         outro(sprintf('https://cloud.laravel.com/%s/%s', $application->organizationId, $application->slug));
+    }
+
+    protected function createApplication(ValidationErrors $errors, string $defaultRegion, string $repository): ?Application
+    {
+        if (! $this->appName || $errors->has('name')) {
+            $this->appName = text(
+                label: 'Application name',
+                default: $this->appName ?? $this->git->currentDirectoryName(),
+                required: true,
+            );
+        }
+
+        if (! $this->region || $errors->has('region')) {
+            $this->region = select(
+                label: 'Application region',
+                options: collect(CloudRegion::cases())->mapWithKeys(
+                    fn (CloudRegion $region) => [
+                        $region->value => $region->label(),
+                    ],
+                ),
+                default: $this->region ?? $defaultRegion,
+            );
+        }
+
+        $application = dynamicSpinner(
+            fn () => $this->client->createApplication(
+                $repository,
+                $this->appName,
+                $this->region,
+            ),
+            'Creating application',
+        );
+
+        return $application;
     }
 
     protected function collectOptionsToEnable(Environment $environment): void
@@ -172,19 +173,20 @@ class Ship extends Command
         $instanceParams = [];
         $environmentParams = [];
 
-        if (in_array('scheduler', $selectedOptions)) {
-            $instanceParams['uses_scheduler'] = true;
+        $mapping = [
+            'scheduler' => 'uses_scheduler',
+            'octane' => 'uses_octane',
+            'inertia_ssr' => 'uses_inertia_ssr',
+            'hibernation' => 'uses_sleep_mode',
+        ];
+
+        foreach ($mapping as $option => $param) {
+            if (in_array($option, $selectedOptions)) {
+                $instanceParams[$param] = true;
+            }
         }
 
-        if (in_array('octane', $selectedOptions)) {
-            $instanceParams['uses_octane'] = true;
-        }
-
-        if (in_array('inertia_ssr', $selectedOptions)) {
-            $instanceParams['uses_inertia_ssr'] = true;
-        }
-
-        if (in_array('hibernation', $selectedOptions)) {
+        if ($instanceParams['uses_sleep_mode'] ?? false) {
             $hibernateFor = text(
                 label: 'Hibernate after',
                 default: '5',
@@ -193,7 +195,6 @@ class Ship extends Command
                 hint: 'The number of minutes without HTTP requests received before your application hibernates (1-60)',
             );
 
-            $instanceParams['uses_sleep_mode'] = true;
             $instanceParams['sleep_timeout'] = $hibernateFor;
         }
 

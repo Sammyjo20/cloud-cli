@@ -9,7 +9,7 @@ enum TimelineSymbol: string
     case PENDING = '◆';
     case SUCCESS = '✔';
     case FAILURE = '✘';
-    case WARNING = '⚠';
+    case WARNING = '▲';
     case CIRCLE = '●';
 
     public static function color(self $symbol): string
