@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use App\Concerns\HasAClient;
 use App\Concerns\RequiresRemoteGitRepo;
+use App\Concerns\UpdatesBuildDeployCommands;
 use App\Concerns\Validates;
 use App\Dto\Application;
 use App\Dto\Database;
@@ -29,13 +30,13 @@ use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
-use function Laravel\Prompts\textarea;
 
 class Ship extends Command
 {
     use Colors;
     use HasAClient;
     use RequiresRemoteGitRepo;
+    use UpdatesBuildDeployCommands;
     use Validates;
 
     protected $signature = 'ship';
@@ -124,51 +125,6 @@ class Ship extends Command
         Artisan::call('deploy', [
             'application' => $application->id,
         ], $this->output);
-    }
-
-    protected function updateCommands(Environment $environment): void
-    {
-        $this->loopUntilValid(
-            function () use ($environment) {
-                $buildCommand = textarea(
-                    label: 'Build command',
-                    default: $environment->buildCommand,
-                    required: true,
-                );
-
-                if ($buildCommand === $environment->buildCommand) {
-                    return;
-                }
-
-                return dynamicSpinner(
-                    fn () => $this->client->updateEnvironment($environment->id, [
-                        'build_command' => $buildCommand,
-                    ]),
-                    'Updating build command',
-                );
-            },
-        );
-
-        $this->loopUntilValid(
-            function () use ($environment) {
-                $deployCommand = textarea(
-                    label: 'Deploy command',
-                    default: $environment->deployCommand,
-                    required: true,
-                );
-
-                if ($deployCommand === $environment->deployCommand) {
-                    return;
-                }
-
-                return dynamicSpinner(
-                    fn () => $this->client->updateEnvironment($environment->id, [
-                        'deploy_command' => $deployCommand,
-                    ]),
-                    'Updating deploy command',
-                );
-            },
-        );
     }
 
     protected function createApplication(ValidationErrors $errors, string $defaultRegion, string $repository): ?Application

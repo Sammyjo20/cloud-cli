@@ -6,6 +6,7 @@ use App\Concerns\HasAClient;
 use App\Concerns\RequiresApplication;
 use App\Concerns\RequiresEnvironment;
 use App\Concerns\RequiresRemoteGitRepo;
+use App\Concerns\UpdatesBuildDeployCommands;
 use App\Dto\Deployment;
 use App\Git;
 use Carbon\CarbonImmutable;
@@ -30,6 +31,7 @@ class Deploy extends Command
     use RequiresApplication;
     use RequiresEnvironment;
     use RequiresRemoteGitRepo;
+    use UpdatesBuildDeployCommands;
 
     protected $signature = 'deploy '
         .'{application? : The ID of the application to deploy} '
@@ -96,6 +98,20 @@ class Deploy extends Command
 
         if ($deployment->isFailed()) {
             error('Deployment failed: '.$deployment->failureReason);
+
+            if (confirm('Do you want to edit the build and deploy commands and try again?')) {
+                $this->updateCommands($environment);
+
+                if (confirm('Re-deploy?')) {
+                    Artisan::call('deploy', [
+                        'application' => $app->id,
+                        'environment' => $environment->name,
+                    ], $this->output);
+
+                    exit(0);
+                }
+            }
+
             exit(1);
         }
 
