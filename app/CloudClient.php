@@ -14,7 +14,12 @@ use Illuminate\Support\Facades\Http;
 
 class CloudClient
 {
+    /**
+     * @var PendingRequest<false>
+     */
     protected PendingRequest $client;
+
+    protected array $includes = [];
 
     public function __construct(
         protected string $apiKey,
@@ -23,6 +28,10 @@ class CloudClient
             ->baseUrl('https://cloud.laravel.com/api')
             ->acceptJson()
             ->asJson()
+            ->beforeSending(fn ($request) => $request->withQueryParams(
+                ['include' => implode(',', $this->includes)],
+            ))
+            ->afterResponse(fn ($response) => $this->includes = [])
             ->throw();
     }
 
@@ -31,25 +40,25 @@ class CloudClient
      */
     public function listApplications(): Paginated
     {
-        $response = $this->get('/applications', [
-            'include' => $this->include('organization', 'environments', 'defaultEnvironment'),
-        ]);
+        $this->include('organization', 'environments', 'defaultEnvironment');
+
+        $response = $this->client->get('/applications');
 
         return new Paginated(
-            data: array_map(fn ($item) => Application::fromApiResponse($item), $response['data']),
-            links: $response['links'],
+            data: array_map(fn ($item) => Application::fromApiResponse($item), $response->json('data')),
+            links: $response->json('links'),
         );
     }
 
     public function createApplication(string $repository, string $name, string $region): Application
     {
-        $response = $this->post('/applications', [
+        $response = $this->client->post('/applications', [
             'repository' => $repository,
             'name' => $name,
             'region' => $region,
         ]);
 
-        return Application::fromApiResponse($response['data']);
+        return Application::fromApiResponse($response->json('data'));
     }
 
     public function replaceEnvironmentVariables(string $environmentId, array $variables): array
@@ -67,11 +76,11 @@ class CloudClient
 
     public function getApplication(string $applicationId): Application
     {
-        $response = $this->get("/applications/{$applicationId}", [
-            'include' => $this->include('organization', 'environments', 'defaultEnvironment'),
-        ]);
+        $this->include('organization', 'environments', 'defaultEnvironment');
 
-        return Application::fromApiResponse($response['data']);
+        $response = $this->client->get("/applications/{$applicationId}");
+
+        return Application::fromApiResponse($response->json('data'));
     }
 
     /**
@@ -79,92 +88,79 @@ class CloudClient
      */
     public function listEnvironments(string $applicationId): Paginated
     {
-        $response = $this->get("/applications/{$applicationId}/environments");
+        $response = $this->client->get("/applications/{$applicationId}/environments");
 
         return new Paginated(
-            data: array_map(fn ($item) => Environment::fromApiResponse($item), $response['data']),
-            links: $response['links'],
+            data: array_map(fn ($item) => Environment::fromApiResponse($item), $response->json('data')),
+            links: $response->json('links'),
         );
     }
 
     public function getEnvironment(string $environmentId): Environment
     {
-        $response = $this->get("/environments/{$environmentId}", [
-            'include' => $this->include('instances', 'currentDeployment'),
-        ]);
+        $this->include('instances', 'currentDeployment');
 
-        return Environment::fromApiResponse($response['data']);
+        $response = $this->client->get("/environments/{$environmentId}");
+
+        return Environment::fromApiResponse($response->json('data'));
     }
 
     public function updateEnvironment(string $environmentId, array $data): Environment
     {
         $response = $this->client->patch("/environments/{$environmentId}", $data);
 
-        dump($response, $response->json());
-
         return Environment::fromApiResponse($response->json()['data']);
     }
 
     public function getInstance(string $instanceId): EnvironmentInstance
     {
-        $response = $this->get("/instances/{$instanceId}");
+        $response = $this->client->get("/instances/{$instanceId}");
 
-        return EnvironmentInstance::fromApiResponse($response['data']);
+        return EnvironmentInstance::fromApiResponse($response->json('data'));
     }
 
     public function updateInstance(string $instanceId, array $data): EnvironmentInstance
     {
         $response = $this->client->patch("/instances/{$instanceId}", $data);
 
-        return EnvironmentInstance::fromApiResponse($response->json()['data']);
+        return EnvironmentInstance::fromApiResponse($response->json('data'));
     }
 
     public function createEnvironment(string $applicationId, string $name, ?string $branch = null): Environment
     {
-        $response = $this->post("/applications/{$applicationId}/environments", array_filter([
-            'name' => $name,
-            'branch' => $branch,
-        ]));
+        $response = $this->client->post(
+            "/applications/{$applicationId}/environments",
+            array_filter([
+                'name' => $name,
+                'branch' => $branch,
+            ])
+        );
 
-        return Environment::fromApiResponse($response['data']);
+        return Environment::fromApiResponse($response->json('data'));
     }
 
     public function initiateDeployment(string $environmentId): Deployment
     {
-        $response = $this->post("/environments/{$environmentId}/deployments");
+        $response = $this->client->post("/environments/{$environmentId}/deployments");
 
-        return Deployment::fromApiResponse($response['data']);
+        return Deployment::fromApiResponse($response->json('data'));
     }
 
     public function getDeployment(string $deploymentId): Deployment
     {
-        $response = $this->get("/deployments/{$deploymentId}");
+        $response = $this->client->get("/deployments/{$deploymentId}");
 
-        return Deployment::fromApiResponse($response['data']);
+        return Deployment::fromApiResponse($response->json('data'));
     }
 
     public function listDeployments(string $environmentId): Paginated
     {
-        $response = $this->get("/environments/{$environmentId}/deployments");
+        $response = $this->client->get("/environments/{$environmentId}/deployments");
 
         return new Paginated(
-            data: array_map(fn ($item) => Deployment::fromApiResponse($item), $response['data']),
-            links: $response['links'],
+            data: array_map(fn ($item) => Deployment::fromApiResponse($item), $response->json('data')),
+            links: $response->json('links'),
         );
-    }
-
-    protected function get(string $endpoint, array $query = []): array
-    {
-        $response = $this->client->get($endpoint, $query);
-
-        return $response->json() ?? [];
-    }
-
-    protected function post(string $endpoint, array $data = []): array
-    {
-        $response = $this->client->post($endpoint, $data);
-
-        return $response->json() ?? [];
     }
 
     /**
@@ -172,13 +168,13 @@ class CloudClient
      */
     public function listDatabases(): Paginated
     {
-        $response = $this->get('/databases', [
-            'include' => implode(',', ['schemas']),
-        ]);
+        $this->include('schemas');
+
+        $response = $this->client->get('/databases');
 
         return new Paginated(
-            data: array_map(fn ($item) => Database::fromApiResponse($item, $response), $response['data']),
-            links: $response['links'],
+            data: array_map(fn ($item) => Database::fromApiResponse($item, $response->json()), $response->json('data')),
+            links: $response->json('links'),
         );
     }
 
@@ -187,22 +183,24 @@ class CloudClient
      */
     public function listDatabaseTypes(): array
     {
-        $response = $this->get('/databases/types');
+        $response = $this->client->get('/databases/types');
 
-        return array_map(fn ($item) => DatabaseType::fromApiResponse($item), $response['data']);
+        return array_map(fn ($item) => DatabaseType::fromApiResponse($item), $response->json('data'));
     }
 
     public function getDatabase(string $databaseId): Database
     {
-        $response = $this->get("/databases/{$databaseId}", [
-            'include' => $this->include('schemas'),
-        ]);
+        $this->include('schemas');
 
-        return Database::fromApiResponse($response['data'], $response);
+        $response = $this->client->get("/databases/{$databaseId}");
+
+        return Database::fromApiResponse($response->json('data'), $response->json());
     }
 
-    protected function include(string ...$includes): string
+    public function include(string ...$includes): self
     {
-        return implode(',', $includes);
+        $this->includes = $includes;
+
+        return $this;
     }
 }
