@@ -18,6 +18,7 @@ class EnvironmentInstance
         public readonly ?int $scalingCpuThresholdPercentage = null,
         public readonly ?int $scalingMemoryThresholdPercentage = null,
         public readonly ?CarbonImmutable $createdAt = null,
+        public readonly ?CarbonImmutable $updatedAt = null,
         public readonly ?string $environmentId = null,
         public readonly array $backgroundProcessIds = [],
     ) {
@@ -41,6 +42,7 @@ class EnvironmentInstance
             scalingCpuThresholdPercentage: $attributes['scaling_cpu_threshold_percentage'],
             scalingMemoryThresholdPercentage: $attributes['scaling_memory_threshold_percentage'],
             createdAt: isset($attributes['created_at']) ? CarbonImmutable::parse($attributes['created_at']) : null,
+            updatedAt: isset($attributes['updated_at']) ? CarbonImmutable::parse($attributes['updated_at']) : null,
             environmentId: $relationships['environment']['data']['id'] ?? null,
             backgroundProcessIds: array_column($relationships['backgroundProcesses']['data'] ?? [], 'id'),
         );

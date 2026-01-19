@@ -3,9 +3,12 @@
 namespace App;
 
 use App\Dto\Application;
+use App\Dto\BackgroundProcess;
+use App\Dto\Command;
 use App\Dto\Database;
 use App\Dto\DatabaseType;
 use App\Dto\Deployment;
+use App\Dto\Domain;
 use App\Dto\Environment;
 use App\Dto\EnvironmentInstance;
 use App\Dto\Paginated;
@@ -83,6 +86,13 @@ class CloudClient
         return Application::fromApiResponse($response->json('data'));
     }
 
+    public function updateApplication(string $applicationId, array $data): Application
+    {
+        $response = $this->client->patch("/applications/{$applicationId}", $data);
+
+        return Application::fromApiResponse($response->json('data'));
+    }
+
     /**
      * @return Paginated<Environment>
      */
@@ -112,6 +122,11 @@ class CloudClient
         return Environment::fromApiResponse($response->json()['data']);
     }
 
+    public function deleteEnvironment(string $environmentId): void
+    {
+        $this->client->delete("/environments/{$environmentId}");
+    }
+
     public function getInstance(string $instanceId): EnvironmentInstance
     {
         $response = $this->client->get("/instances/{$instanceId}");
@@ -124,6 +139,31 @@ class CloudClient
         $response = $this->client->patch("/instances/{$instanceId}", $data);
 
         return EnvironmentInstance::fromApiResponse($response->json('data'));
+    }
+
+    /**
+     * @return Paginated<EnvironmentInstance>
+     */
+    public function listInstances(string $environmentId): Paginated
+    {
+        $response = $this->client->get("/environments/{$environmentId}/instances");
+
+        return new Paginated(
+            data: array_map(fn ($item) => EnvironmentInstance::fromApiResponse($item), $response->json('data')),
+            links: $response->json('links'),
+        );
+    }
+
+    public function createInstance(string $environmentId, array $data): EnvironmentInstance
+    {
+        $response = $this->client->post("/environments/{$environmentId}/instances", $data);
+
+        return EnvironmentInstance::fromApiResponse($response->json('data'));
+    }
+
+    public function deleteInstance(string $instanceId): void
+    {
+        $this->client->delete("/instances/{$instanceId}");
     }
 
     public function createEnvironment(string $applicationId, string $name, ?string $branch = null): Environment
@@ -161,6 +201,122 @@ class CloudClient
             data: array_map(fn ($item) => Deployment::fromApiResponse($item), $response->json('data')),
             links: $response->json('links'),
         );
+    }
+
+    /**
+     * @return Paginated<Domain>
+     */
+    public function listDomains(string $environmentId): Paginated
+    {
+        $response = $this->client->get("/environments/{$environmentId}/domains");
+
+        return new Paginated(
+            data: array_map(fn ($item) => Domain::fromApiResponse($item), $response->json('data')),
+            links: $response->json('links'),
+        );
+    }
+
+    public function createDomain(string $environmentId, string $domain): Domain
+    {
+        $response = $this->client->post("/environments/{$environmentId}/domains", [
+            'domain' => $domain,
+        ]);
+
+        return Domain::fromApiResponse($response->json('data'));
+    }
+
+    public function getDomain(string $domainId): Domain
+    {
+        $response = $this->client->get("/domains/{$domainId}");
+
+        return Domain::fromApiResponse($response->json('data'));
+    }
+
+    public function updateDomain(string $domainId, array $data): Domain
+    {
+        $response = $this->client->patch("/domains/{$domainId}", $data);
+
+        return Domain::fromApiResponse($response->json('data'));
+    }
+
+    public function deleteDomain(string $domainId): void
+    {
+        $this->client->delete("/domains/{$domainId}");
+    }
+
+    /**
+     * @return Paginated<Command>
+     */
+    public function listCommands(string $environmentId): Paginated
+    {
+        $response = $this->client->get("/environments/{$environmentId}/commands");
+
+        return new Paginated(
+            data: array_map(fn ($item) => Command::fromApiResponse($item), $response->json('data')),
+            links: $response->json('links'),
+        );
+    }
+
+    public function runCommand(string $environmentId, string $command): Command
+    {
+        $response = $this->client->post("/environments/{$environmentId}/commands", [
+            'command' => $command,
+        ]);
+
+        return Command::fromApiResponse($response->json('data'));
+    }
+
+    public function getCommand(string $commandId): Command
+    {
+        $response = $this->client->get("/commands/{$commandId}");
+
+        return Command::fromApiResponse($response->json('data'));
+    }
+
+    /**
+     * @return Paginated<BackgroundProcess>
+     */
+    public function listBackgroundProcesses(string $instanceId): Paginated
+    {
+        $response = $this->client->get("/instances/{$instanceId}/background-processes");
+
+        return new Paginated(
+            data: array_map(fn ($item) => BackgroundProcess::fromApiResponse($item), $response->json('data')),
+            links: $response->json('links'),
+        );
+    }
+
+    public function createBackgroundProcess(string $instanceId, array $data): BackgroundProcess
+    {
+        $response = $this->client->post("/instances/{$instanceId}/background-processes", $data);
+
+        return BackgroundProcess::fromApiResponse($response->json('data'));
+    }
+
+    public function getBackgroundProcess(string $backgroundProcessId): BackgroundProcess
+    {
+        $response = $this->client->get("/background-processes/{$backgroundProcessId}");
+
+        return BackgroundProcess::fromApiResponse($response->json('data'));
+    }
+
+    public function updateBackgroundProcess(string $backgroundProcessId, array $data): BackgroundProcess
+    {
+        $response = $this->client->patch("/background-processes/{$backgroundProcessId}", $data);
+
+        return BackgroundProcess::fromApiResponse($response->json('data'));
+    }
+
+    public function deleteBackgroundProcess(string $backgroundProcessId): void
+    {
+        $this->client->delete("/background-processes/{$backgroundProcessId}");
+    }
+
+    public function getIpAddresses(): array
+    {
+        $response = $this->client->get('/ip');
+
+        return $response->json() ?? [];
     }
 
     /**

@@ -15,6 +15,7 @@ class Database
         public readonly array $config,
         public readonly array $connection,
         public readonly ?CarbonImmutable $createdAt = null,
+        public readonly ?CarbonImmutable $updatedAt = null,
         public readonly array $schemas = [],
     ) {
         //
@@ -34,6 +35,7 @@ class Database
             config: $attributes['config'] ?? [],
             connection: $attributes['connection'] ?? [],
             createdAt: isset($attributes['created_at']) ? CarbonImmutable::parse($attributes['created_at']) : null,
+            updatedAt: isset($attributes['updated_at']) ? CarbonImmutable::parse($attributes['updated_at']) : null,
             schemas: collect($included)
                 ->filter(fn ($item) => $item['type'] === 'databaseSchemas')
                 ->map(fn ($item) => [
