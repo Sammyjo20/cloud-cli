@@ -3,19 +3,19 @@
 namespace App\Commands;
 
 use App\Concerns\HasAClient;
+use App\Concerns\RequiresDatabase;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 
-use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
 
 class DatabaseGet extends Command
 {
     use Colors;
     use HasAClient;
+    use RequiresDatabase;
 
-    protected $signature = 'database:get {database : The database ID} {--json : Output as JSON}';
+    protected $signature = 'database:get {database? : The database ID or name} {--json : Output as JSON}';
 
     protected $description = 'Get database cluster details';
 
@@ -23,35 +23,29 @@ class DatabaseGet extends Command
     {
         $this->ensureClient();
 
-        intro('Database Cluster Details');
+        if (! $this->option('json')) {
+            if ($this->argument('database')) {
+                intro('Database Cluster Details: '.$this->argument('database'));
+            } else {
+                intro('Database Cluster Details');
+            }
+        }
 
-        $database = spin(
-            fn () => $this->client->getDatabase($this->argument('database')),
-            'Fetching database...'
-        );
+        $database = $this->getDatabaseCluster(showPrompt: false);
 
         if ($this->option('json')) {
-            $this->line(json_encode([
-                'id' => $database->id,
-                'name' => $database->name,
-                'type' => $database->type,
-                'status' => $database->status,
-                'region' => $database->region,
-                'config' => $database->config,
-                'connection' => $database->connection,
-                'schemas' => $database->schemas,
-                'created_at' => $database->createdAt?->toIso8601String(),
-                'updated_at' => $database->updatedAt?->toIso8601String(),
-            ], JSON_PRETTY_PRINT));
+            $this->line($database->toJson());
 
             return;
         }
 
-        info("Database: {$database->name}");
-        $this->line("ID: {$database->id}");
-        $this->line("Type: {$database->type}");
-        $this->line("Status: {$database->status}");
-        $this->line("Region: {$database->region}");
-        $this->line('Schemas: '.count($database->schemas));
+        dataList([
+            'ID' => $database->id,
+            'Name' => $database->name,
+            'Type' => $database->type,
+            'Status' => $database->status,
+            'Region' => $database->region,
+            'Schemas' => collect($database->schemas)->pluck('name')->toArray(),
+        ]);
     }
 }
