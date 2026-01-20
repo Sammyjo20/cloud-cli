@@ -6,6 +6,7 @@ use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
@@ -36,7 +37,7 @@ class IpAddresses extends Command
         }
 
         foreach ($addresses as $region => $ips) {
-            $this->info("Region: {$region}");
+            info("Region: {$region}");
 
             if (isset($ips['ipv4'])) {
                 $this->line('IPv4: '.implode(', ', $ips['ipv4']));

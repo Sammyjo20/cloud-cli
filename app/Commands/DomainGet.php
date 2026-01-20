@@ -6,6 +6,7 @@ use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
@@ -43,7 +44,7 @@ class DomainGet extends Command
             return;
         }
 
-        $this->info("Domain: {$domain->domain}");
+        info("Domain: {$domain->domain}");
         $this->line("ID: {$domain->id}");
         $this->line("Status: {$domain->status}");
         $this->line('Primary: '.($domain->isPrimary ? 'Yes' : 'No'));

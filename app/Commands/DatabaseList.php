@@ -6,6 +6,7 @@ use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
@@ -23,7 +24,9 @@ class DatabaseList extends Command
     {
         $this->ensureClient();
 
-        intro('Listing database clusters');
+        if (! $this->option('json')) {
+            intro('Database Clusters');
+        }
 
         $databases = spin(
             fn () => $this->client->listDatabases(),
@@ -31,24 +34,13 @@ class DatabaseList extends Command
         );
 
         if ($this->option('json')) {
-            $this->line(json_encode([
-                'data' => array_map(fn ($db) => [
-                    'id' => $db->id,
-                    'name' => $db->name,
-                    'type' => $db->type,
-                    'status' => $db->status,
-                    'region' => $db->region,
-                    'schemas' => $db->schemas,
-                    'created_at' => $db->createdAt?->toIso8601String(),
-                ], $databases->data),
-                'links' => $databases->links,
-            ], JSON_PRETTY_PRINT));
+            $this->line($databases->toJson());
 
             return;
         }
 
         if (count($databases->data) === 0) {
-            $this->info('No databases found.');
+            info('No databases found.');
 
             return;
         }
@@ -61,7 +53,7 @@ class DatabaseList extends Command
                 $db->type,
                 $db->status,
                 $db->region,
-                count($db->schemas),
+                collect($db->schemas)->pluck('name')->implode(', '),
             ])->toArray()
         );
     }

@@ -6,6 +6,7 @@ use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
@@ -47,7 +48,7 @@ class DomainList extends Command
         }
 
         if (count($domains->data) === 0) {
-            $this->info('No domains found.');
+            info('No domains found.');
 
             return;
         }

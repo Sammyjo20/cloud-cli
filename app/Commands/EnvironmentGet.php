@@ -6,6 +6,7 @@ use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
@@ -52,7 +53,7 @@ class EnvironmentGet extends Command
             return;
         }
 
-        $this->info("Environment: {$environment->name}");
+        info("Environment: {$environment->name}");
         $this->line("ID: {$environment->id}");
         $branch = $environment->branch ?? 'N/A';
         $this->line("Branch: {$branch}");

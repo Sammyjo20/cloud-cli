@@ -6,6 +6,7 @@ use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
@@ -49,7 +50,7 @@ class DeploymentGet extends Command
             return;
         }
 
-        $this->info("Deployment: {$deployment->id}");
+        info("Deployment: {$deployment->id}");
         $this->line("Status: {$deployment->status->label()}");
         $this->line("Branch: {$deployment->branchName}");
         $this->line("Commit: {$deployment->commitHash}");

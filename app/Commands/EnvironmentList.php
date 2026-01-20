@@ -7,6 +7,7 @@ use App\Concerns\RequiresApplication;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
@@ -63,7 +64,7 @@ class EnvironmentList extends Command
         }
 
         if (count($environments->data) === 0) {
-            $this->info('No environments found.');
+            info('No environments found.');
 
             return;
         }

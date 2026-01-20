@@ -9,6 +9,7 @@ use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\success;
@@ -37,7 +38,7 @@ class BackgroundProcessDelete extends Command
             );
 
             if (! confirm("Delete background process '{$process->command}'?")) {
-                $this->info('Cancelled.');
+                info('Cancelled.');
 
                 return;
             }

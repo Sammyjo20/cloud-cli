@@ -6,6 +6,7 @@ use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
@@ -46,7 +47,7 @@ class BackgroundProcessList extends Command
         }
 
         if (count($processes->data) === 0) {
-            $this->info('No background processes found.');
+            info('No background processes found.');
 
             return;
         }

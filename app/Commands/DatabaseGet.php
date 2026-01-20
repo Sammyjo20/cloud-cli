@@ -6,6 +6,7 @@ use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
@@ -46,7 +47,7 @@ class DatabaseGet extends Command
             return;
         }
 
-        $this->info("Database: {$database->name}");
+        info("Database: {$database->name}");
         $this->line("ID: {$database->id}");
         $this->line("Type: {$database->type}");
         $this->line("Status: {$database->status}");

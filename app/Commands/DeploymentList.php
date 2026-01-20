@@ -6,6 +6,7 @@ use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
@@ -48,7 +49,7 @@ class DeploymentList extends Command
         }
 
         if (count($deployments->data) === 0) {
-            $this->info('No deployments found.');
+            info('No deployments found.');
 
             return;
         }

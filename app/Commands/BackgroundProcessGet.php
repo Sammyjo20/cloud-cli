@@ -6,6 +6,7 @@ use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
@@ -49,7 +50,7 @@ class BackgroundProcessGet extends Command
             return;
         }
 
-        $this->info("Background Process: {$process->id}");
+        info("Background Process: {$process->id}");
         $this->line("Command: {$process->command}");
         $this->line("Type: {$process->type}");
         $this->line("Instances: {$process->instances}");

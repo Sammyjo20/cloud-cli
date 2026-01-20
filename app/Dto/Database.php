@@ -4,7 +4,7 @@ namespace App\Dto;
 
 use Carbon\CarbonImmutable;
 
-class Database
+class Database extends Data
 {
     public function __construct(
         public readonly string $id,
@@ -47,5 +47,16 @@ class Database
                 ->values()
                 ->toArray(),
         );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'type' => $this->type,
+            'status' => $this->status,
+            'region' => $this->region,
+        ];
     }
 }

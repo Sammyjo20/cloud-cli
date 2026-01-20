@@ -6,6 +6,7 @@ use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
@@ -49,7 +50,7 @@ class InstanceGet extends Command
             return;
         }
 
-        $this->info("Instance: {$instance->name}");
+        info("Instance: {$instance->name}");
         $this->line("ID: {$instance->id}");
         $this->line("Type: {$instance->type}");
         $this->line("Size: {$instance->size}");

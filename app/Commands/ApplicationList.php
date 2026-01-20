@@ -6,6 +6,7 @@ use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
@@ -39,7 +40,7 @@ class ApplicationList extends Command
         }
 
         if (count($applications->data) === 0) {
-            $this->info('No applications found.');
+            info('No applications found.');
 
             return;
         }
