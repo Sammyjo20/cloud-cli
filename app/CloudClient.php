@@ -56,7 +56,7 @@ class CloudClient
         $response = $this->client->get('/applications');
 
         return new Paginated(
-            data: array_map(fn($item) => Application::fromApiResponse($item), $response->json('data')),
+            data: array_map(fn($item) => Application::fromApiResponse($response, $item), $response->json('data')),
             links: $response->json('links'),
         );
     }
@@ -69,7 +69,7 @@ class CloudClient
             'region' => $region,
         ]);
 
-        return Application::fromApiResponse($response->json('data'));
+        return Application::fromApiResponse($response);
     }
 
     public function replaceEnvironmentVariables(string $environmentId, array $variables): array
@@ -91,14 +91,14 @@ class CloudClient
 
         $response = $this->client->get("/applications/{$applicationId}");
 
-        return Application::fromApiResponse($response->json('data'));
+        return Application::fromApiResponse($response);
     }
 
     public function updateApplication(string $applicationId, array $data): Application
     {
         $response = $this->client->patch("/applications/{$applicationId}", $data);
 
-        return Application::fromApiResponse($response->json('data'));
+        return Application::fromApiResponse($response);
     }
 
     /**
@@ -109,7 +109,7 @@ class CloudClient
         $response = $this->client->get("/applications/{$applicationId}/environments");
 
         return new Paginated(
-            data: array_map(fn($item) => Environment::fromApiResponse($item), $response->json('data')),
+            data: array_map(fn($item) => Environment::fromApiResponse($response, $item), $response->json('data')),
             links: $response->json('links'),
         );
     }
@@ -120,14 +120,14 @@ class CloudClient
 
         $response = $this->client->get("/environments/{$environmentId}");
 
-        return Environment::fromApiResponse($response->json('data'));
+        return Environment::fromApiResponse($response);
     }
 
     public function updateEnvironment(string $environmentId, array $data): Environment
     {
         $response = $this->client->patch("/environments/{$environmentId}", $data);
 
-        return Environment::fromApiResponse($response->json()['data']);
+        return Environment::fromApiResponse($response);
     }
 
     public function deleteEnvironment(string $environmentId): void
@@ -139,14 +139,14 @@ class CloudClient
     {
         $response = $this->client->get("/instances/{$instanceId}");
 
-        return EnvironmentInstance::fromApiResponse($response->json('data'));
+        return EnvironmentInstance::fromApiResponse($response);
     }
 
     public function updateInstance(string $instanceId, array $data): EnvironmentInstance
     {
         $response = $this->client->patch("/instances/{$instanceId}", $data);
 
-        return EnvironmentInstance::fromApiResponse($response->json('data'));
+        return EnvironmentInstance::fromApiResponse($response);
     }
 
     /**
@@ -157,7 +157,7 @@ class CloudClient
         $response = $this->client->get("/environments/{$environmentId}/instances");
 
         return new Paginated(
-            data: array_map(fn($item) => EnvironmentInstance::fromApiResponse($item), $response->json('data')),
+            data: array_map(fn($item) => EnvironmentInstance::fromApiResponse($response, $item), $response->json('data')),
             links: $response->json('links'),
         );
     }
@@ -166,7 +166,7 @@ class CloudClient
     {
         $response = $this->client->post("/environments/{$environmentId}/instances", $data);
 
-        return EnvironmentInstance::fromApiResponse($response->json('data'));
+        return EnvironmentInstance::fromApiResponse($response);
     }
 
     public function deleteInstance(string $instanceId): void
@@ -184,21 +184,21 @@ class CloudClient
             ])
         );
 
-        return Environment::fromApiResponse($response->json('data'));
+        return Environment::fromApiResponse($response);
     }
 
     public function initiateDeployment(string $environmentId): Deployment
     {
         $response = $this->client->post("/environments/{$environmentId}/deployments");
 
-        return Deployment::fromApiResponse($response->json('data'));
+        return Deployment::fromApiResponse($response);
     }
 
     public function getDeployment(string $deploymentId): Deployment
     {
         $response = $this->client->get("/deployments/{$deploymentId}");
 
-        return Deployment::fromApiResponse($response->json('data'));
+        return Deployment::fromApiResponse($response);
     }
 
     public function listDeployments(string $environmentId): Paginated
@@ -206,7 +206,7 @@ class CloudClient
         $response = $this->client->get("/environments/{$environmentId}/deployments");
 
         return new Paginated(
-            data: array_map(fn($item) => Deployment::fromApiResponse($item), $response->json('data')),
+            data: array_map(fn($item) => Deployment::fromApiResponse($response, $item), $response->json('data')),
             links: $response->json('links'),
         );
     }
@@ -219,7 +219,7 @@ class CloudClient
         $response = $this->client->get("/environments/{$environmentId}/domains");
 
         return new Paginated(
-            data: array_map(fn($item) => Domain::fromApiResponse($item), $response->json('data')),
+            data: array_map(fn($item) => Domain::fromApiResponse($response, $item), $response->json('data')),
             links: $response->json('links'),
         );
     }
@@ -230,21 +230,21 @@ class CloudClient
             'domain' => $domain,
         ]);
 
-        return Domain::fromApiResponse($response->json('data'));
+        return Domain::fromApiResponse($response);
     }
 
     public function getDomain(string $domainId): Domain
     {
         $response = $this->client->get("/domains/{$domainId}");
 
-        return Domain::fromApiResponse($response->json('data'));
+        return Domain::fromApiResponse($response);
     }
 
     public function updateDomain(string $domainId, array $data): Domain
     {
         $response = $this->client->patch("/domains/{$domainId}", $data);
 
-        return Domain::fromApiResponse($response->json('data'));
+        return Domain::fromApiResponse($response);
     }
 
     public function deleteDomain(string $domainId): void
@@ -260,7 +260,7 @@ class CloudClient
         $response = $this->client->get("/environments/{$environmentId}/commands");
 
         return new Paginated(
-            data: array_map(fn($item) => Command::fromApiResponse($item), $response->json('data')),
+            data: array_map(fn($item) => Command::fromApiResponse($response, $item), $response->json('data')),
             links: $response->json('links'),
         );
     }
@@ -271,14 +271,14 @@ class CloudClient
             'command' => $command,
         ]);
 
-        return Command::fromApiResponse($response->json('data'));
+        return Command::fromApiResponse($response);
     }
 
     public function getCommand(string $commandId): Command
     {
         $response = $this->client->get("/commands/{$commandId}");
 
-        return Command::fromApiResponse($response->json('data'));
+        return Command::fromApiResponse($response);
     }
 
     /**
@@ -289,7 +289,7 @@ class CloudClient
         $response = $this->client->get("/instances/{$instanceId}/background-processes");
 
         return new Paginated(
-            data: array_map(fn($item) => BackgroundProcess::fromApiResponse($item), $response->json('data')),
+            data: array_map(fn($item) => BackgroundProcess::fromApiResponse($response, $item), $response->json('data')),
             links: $response->json('links'),
         );
     }
@@ -298,21 +298,21 @@ class CloudClient
     {
         $response = $this->client->post("/instances/{$instanceId}/background-processes", $data);
 
-        return BackgroundProcess::fromApiResponse($response->json('data'));
+        return BackgroundProcess::fromApiResponse($response);
     }
 
     public function getBackgroundProcess(string $backgroundProcessId): BackgroundProcess
     {
         $response = $this->client->get("/background-processes/{$backgroundProcessId}");
 
-        return BackgroundProcess::fromApiResponse($response->json('data'));
+        return BackgroundProcess::fromApiResponse($response);
     }
 
     public function updateBackgroundProcess(string $backgroundProcessId, array $data): BackgroundProcess
     {
         $response = $this->client->patch("/background-processes/{$backgroundProcessId}", $data);
 
-        return BackgroundProcess::fromApiResponse($response->json('data'));
+        return BackgroundProcess::fromApiResponse($response);
     }
 
     public function deleteBackgroundProcess(string $backgroundProcessId): void
@@ -337,7 +337,7 @@ class CloudClient
         $response = $this->client->get('/databases');
 
         return new Paginated(
-            data: array_map(fn($item) => Database::fromApiResponse($item, $response->json()), $response->json('data')),
+            data: array_map(fn($item) => Database::fromApiResponse($response, $item), $response->json('data')),
             links: $response->json('links'),
         );
     }
@@ -349,7 +349,7 @@ class CloudClient
     {
         $response = $this->client->get('/databases/types');
 
-        return array_map(fn($item) => DatabaseType::fromApiResponse($item), $response->json('data'));
+        return array_map(fn($item) => DatabaseType::fromApiResponse($response, $item), $response->json('data'));
     }
 
     public function getDatabase(string $databaseId): Database
@@ -358,7 +358,7 @@ class CloudClient
 
         $response = $this->client->get("/databases/{$databaseId}");
 
-        return Database::fromApiResponse($response->json('data'), $response->json());
+        return Database::fromApiResponse($response);
     }
 
     public function include(string ...$includes): self

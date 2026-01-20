@@ -3,6 +3,7 @@
 namespace App\Dto;
 
 use Carbon\CarbonImmutable;
+use Illuminate\Http\Client\Response;
 
 class EnvironmentInstance
 {
@@ -25,8 +26,12 @@ class EnvironmentInstance
         //
     }
 
-    public static function fromApiResponse(array $data): self
+    public static function fromApiResponse(Response $response, ?array $item = null): self
     {
+        $responseData = $response->json();
+        $data = $item ?? ($responseData['data'] ?? $responseData);
+        $included = $responseData['included'] ?? [];
+
         $attributes = $data['attributes'] ?? [];
         $relationships = $data['relationships'] ?? [];
 

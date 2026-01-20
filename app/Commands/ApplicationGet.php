@@ -33,6 +33,8 @@ class ApplicationGet extends Command
             return;
         }
 
+        dd($application);
+
         dataList([
             'Name' => $application->name,
             'ID' => $application->id,

@@ -5,6 +5,7 @@ namespace App\Dto;
 use App\Enums\DeploymentStatus;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
+use Illuminate\Http\Client\Response;
 
 class Deployment
 {
@@ -31,8 +32,12 @@ class Deployment
         //
     }
 
-    public static function fromApiResponse(array $data): self
+    public static function fromApiResponse(Response $response, ?array $item = null): self
     {
+        $responseData = $response->json();
+        $data = $item ?? ($responseData['data'] ?? $responseData);
+        $included = $responseData['included'] ?? [];
+
         $attributes = $data['attributes'] ?? [];
         $relationships = $data['relationships'] ?? [];
         $commit = $attributes['commit'] ?? [];
