@@ -20,19 +20,16 @@ use Illuminate\Support\Composer;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Sleep;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 use Throwable;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
-class Ship extends Command
+class Ship extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -55,7 +52,7 @@ class Ship extends Command
         $this->git = $git;
 
         slideIn('WE MUST *SHIP*');
-        intro('Shipping application to Laravel Cloud');
+        $this->intro('Shipping application to Laravel Cloud');
 
         $this->ensureClient();
         $this->ensureRemoteGitRepo();
@@ -111,7 +108,7 @@ class Ship extends Command
             fn () => $this->collectOptionsToEnable($environment),
         );
 
-        outro(sprintf('https://cloud.laravel.com/%s/%s', $application->organizationId, $application->slug));
+        $this->outro(sprintf('https://cloud.laravel.com/%s/%s', $application->organizationId, $application->slug));
 
         $deploy = confirm('Do you want to deploy the application?');
 

@@ -4,13 +4,11 @@ namespace App\Commands;
 
 use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
-class InstanceGet extends Command
+class InstanceGet extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -23,7 +21,7 @@ class InstanceGet extends Command
     {
         $this->ensureClient();
 
-        intro('Instance Details');
+        $this->intro('Instance Details');
 
         $instance = spin(
             fn () => $this->client->getInstance($this->argument('instance')),

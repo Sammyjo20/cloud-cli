@@ -4,13 +4,11 @@ namespace App\Commands;
 
 use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
-class EnvironmentGet extends Command
+class EnvironmentGet extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -23,7 +21,7 @@ class EnvironmentGet extends Command
     {
         $this->ensureClient();
 
-        intro('Environment Details');
+        $this->intro('Environment Details');
 
         $environment = spin(
             fn () => $this->client->getEnvironment($this->argument('environment')),

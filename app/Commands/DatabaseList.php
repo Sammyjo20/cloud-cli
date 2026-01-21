@@ -4,14 +4,12 @@ namespace App\Commands;
 
 use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
 
-class DatabaseList extends Command
+class DatabaseList extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -25,7 +23,7 @@ class DatabaseList extends Command
         $this->ensureClient();
 
         if (! $this->option('json')) {
-            intro('Database Clusters');
+            $this->intro('Database Clusters');
         }
 
         $databases = spin(

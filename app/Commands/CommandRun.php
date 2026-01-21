@@ -5,14 +5,11 @@ namespace App\Commands;
 use App\Concerns\HasAClient;
 use Illuminate\Http\Client\RequestException;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\error;
-use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 
-class CommandRun extends Command
+class CommandRun extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -28,7 +25,7 @@ class CommandRun extends Command
     {
         $this->ensureClient();
 
-        intro('Running command');
+        $this->intro('Running command');
 
         try {
             $cmd = spin(
@@ -50,7 +47,7 @@ class CommandRun extends Command
                 return;
             }
 
-            outro("Command started: {$cmd->id}\nUse 'command:get {$cmd->id}' to check status and output");
+            $this->outro("Command started: {$cmd->id}\nUse 'command:get {$cmd->id}' to check status and output");
         } catch (RequestException $e) {
             if ($e->response?->status() === 422) {
                 $errors = $e->response->json()['errors'] ?? [];

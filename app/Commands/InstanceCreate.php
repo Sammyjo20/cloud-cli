@@ -5,14 +5,11 @@ namespace App\Commands;
 use App\Concerns\HasAClient;
 use Illuminate\Http\Client\RequestException;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\error;
-use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 
-class InstanceCreate extends Command
+class InstanceCreate extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -32,7 +29,7 @@ class InstanceCreate extends Command
     {
         $this->ensureClient();
 
-        intro('Creating instance');
+        $this->intro('Creating instance');
 
         $data = [];
 
@@ -73,7 +70,7 @@ class InstanceCreate extends Command
                 return;
             }
 
-            outro("Instance created: {$instance->name}");
+            $this->outro("Instance created: {$instance->name}");
         } catch (RequestException $e) {
             if ($e->response?->status() === 422) {
                 $errors = $e->response->json()['errors'] ?? [];

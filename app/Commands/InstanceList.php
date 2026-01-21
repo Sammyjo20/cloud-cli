@@ -4,14 +4,12 @@ namespace App\Commands;
 
 use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
 
-class InstanceList extends Command
+class InstanceList extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -24,7 +22,7 @@ class InstanceList extends Command
     {
         $this->ensureClient();
 
-        intro('Listing instances');
+        $this->intro('Listing instances');
 
         $instances = spin(
             fn () => $this->client->listInstances($this->argument('environment')),

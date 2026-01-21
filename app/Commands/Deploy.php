@@ -14,16 +14,13 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Sleep;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
-use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
-class Deploy extends Command
+class Deploy extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -45,7 +42,7 @@ class Deploy extends Command
         slideIn('TO THE *CLOUD*');
         $this->newLine();
 
-        intro('Deploying application to Laravel Cloud');
+        $this->intro('Deploying application to Laravel Cloud');
 
         $this->ensureClient();
         $this->ensureRemoteGitRepo();
@@ -122,9 +119,9 @@ class Deploy extends Command
                 Process::run('open '.$environment->url);
             }
 
-            outro($environment->url);
+            $this->outro($environment->url);
         } else {
-            outro('Deployment completed in <comment>'.$deployment->totalTime()->format('%I:%S').'</comment>');
+            $this->outro('Deployment completed in <comment>'.$deployment->totalTime()->format('%I:%S').'</comment>');
         }
     }
 
@@ -143,9 +140,9 @@ class Deploy extends Command
 
             $newMessage = $this->getDeploymentMessage($deploymentStatus);
 
-            $updateMessage($newMessage, $lastMessage !== $deploymentStatus->status->label());
+            $updateMessage($newMessage, $lastMessage !== $deploymentStatus->status->monitorLabel());
 
-            $lastMessage = $deploymentStatus->status->label();
+            $lastMessage = $deploymentStatus->status->monitorLabel();
 
             Sleep::for(CarbonInterval::milliseconds($updateInterval));
             $count++;
@@ -155,6 +152,6 @@ class Deploy extends Command
 
     protected function getDeploymentMessage(Deployment $deployment): string
     {
-        return $this->dim($deployment->timeElapsed()->format('%I:%S')).' '.$deployment->status->label();
+        return $this->dim($deployment->timeElapsed()->format('%I:%S')).' '.$deployment->status->monitorLabel();
     }
 }

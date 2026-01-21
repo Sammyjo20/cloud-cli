@@ -6,15 +6,13 @@ use App\Concerns\HasAClient;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Process;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
-use function Laravel\Prompts\intro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
 use function Laravel\Prompts\warning;
 
-class IpAddresses extends Command
+class IpAddresses extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -28,7 +26,7 @@ class IpAddresses extends Command
 
     public function handle()
     {
-        intro('Laravel Cloud IP Addresses');
+        $this->intro('Laravel Cloud IP Addresses');
 
         $this->ensureClient();
 

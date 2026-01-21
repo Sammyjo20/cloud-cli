@@ -4,13 +4,11 @@ namespace App\Commands;
 
 use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
-class BackgroundProcessGet extends Command
+class BackgroundProcessGet extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -23,7 +21,7 @@ class BackgroundProcessGet extends Command
     {
         $this->ensureClient();
 
-        intro('Background Process Details');
+        $this->intro('Background Process Details');
 
         $process = spin(
             fn () => $this->client->getBackgroundProcess($this->argument('process')),

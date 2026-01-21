@@ -5,14 +5,11 @@ namespace App\Commands;
 use App\Concerns\HasAClient;
 use Illuminate\Http\Client\RequestException;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\error;
-use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 
-class DomainUpdate extends Command
+class DomainUpdate extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -28,7 +25,7 @@ class DomainUpdate extends Command
     {
         $this->ensureClient();
 
-        intro('Updating domain');
+        $this->intro('Updating domain');
 
         $data = [];
 
@@ -59,7 +56,7 @@ class DomainUpdate extends Command
                 return;
             }
 
-            outro("Domain updated: {$domain->domain}");
+            $this->outro("Domain updated: {$domain->domain}");
         } catch (RequestException $e) {
             if ($e->response?->status() === 422) {
                 $errors = $e->response->json()['errors'] ?? [];

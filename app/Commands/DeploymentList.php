@@ -4,14 +4,12 @@ namespace App\Commands;
 
 use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
 
-class DeploymentList extends Command
+class DeploymentList extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -24,7 +22,7 @@ class DeploymentList extends Command
     {
         $this->ensureClient();
 
-        intro('Listing deployments');
+        $this->intro('Listing deployments');
 
         $deployments = spin(
             fn () => $this->client->listDeployments($this->argument('environment')),

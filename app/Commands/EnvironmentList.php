@@ -5,14 +5,12 @@ namespace App\Commands;
 use App\Concerns\HasAClient;
 use App\Concerns\RequiresApplication;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
 
-class EnvironmentList extends Command
+class EnvironmentList extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -28,7 +26,7 @@ class EnvironmentList extends Command
     {
         $this->ensureClient();
 
-        intro('Listing environments');
+        $this->intro('Listing environments');
 
         $applicationId = $this->argument('application');
 

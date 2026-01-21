@@ -8,9 +8,8 @@ use App\Concerns\UpdatesBuildDeployCommands;
 use App\Concerns\Validates;
 use App\Prompts\Hyb as HybPrompt;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
-class Hyb extends Command
+class Hyb extends BaseCommand
 {
     use Colors;
     use HasAClient;

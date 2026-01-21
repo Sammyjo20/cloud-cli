@@ -5,14 +5,11 @@ namespace App\Commands;
 use App\Concerns\HasAClient;
 use Illuminate\Http\Client\RequestException;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\error;
-use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 
-class InstanceUpdate extends Command
+class InstanceUpdate extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -31,7 +28,7 @@ class InstanceUpdate extends Command
     {
         $this->ensureClient();
 
-        intro('Updating instance');
+        $this->intro('Updating instance');
 
         $data = [];
 
@@ -73,7 +70,7 @@ class InstanceUpdate extends Command
                 return;
             }
 
-            outro("Instance updated: {$instance->name}");
+            $this->outro("Instance updated: {$instance->name}");
         } catch (RequestException $e) {
             if ($e->response?->status() === 422) {
                 $errors = $e->response->json()['errors'] ?? [];

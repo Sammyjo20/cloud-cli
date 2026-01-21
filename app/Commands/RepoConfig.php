@@ -8,16 +8,13 @@ use App\Dto\Organization;
 use App\Git;
 use App\LocalConfig;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\error;
-use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
-class RepoConfig extends Command
+class RepoConfig extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -28,7 +25,7 @@ class RepoConfig extends Command
 
     public function handle(Git $git, LocalConfig $localConfig)
     {
-        intro('Configure Repository Defaults');
+        $this->intro('Configure Repository Defaults');
 
         if (! $git->isRepo()) {
             error('This directory is not a Git repository.');
@@ -64,7 +61,7 @@ class RepoConfig extends Command
 
         $localConfig->setMany($newValues);
 
-        outro('Configuration saved to '.$localConfig->path());
+        $this->outro('Configuration saved to '.$localConfig->path());
 
         return 0;
     }

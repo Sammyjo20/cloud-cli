@@ -15,9 +15,11 @@ abstract class Renderer extends BaseRenderer
     /**
      * Render a warning message.
      */
-    protected function bullet(string $message): self
+    protected function bullet(string $message, TimelineSymbol $symbol = TimelineSymbol::DOT): self
     {
-        return $this->line($this->green(TimelineSymbol::DOT->value)."  {$message}");
+        $color = $symbol->color();
+
+        return $this->line($this->{$color}($symbol->value).'  '.$message);
     }
 
     /**

@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Middleware\CommandMiddlewareManager;
 use App\Middleware\RequiresAuthToken;
+use App\Prompts\Answered;
+use App\Prompts\TextPromptRenderer;
 use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
@@ -36,6 +38,8 @@ class AppServiceProvider extends ServiceProvider
 
                 return [$promptClass => 'App\\Prompts\\'.$class];
             });
+
+        $renderers->offsetSet(Answered::class, TextPromptRenderer::class);
 
         Prompt::addTheme('cloud', $renderers->toArray());
         Prompt::theme('cloud');

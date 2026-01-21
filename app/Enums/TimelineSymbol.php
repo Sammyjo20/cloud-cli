@@ -12,9 +12,9 @@ enum TimelineSymbol: string
     case WARNING = '▲';
     case CIRCLE = '●';
 
-    public static function color(self $symbol): string
+    public function color(): string
     {
-        return match ($symbol) {
+        return match ($this) {
             self::DOT, self::CIRCLE => 'cyan',
             self::LINE => 'gray',
             self::PENDING, self::WARNING => 'yellow',

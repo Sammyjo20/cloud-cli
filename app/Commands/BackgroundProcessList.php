@@ -4,14 +4,12 @@ namespace App\Commands;
 
 use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
 
-class BackgroundProcessList extends Command
+class BackgroundProcessList extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -24,7 +22,7 @@ class BackgroundProcessList extends Command
     {
         $this->ensureClient();
 
-        intro('Listing background processes');
+        $this->intro('Listing background processes');
 
         $processes = spin(
             fn () => $this->client->listBackgroundProcesses($this->argument('instance')),

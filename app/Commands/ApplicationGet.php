@@ -5,11 +5,8 @@ namespace App\Commands;
 use App\Concerns\HasAClient;
 use App\Concerns\RequiresApplication;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
-use function Laravel\Prompts\intro;
-
-class ApplicationGet extends Command
+class ApplicationGet extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -25,9 +22,9 @@ class ApplicationGet extends Command
 
         if (! $this->option('json')) {
             if ($this->argument('application')) {
-                intro('Application Details: '.$this->argument('application'));
+                $this->intro('Application Details: '.$this->argument('application'));
             } else {
-                intro('Application Details');
+                $this->intro('Application Details');
             }
         }
 

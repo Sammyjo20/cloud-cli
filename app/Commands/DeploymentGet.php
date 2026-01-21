@@ -3,19 +3,27 @@
 namespace App\Commands;
 
 use App\Concerns\HasAClient;
-use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
+use App\Concerns\RequiresApplication;
+use App\Concerns\RequiresEnvironment;
+use App\Dto\Deployment;
+use App\Dto\Environment;
+use App\Git;
 
-use function Laravel\Prompts\info;
-use function Laravel\Prompts\intro;
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
+use function Laravel\Prompts\warning;
 
-class DeploymentGet extends Command
+class DeploymentGet extends BaseCommand
 {
-    use Colors;
     use HasAClient;
+    use RequiresApplication;
+    use RequiresEnvironment;
 
-    protected $signature = 'deployment:get {deployment : The deployment ID} {--json : Output as JSON}';
+    protected $signature = 'deployment:get'
+        .' {application? : The application ID or name}'
+        .' {environment? : The environment ID or name}'
+        .' {deployment? : The deployment ID}'
+        .' {--json : Output as JSON}';
 
     protected $description = 'Get deployment details';
 
@@ -23,45 +31,72 @@ class DeploymentGet extends Command
     {
         $this->ensureClient();
 
-        intro('Deployment Details');
+        $this->intro('Deployment Details');
 
-        $deployment = spin(
-            fn () => $this->client->getDeployment($this->argument('deployment')),
-            'Fetching deployment...'
-        );
+        $application = $this->getCloudApplication();
+        $environment = $this->getEnvironment(collect($application->environments));
+        $deployment = $this->getDeployment($environment);
 
-        if ($this->option('json')) {
-            $this->line(json_encode([
-                'id' => $deployment->id,
-                'status' => $deployment->status->value,
-                'branch' => $deployment->branchName,
-                'commit' => [
-                    'hash' => $deployment->commitHash,
-                    'message' => $deployment->commitMessage,
-                    'author' => $deployment->commitAuthor,
-                ],
-                'started_at' => $deployment->startedAt?->toIso8601String(),
-                'finished_at' => $deployment->finishedAt?->toIso8601String(),
-                'failure_reason' => $deployment->failureReason,
-                'total_time' => $deployment->totalTime()->format('%H:%I:%S'),
-                'environment_id' => $deployment->environmentId,
-            ], JSON_PRETTY_PRINT));
+        if (! $deployment) {
+            warning('No deployments found for environment '.$environment->name);
 
             return;
         }
 
-        info("Deployment: {$deployment->id}");
-        $this->line("Status: {$deployment->status->label()}");
-        $this->line("Branch: {$deployment->branchName}");
-        $this->line("Commit: {$deployment->commitHash}");
-        $this->line("Message: {$deployment->commitMessage}");
+        if ($this->option('json')) {
+            $this->line($deployment->toJson());
 
-        if ($deployment->finishedAt) {
-            $this->line("Duration: {$deployment->totalTime()->format('%I:%S')}");
+            return;
         }
+
+        $data = [
+            'ID' => $deployment->id,
+            'Status' => $deployment->status->label(),
+            'Branch' => Git::branchUrl($application->repositoryFullName, $deployment->branchName),
+            'Commit' => Git::commitUrl($application->repositoryFullName, $deployment->commitHash),
+            'Message' => $deployment->commitMessage,
+            'Author' => $deployment->commitAuthor ?? '—',
+            'Started At' => $deployment->startedAt?->toIso8601String() ?? '—',
+            'Finished At' => $deployment->finishedAt?->toIso8601String() ?? '—',
+            'Duration' => $deployment->finishedAt ? $deployment->totalTime()->format('%I:%S') : '—',
+        ];
 
         if ($deployment->failureReason) {
-            $this->line("Failure: {$deployment->failureReason}");
+            $data['Failure Reason'] = $deployment->failureReason;
         }
+
+        dataList($data);
+    }
+
+    protected function getDeployment(Environment $environment): ?Deployment
+    {
+        if ($this->argument('deployment')) {
+            return spin(
+                fn () => $this->client->getDeployment($this->argument('deployment')),
+                'Fetching deployment...'
+            );
+        }
+
+        $deployments = spin(
+            fn () => $this->client->listDeployments($environment->id),
+            'Fetching deployments...'
+        );
+
+        if (count($deployments->data) === 0) {
+            return null;
+        }
+
+        if (count($deployments->data) === 1) {
+            return $deployments->data[0];
+        }
+
+        $selection = select(
+            label: 'Deployment',
+            options: collect($deployments->data)->mapWithKeys(fn ($deployment) => [
+                $deployment->id => $deployment->startedAt?->toIso8601String().$this->dim(' ('.str($deployment->commitMessage)->limit(10).')'),
+            ]),
+        );
+
+        return collect($deployments->data)->firstWhere('id', $selection);
     }
 }

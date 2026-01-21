@@ -5,16 +5,14 @@ namespace App\Commands;
 use App\Concerns\HasAClient;
 use Illuminate\Http\Client\RequestException;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\success;
 
-class EnvironmentDelete extends Command
+class EnvironmentDelete extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -29,7 +27,7 @@ class EnvironmentDelete extends Command
     {
         $this->ensureClient();
 
-        intro('Deleting environment');
+        $this->intro('Deleting environment');
 
         $environmentId = $this->argument('environment');
 

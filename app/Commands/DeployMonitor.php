@@ -14,15 +14,13 @@ use App\Prompts\MonitorDeployments;
 use App\Support\Notification;
 use Illuminate\Support\Facades\Artisan;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
-use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
-class DeployMonitor extends Command
+class DeployMonitor extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -43,7 +41,7 @@ class DeployMonitor extends Command
         slideIn('EYES ON THE *SKY*');
         $this->newLine();
 
-        intro('Monitoring application deployments');
+        $this->intro('Monitoring application deployments');
 
         $this->ensureClient();
         $this->ensureRemoteGitRepo();

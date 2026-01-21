@@ -24,7 +24,7 @@ trait DrawsThemeBoxes
                     return $line;
                 }
 
-                $color = TimelineSymbol::color($symbol);
+                $color = $symbol->color();
 
                 return ($index === 0 ? $this->{$color}($symbol->value) : TimelineSymbol::LINE->value).' '.$line;
             })

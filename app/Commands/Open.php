@@ -10,16 +10,13 @@ use App\Git;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Process;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
-use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
-class Open extends Command
+class Open extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -35,7 +32,7 @@ class Open extends Command
 
     public function handle()
     {
-        intro('Opening site in browser');
+        $this->intro('Opening site in browser');
 
         $this->ensureClient();
         $this->ensureRemoteGitRepo();
@@ -79,9 +76,9 @@ class Open extends Command
         if ($environment->url) {
             Process::run('open '.$environment->url);
 
-            outro($environment->url);
+            $this->outro($environment->url);
         } else {
-            outro('No site found for this environment.');
+            $this->outro('No site found for this environment.');
         }
     }
 }

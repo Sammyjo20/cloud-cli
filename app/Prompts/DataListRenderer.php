@@ -10,6 +10,7 @@ class DataListRenderer extends Renderer
     public function __invoke(DataList $prompt): string
     {
         $first = true;
+
         foreach ($prompt->data as $key => $value) {
             if ($first) {
                 $this->bullet($this->dim($key));

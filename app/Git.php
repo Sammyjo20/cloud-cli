@@ -133,6 +133,16 @@ class Git
         return 'main';
     }
 
+    public static function commitUrl(string $repositoryFullName, string $commitHash): string
+    {
+        return sprintf('https://github.com/%s/commit/%s', $repositoryFullName, $commitHash);
+    }
+
+    public static function branchUrl(string $repositoryFullName, string $branchName): string
+    {
+        return sprintf('https://github.com/%s/tree/%s', $repositoryFullName, $branchName);
+    }
+
     protected function run(array $command): ProcessResult
     {
         return Process::run($command);

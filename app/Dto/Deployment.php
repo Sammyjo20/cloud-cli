@@ -6,7 +6,7 @@ use App\Enums\DeploymentStatus;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 
-class Deployment
+class Deployment extends Data
 {
     public function __construct(
         public readonly string $id,
@@ -118,5 +118,30 @@ class Deployment
     public function isInProgress(): bool
     {
         return ! $this->isFinished();
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'status' => $this->status->value,
+            'branch_name' => $this->branchName,
+            'commit_hash' => $this->commitHash,
+            'commit_message' => $this->commitMessage,
+            'commit_author' => $this->commitAuthor,
+            'started_at' => $this->startedAt?->toIso8601String(),
+            'finished_at' => $this->finishedAt?->toIso8601String(),
+            'failure_reason' => $this->failureReason,
+            'total_time' => $this->totalTime()->format('%H:%I:%S'),
+            'environment_id' => $this->environmentId,
+            'initiator_id' => $this->initiatorId,
+            'created_at' => $this->createdAt?->toIso8601String(),
+            'updated_at' => $this->updatedAt?->toIso8601String(),
+            'php_major_version' => $this->phpMajorVersion,
+            'build_command' => $this->buildCommand,
+            'node_version' => $this->nodeVersion,
+            'uses_octane' => $this->usesOctane,
+            'uses_hibernation' => $this->usesHibernation,
+        ];
     }
 }

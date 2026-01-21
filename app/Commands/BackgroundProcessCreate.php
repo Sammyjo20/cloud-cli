@@ -5,14 +5,11 @@ namespace App\Commands;
 use App\Concerns\HasAClient;
 use Illuminate\Http\Client\RequestException;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\error;
-use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 
-class BackgroundProcessCreate extends Command
+class BackgroundProcessCreate extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -32,7 +29,7 @@ class BackgroundProcessCreate extends Command
     {
         $this->ensureClient();
 
-        intro('Creating background process');
+        $this->intro('Creating background process');
 
         $data = [];
 
@@ -73,7 +70,7 @@ class BackgroundProcessCreate extends Command
                 return;
             }
 
-            outro("Background process created: {$process->id}");
+            $this->outro("Background process created: {$process->id}");
         } catch (RequestException $e) {
             if ($e->response?->status() === 422) {
                 $errors = $e->response->json()['errors'] ?? [];

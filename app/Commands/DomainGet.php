@@ -4,13 +4,11 @@ namespace App\Commands;
 
 use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
-class DomainGet extends Command
+class DomainGet extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -23,7 +21,7 @@ class DomainGet extends Command
     {
         $this->ensureClient();
 
-        intro('Domain Details');
+        $this->intro('Domain Details');
 
         $domain = spin(
             fn () => $this->client->getDomain($this->argument('domain')),

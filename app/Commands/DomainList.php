@@ -4,14 +4,12 @@ namespace App\Commands;
 
 use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
 
-class DomainList extends Command
+class DomainList extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -24,7 +22,7 @@ class DomainList extends Command
     {
         $this->ensureClient();
 
-        intro('Listing domains');
+        $this->intro('Listing domains');
 
         $domains = spin(
             fn () => $this->client->listDomains($this->argument('environment')),

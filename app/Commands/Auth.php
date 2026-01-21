@@ -7,17 +7,14 @@ use App\ConfigRepository;
 use App\Contracts\NoAuthRequired;
 use Illuminate\Support\Collection;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
 
-class Auth extends Command implements NoAuthRequired
+class Auth extends BaseCommand implements NoAuthRequired
 {
     use Colors;
 
@@ -32,7 +29,7 @@ class Auth extends Command implements NoAuthRequired
         $this->config = app(ConfigRepository::class);
         $tokens = $this->config->apiTokens();
 
-        intro('Laravel Cloud API Tokens');
+        $this->intro('Laravel Cloud API Tokens');
 
         if ($this->option('add')) {
             $this->addToken($tokens);
@@ -88,7 +85,7 @@ class Auth extends Command implements NoAuthRequired
 
         $this->config->addApiToken($newToken);
 
-        outro('API token saved to '.$this->config->path());
+        $this->outro('API token saved to '.$this->config->path());
     }
 
     protected function removeToken(Collection $existingTokens): void
@@ -100,7 +97,7 @@ class Auth extends Command implements NoAuthRequired
 
         $this->config->removeApiToken($token);
 
-        outro('API token removed');
+        $this->outro('API token removed');
     }
 
     protected function listTokens(Collection $existingTokens): void

@@ -22,23 +22,19 @@ enum DeploymentStatus: string
 
     public function label(): string
     {
+        return str($this->name)->lower()->replace('_', ' ')->ucfirst()->toString();
+    }
+
+    public function monitorLabel(): string
+    {
         return match ($this) {
-            DeploymentStatus::BUILD_PENDING => 'Building',
-            DeploymentStatus::BUILD_CREATED => 'Build created',
-            DeploymentStatus::BUILD_QUEUED => 'Build queued',
-            DeploymentStatus::BUILD_RUNNING => 'Build running',
-            DeploymentStatus::BUILD_SUCCEEDED => 'Build succeeded!',
-            DeploymentStatus::BUILD_FAILED => 'Build failed!',
-            DeploymentStatus::DEPLOYMENT_PENDING => 'Deploying',
-            DeploymentStatus::DEPLOYMENT_CREATED => 'Deployment created',
-            DeploymentStatus::DEPLOYMENT_QUEUED => 'Deployment queued',
-            DeploymentStatus::DEPLOYMENT_RUNNING => 'Deployment running',
-            DeploymentStatus::DEPLOYMENT_SUCCEEDED => 'Deployment succeeded!',
-            DeploymentStatus::DEPLOYMENT_FAILED => 'Deployment failed!',
-            DeploymentStatus::CANCELLED => 'Cancelled!',
-            DeploymentStatus::FAILED => 'Failed!',
-            DeploymentStatus::PENDING => 'Pending',
-            default => $this->value,
+            self::BUILD_SUCCEEDED,
+            self::BUILD_FAILED,
+            self::DEPLOYMENT_SUCCEEDED,
+            self::DEPLOYMENT_FAILED,
+            self::CANCELLED,
+            self::FAILED => $this->label().'!',
+            default => $this->label(),
         };
     }
 }

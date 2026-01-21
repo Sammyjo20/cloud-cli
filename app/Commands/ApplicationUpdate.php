@@ -8,17 +8,14 @@ use App\Concerns\Validates;
 use App\Dto\Application;
 use App\Git;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Illuminate\Filesystem\join_paths;
 use function Laravel\Prompts\error;
-use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
-class ApplicationUpdate extends Command
+class ApplicationUpdate extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -42,9 +39,9 @@ class ApplicationUpdate extends Command
 
         if (! $this->option('json')) {
             if ($this->argument('application')) {
-                intro('Updating application: '.$this->argument('application'));
+                $this->intro('Updating application: '.$this->argument('application'));
             } else {
-                intro('Updating application');
+                $this->intro('Updating application');
             }
         }
 
@@ -173,7 +170,7 @@ class ApplicationUpdate extends Command
         }
 
         if (! $this->option('json')) {
-            outro('Application updated');
+            $this->outro('Application updated');
         }
     }
 

@@ -4,14 +4,12 @@ namespace App\Commands;
 
 use App\Concerns\HasAClient;
 use Laravel\Prompts\Concerns\Colors;
-use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
 
-class ApplicationList extends Command
+class ApplicationList extends BaseCommand
 {
     use Colors;
     use HasAClient;
@@ -25,7 +23,7 @@ class ApplicationList extends Command
         $this->ensureClient();
 
         if (! $this->option('json')) {
-            intro('Applications');
+            $this->intro('Applications');
         }
 
         $applications = spin(
