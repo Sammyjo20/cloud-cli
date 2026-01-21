@@ -111,13 +111,6 @@ class CloudClient
             $response = $this->client
                 ->attach('avatar', $avatar, 'avatar.'.$extension)
                 ->patch($endpoint, $data);
-
-            dd(
-                $response,
-                $response->json(),
-                $this->client
-                    ->attach('avatar', $avatar, 'avatar.'.$extension)
-            );
         } else {
             $response = $this->client->patch($endpoint, $data);
         }
