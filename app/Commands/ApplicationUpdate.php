@@ -233,7 +233,6 @@ class ApplicationUpdate extends BaseCommand
                     return [file_get_contents($selected), $extension];
                 }
 
-                /** @phpstan-ignore-next-line */
                 $imagick = new \Imagick;
                 $imagick->readImage($selected);
                 $imagick->setImageFormat('png');
@@ -269,7 +268,7 @@ class ApplicationUpdate extends BaseCommand
             ->filter(fn ($path) => file_exists($path))
             ->values();
 
-        if (class_exists(\Imagick::class)) {
+        if (class_exists('Imagick')) {
             // We can convert non-supported images to PNG, we're good
             return $possiblePaths;
         }
