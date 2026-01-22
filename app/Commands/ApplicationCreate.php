@@ -66,17 +66,13 @@ class ApplicationCreate extends BaseCommand
 
     protected function resolveName($hasError): ?string
     {
-        $this->applicationName ??= $this->option('name');
-
-        if (! $this->isInteractive() && ($hasError || ! $this->applicationName)) {
-            $this->outputErrorOrThrow('Application name is required. Provide --name option.');
-        }
-
         if ($this->applicationName && ! $hasError) {
             return $this->applicationName;
         }
 
-        if (! $this->applicationName) {
+        $this->applicationName ??= $this->option('name');
+
+        if ($this->isInteractive() && (! $this->applicationName || $hasError)) {
             $git = app(Git::class);
             $defaultName = $git->currentDirectoryName();
 
@@ -93,7 +89,13 @@ class ApplicationCreate extends BaseCommand
             );
         }
 
-        return $this->applicationName;
+        if ($this->applicationName) {
+            return $this->applicationName;
+        }
+
+        $this->outputErrorOrThrow('Application name is required. Provide --name option.');
+
+        return null;
     }
 
     protected function resolveRepository($hasError): ?string
@@ -108,22 +110,23 @@ class ApplicationCreate extends BaseCommand
 
         if (! $this->repository && $git->isRepo()) {
             if ($git->hasGitHubRemote()) {
-                if ($this->isInteractive()) {
-                    return text(
-                        label: 'Repository',
-                        default: $git->remoteRepo(),
-                        required: true,
-                    );
+                if (! $this->isInteractive()) {
+                    return $git->remoteRepo();
                 }
 
-                return $git->remoteRepo();
+                return text(
+                    label: 'Repository',
+                    default: $git->remoteRepo(),
+                    required: true,
+                );
             }
         }
 
-        if (! $this->repository && $this->isInteractive()) {
+        if ($this->isInteractive() && (! $this->repository || $hasError)) {
             return text(
                 label: 'Repository',
                 required: true,
+                default: $this->repository,
             );
         }
 
@@ -144,7 +147,7 @@ class ApplicationCreate extends BaseCommand
 
         $this->region ??= $this->option('region');
 
-        if (! $this->region && $this->isInteractive()) {
+        if (! $this->region || $hasError) {
             $applications = spin(
                 fn () => $this->client->listApplications(),
                 'Fetching applications...'
@@ -158,6 +161,10 @@ class ApplicationCreate extends BaseCommand
                 ->first();
 
             $defaultRegion = CloudRegion::tryFrom($mostUsedRegion ?? '')?->value ?? CloudRegion::US_EAST_2->value;
+
+            if (! $this->isInteractive()) {
+                return $defaultRegion;
+            }
 
             return select(
                 label: 'Application region',
