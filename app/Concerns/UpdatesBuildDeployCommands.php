@@ -12,44 +12,25 @@ trait UpdatesBuildDeployCommands
 
     protected function updateCommands(Environment $environment): void
     {
-        $this->loopUntilValid(
-            function () use ($environment) {
-                $buildCommand = textarea(
-                    label: 'Build command',
-                    default: $environment->buildCommand,
-                    required: true,
-                );
+        $data = [];
 
-                if ($buildCommand === $environment->buildCommand) {
-                    return;
-                }
+        $data['build_command'] = textarea(
+            label: 'Build command',
+            default: $environment->buildCommand,
+            required: true,
+        );
 
-                return dynamicSpinner(
-                    fn () => $this->client->updateEnvironment($environment->id, [
-                        'build_command' => $buildCommand,
-                    ]),
-                    'Updating build command',
-                );
-            },
+        $data['deploy_command'] = textarea(
+            label: 'Deploy command',
+            default: $environment->deployCommand,
+            required: true,
         );
 
         $this->loopUntilValid(
-            function () use ($environment) {
-                $deployCommand = textarea(
-                    label: 'Deploy command',
-                    default: $environment->deployCommand,
-                    required: true,
-                );
-
-                if ($deployCommand === $environment->deployCommand) {
-                    return;
-                }
-
+            function () use ($environment, $data) {
                 return dynamicSpinner(
-                    fn () => $this->client->updateEnvironment($environment->id, [
-                        'deploy_command' => $deployCommand,
-                    ]),
-                    'Updating deploy command',
+                    fn () => $this->client->updateEnvironment($environment->id, $data),
+                    'Updating commands',
                 );
             },
         );
