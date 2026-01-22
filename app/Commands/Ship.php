@@ -18,6 +18,7 @@ use Carbon\CarbonInterval;
 use Dotenv\Dotenv;
 use Illuminate\Support\Composer;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Sleep;
 use Throwable;
 
@@ -106,11 +107,9 @@ class Ship extends BaseCommand
             fn () => $this->collectOptionsToEnable($environment),
         );
 
-        $this->outro(sprintf('https://cloud.laravel.com/%s/%s', $application->organizationId, $application->slug));
+        // $this->outro(sprintf('https://cloud.laravel.com/%s/%s', $application->organizationId, $application->slug));
 
-        $deploy = confirm('Do you want to deploy the application?');
-
-        if (! $deploy) {
+        if (! confirm('Do you want to deploy the application?')) {
             return;
         }
 
@@ -121,6 +120,10 @@ class Ship extends BaseCommand
         Artisan::call('deploy', [
             'application' => $application->id,
         ], $this->output);
+
+        if (confirm('Open site in browser?')) {
+            Process::run('open '.$environment->url);
+        }
     }
 
     protected function createApplication(ValidationErrors $errors, string $defaultRegion, string $repository): ?Application
@@ -243,6 +246,7 @@ class Ship extends BaseCommand
             $this->loopUntilValid(
                 function ($errors) use ($environmentParams, $environment) {
                     if ($errors->messageContains('global', 'wait a few seconds')) {
+                        info('Waiting a few seconds...');
                         Sleep::for(CarbonInterval::seconds(5));
                     }
 

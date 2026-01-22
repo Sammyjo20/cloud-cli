@@ -112,15 +112,11 @@ class Deploy extends BaseCommand
 
         success('Deployment completed in <comment>'.$deployment->totalTime()->format('%I:%S').'</comment>');
 
-        if ($environment->url) {
-            if ($this->option('open') || confirm('Open site in browser?')) {
-                Process::run('open '.$environment->url);
-            }
-
-            $this->outro($environment->url);
-        } else {
-            $this->outro('Deployment completed in <comment>'.$deployment->totalTime()->format('%I:%S').'</comment>');
+        if ($this->option('open')) {
+            Process::run('open '.$environment->url);
         }
+
+        $this->outro($environment->url);
     }
 
     protected function updateDeploymentStatus(Deployment $deployment, callable $updateMessage): void
