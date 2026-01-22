@@ -18,6 +18,7 @@ use Carbon\CarbonInterval;
 use Dotenv\Dotenv;
 use Illuminate\Support\Composer;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Sleep;
 use Throwable;
@@ -113,7 +114,7 @@ class Ship extends BaseCommand
             return;
         }
 
-        if (confirm('Do you want to edit the build and deploys commands before deploying?')) {
+        if (confirm('Do you want to edit the build and deploy commands before deploying?')) {
             $this->updateCommands($environment);
         }
 
@@ -122,8 +123,23 @@ class Ship extends BaseCommand
         ], $this->output);
 
         if (confirm('Open site in browser?')) {
+            spin(
+                fn () => $this->waitForUrlToBeReady($environment),
+                'Waiting for site to be ready...',
+            );
+
             Process::run('open '.$environment->url);
         }
+    }
+
+    protected function waitForUrlToBeReady(Environment $environment): bool
+    {
+        do {
+            $response = Http::get($environment->url);
+            Sleep::for(CarbonInterval::seconds(1));
+        } while ($response->status() !== 200);
+
+        return true;
     }
 
     protected function createApplication(ValidationErrors $errors, string $defaultRegion, string $repository): ?Application
