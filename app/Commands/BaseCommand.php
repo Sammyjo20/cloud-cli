@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Support\ValueResolver;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 use RuntimeException;
@@ -116,5 +117,19 @@ abstract class BaseCommand extends Command
 
             exit(0);
         }
+    }
+
+    protected function resolve(string $argument, ?string $value): ValueResolver
+    {
+        return new ValueResolver(
+            $argument,
+            $this->isInteractive(),
+            $value ?? match (true) {
+                $this->hasOption($argument) => $this->option($argument),
+                $this->hasArgument($argument) => $this->argument($argument),
+                default => null,
+            },
+            $this->hasOption($argument) ? 'option' : 'argument',
+        );
     }
 }
