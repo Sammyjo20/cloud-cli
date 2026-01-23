@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Concerns\HandlesAvatars;
 use App\Concerns\HasAClient;
 use App\Concerns\RequiresRemoteGitRepo;
 use App\Concerns\UpdatesBuildDeployCommands;
@@ -32,6 +33,7 @@ use function Laravel\Prompts\text;
 
 class Ship extends BaseCommand
 {
+    use HandlesAvatars;
     use HasAClient;
     use RequiresRemoteGitRepo;
     use UpdatesBuildDeployCommands;
@@ -95,6 +97,8 @@ class Ship extends BaseCommand
             fn ($errors) => $this->createApplication($errors, $defaultRegion, $repository),
         );
 
+        $this->tryToSetAvatar($application);
+
         success('Application created!');
 
         $application = $this->client->getApplication($application->id);
@@ -129,6 +133,23 @@ class Ship extends BaseCommand
             );
 
             Process::run('open '.$environment->url);
+        }
+    }
+
+    protected function tryToSetAvatar(Application $application): void
+    {
+        $avatars = $this->getAvatarCandidatesFromRepo();
+
+        if ($avatars->isEmpty()) {
+            return;
+        }
+
+        try {
+            $this->client->updateApplication($application->id, [
+                'avatar' => $avatars->first(),
+            ]);
+        } catch (Throwable $e) {
+            // All good, this is a nice bonus but not critical
         }
     }
 

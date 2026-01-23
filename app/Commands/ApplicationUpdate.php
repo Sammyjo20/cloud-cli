@@ -2,19 +2,20 @@
 
 namespace App\Commands;
 
+use App\Concerns\HandlesAvatars;
 use App\Concerns\HasAClient;
 use App\Concerns\RequiresApplication;
 use App\Concerns\Validates;
 use App\Dto\Application;
 use App\Git;
 
-use function Illuminate\Filesystem\join_paths;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
 class ApplicationUpdate extends BaseCommand
 {
+    use HandlesAvatars;
     use HasAClient;
     use RequiresApplication;
     use Validates;
@@ -252,38 +253,17 @@ class ApplicationUpdate extends BaseCommand
         $path = text(
             label: 'Avatar',
             required: true,
+            hint: 'Path or URL to the avatar image',
+            validate: fn ($value) => match (true) {
+                ! file_exists($value) && ! filter_var($value, FILTER_VALIDATE_URL) => 'Invalid path or URL',
+                default => null,
+            },
         );
 
         return [
             file_get_contents($path),
             pathinfo($selected, PATHINFO_EXTENSION),
         ];
-    }
-
-    protected function getAvatarCandidatesFromRepo()
-    {
-        $root = app(Git::class)->getRoot();
-
-        $possiblePaths = collect([
-            'favicon.png',
-            'favicon.svg',
-            'apple-touch-icon.png',
-            'favicon.ico',
-            'favicon.jpg',
-            'favicon.jpeg',
-        ])
-            ->map(fn ($path) => join_paths($root, 'public', $path))
-            ->filter(fn ($path) => file_exists($path))
-            ->values();
-
-        if (class_exists('Imagick')) {
-            // We can convert non-supported images to PNG, we're good
-            return $possiblePaths;
-        }
-
-        return $possiblePaths
-            ->filter(fn ($path) => pathinfo($path, PATHINFO_EXTENSION) === 'png')
-            ->values();
     }
 
     protected function getNewDefaultEnvironmentId(Application $application): string
