@@ -16,6 +16,41 @@ abstract class BaseCommand extends Command
 {
     use Colors;
 
+    /**
+     * @var array<string, ValueResolver>
+     */
+    protected array $paramCollectors = [];
+
+    protected ?ValidationErrors $errors = null;
+
+    protected function setErrors(ValidationErrors $errors): void
+    {
+        $this->errors = $errors;
+    }
+
+    /**
+     * @param  callable(ValueResolver): ValueResolver  $resolver
+     */
+    protected function addParam(string $name, callable $resolver): void
+    {
+        $existing = $this->paramCollectors[$name] ?? $this->resolve($name);
+
+        $this->paramCollectors[$name] = $resolver($existing)->errors($this->errors);
+        $this->paramCollectors[$name]->retrieve();
+    }
+
+    protected function getParam(string $name): ?string
+    {
+        dump($name, $this->paramCollectors[$name] ?? null);
+
+        return $this->paramCollectors[$name]?->value();
+    }
+
+    protected function getParams(): array
+    {
+        return array_map(fn ($resolver) => $resolver->value(), $this->paramCollectors);
+    }
+
     protected function intro(string $title, ?string $suffix = null): void
     {
         if ($this->wantsJson()) {
@@ -120,7 +155,7 @@ abstract class BaseCommand extends Command
         }
     }
 
-    protected function resolve(string $argument, ?string $value): ValueResolver
+    protected function resolve(string $argument, ?string $value = null): ValueResolver
     {
         return new ValueResolver(
             $argument,

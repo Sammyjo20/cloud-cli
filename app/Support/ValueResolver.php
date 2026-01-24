@@ -38,6 +38,16 @@ class ValueResolver
 
     public function value(): ?string
     {
+        return $this->value;
+    }
+
+    public function retrieve(): ?string
+    {
+        return $this->value = $this->retrieveValue();
+    }
+
+    protected function retrieveValue(): ?string
+    {
         $this->errors ??= new ValidationErrors;
 
         if ($this->value && ! $this->errors->has($this->argumentName)) {

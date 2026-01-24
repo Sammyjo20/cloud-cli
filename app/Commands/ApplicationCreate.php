@@ -52,49 +52,54 @@ class ApplicationCreate extends BaseCommand
 
     protected function createApplication(ValidationErrors $errors)
     {
+        $this->setErrors($errors);
         $this->breakValidationLoopIfNotInteractive($errors);
 
         $git = app(Git::class);
 
-        $this->applicationName = $this->resolve('name', $this->applicationName)
-            ->fromInput(fn ($currentValue) => text(
-                label: 'Application name',
-                default: $currentValue,
-                required: true,
-            ))
-            ->errors($errors)
-            ->value();
-
-        $this->repository = $this->resolve('repository', $this->repository)
-            ->fromInput(fn (?string $value) => text(
-                label: 'Repository',
-                required: true,
-                default: $value ?? ($git->hasGitHubRemote() ? $git->remoteRepo() : null),
-            ))
-            ->nonInteractively(fn () => $git->hasGitHubRemote() ? $git->remoteRepo() : null)
-            ->errors($errors)
-            ->value();
-
-        $this->region = $this->resolve('region', $this->region)
-            ->fromInput(fn (?string $value) => select(
-                label: 'Application region',
-                options: collect(CloudRegion::cases())->mapWithKeys(
-                    fn (CloudRegion $region) => [
-                        $region->value => $region->label(),
-                    ],
+        $this->addParam(
+            'name',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($currentValue) => text(
+                    label: 'Application name',
+                    default: $currentValue ?? basename(getcwd()),
+                    required: true,
                 ),
-                default: $value ?? $this->getDefaultRegion(),
-                required: true,
-            ))
-            ->nonInteractively(fn () => $this->getDefaultRegion())
-            ->errors($errors)
-            ->value();
+            ),
+        );
+
+        $this->addParam(
+            'repository',
+            fn ($resolver) => $resolver
+                ->fromInput(fn (?string $value) => text(
+                    label: 'Repository',
+                    required: true,
+                    default: $value ?? ($git->hasGitHubRemote() ? $git->remoteRepo() : ''),
+                ))
+                ->nonInteractively(fn () => $git->hasGitHubRemote() ? $git->remoteRepo() : null),
+        );
+
+        $this->addParam(
+            'region',
+            fn ($resolver) => $resolver
+                ->fromInput(fn (?string $value) => select(
+                    label: 'Region',
+                    options: collect(CloudRegion::cases())->mapWithKeys(
+                        fn (CloudRegion $region) => [
+                            $region->value => $region->label(),
+                        ],
+                    ),
+                    default: $value ?? $this->getDefaultRegion(),
+                    required: true,
+                ))
+                ->nonInteractively(fn () => $this->getDefaultRegion()),
+        );
 
         return spin(
             fn () => $this->client->createApplication(
-                $this->repository,
-                $this->applicationName,
-                $this->region,
+                $this->getParam('repository'),
+                $this->getParam('name'),
+                $this->getParam('region'),
             ),
             'Creating application...'
         );
