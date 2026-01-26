@@ -2,7 +2,7 @@
 
 namespace App\Commands;
 
-use App\Dto\ValidationErrors;
+use App\Concerns\Validates;
 use App\Support\ValueResolver;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
@@ -15,18 +15,12 @@ use function Laravel\Prompts\outro;
 abstract class BaseCommand extends Command
 {
     use Colors;
+    use Validates;
 
     /**
      * @var array<string, ValueResolver>
      */
     protected array $paramCollectors = [];
-
-    protected ?ValidationErrors $errors = null;
-
-    protected function setErrors(ValidationErrors $errors): void
-    {
-        $this->errors = $errors;
-    }
 
     /**
      * @param  callable(ValueResolver): ValueResolver  $resolver
@@ -41,8 +35,6 @@ abstract class BaseCommand extends Command
 
     protected function getParam(string $name): ?string
     {
-        dump($name, $this->paramCollectors[$name] ?? null);
-
         return $this->paramCollectors[$name]?->value();
     }
 
@@ -167,18 +159,5 @@ abstract class BaseCommand extends Command
             },
             $this->hasOption($argument) ? 'option' : 'argument',
         );
-    }
-
-    protected function breakValidationLoopIfNotInteractive(ValidationErrors $errors): void
-    {
-        if ($errors->hasAny() && ! $this->isInteractive()) {
-            if (! $this->wantsJson()) {
-                throw new RuntimeException($errors);
-            }
-
-            $this->line($errors->toJson());
-
-            exit(self::FAILURE);
-        }
     }
 }
