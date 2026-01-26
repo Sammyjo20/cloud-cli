@@ -24,17 +24,17 @@ class BackgroundProcessCreate extends BaseCommand
 
     protected $signature = 'background-process:create
                             {instance? : The instance ID}
-                            {--command= : The command to run}
                             {--type= : Process type (worker|custom)}
-                            {--tries= : Number of tries}
-                            {--backoff= : Backoff time}
-                            {--sleep= : Sleep time}
-                            {--rest= : Rest time}
-                            {--timeout= : Timeout time}
-                            {--force= : Force the process}
-                            {--processes= : Number of }
-                            {--queue= : Queue name}
-                            {--connection= : Queue connection}
+                            {--command= : The command to run (only for custom processes)}
+                            {--connection=database : Queue connection}
+                            {--queue=default : Queue name}
+                            {--backoff=30 : Backoff time}
+                            {--sleep=10 : Sleep time}
+                            {--rest=0 : Rest time}
+                            {--timeout=60 : Timeout time}
+                            {--tries=1 : Number of tries}
+                            {--force=0 : Force the process to run in maintenance mode}
+                            {--processes=1 : Number of processes}
                             {--json : Output as JSON}';
 
     protected $description = 'Create a new background process';
@@ -216,7 +216,6 @@ class BackgroundProcessCreate extends BaseCommand
         );
 
         $data = [
-            'command' => $this->getParam('command', ''),
             'type' => $this->getParam('type'),
             'processes' => (int) $this->getParam('processes'),
             'config' => [],
@@ -233,6 +232,8 @@ class BackgroundProcessCreate extends BaseCommand
                 'timeout' => $this->getParam('timeout', $this->getWorkerDefult('timeout')),
                 'force' => $this->getParam('force', $this->getWorkerDefult('force')),
             ];
+        } else {
+            $data['command'] = $this->getParam('command');
         }
 
         return spin(
@@ -300,14 +301,8 @@ class BackgroundProcessCreate extends BaseCommand
         $arg = $this->option($key);
 
         return match ($key) {
-            'connection' => $arg ?? 'database',
-            'queue' => $arg ?? 'default',
-            'tries' => $arg ?? '3',
-            'backoff' => $arg ?? '30',
-            'sleep' => $arg ?? '3',
-            'rest' => $arg ?? '0',
-            'timeout' => $arg ?? '60',
-            'force' => $arg ?? false,
+            'force' => (int) ($arg ?? 0) === 1,
+            default => $arg ?? null,
         };
     }
 }
