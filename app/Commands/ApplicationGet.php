@@ -5,6 +5,8 @@ namespace App\Commands;
 use App\Concerns\HasAClient;
 use App\Concerns\RequiresApplication;
 
+use function Laravel\Prompts\intro;
+
 class ApplicationGet extends BaseCommand
 {
     use HasAClient;
@@ -18,7 +20,7 @@ class ApplicationGet extends BaseCommand
     {
         $this->ensureClient();
 
-        $this->intro('Application Details', $this->argument('application'));
+        intro('Application Details');
 
         $application = $this->getCloudApplication(showPrompt: false);
 
@@ -28,9 +30,9 @@ class ApplicationGet extends BaseCommand
             'Name' => $application->name,
             'ID' => $application->id,
             'Region' => $application->region,
-            'Repository' => 'https://github.com/'.$application->repositoryFullName,
-            'Environments' => collect($application->environments)->map(fn ($env) => $env->name.' '.$this->dim($env->id).'')->toArray(),
-            'Organization' => $application->organization->name.' '.$this->dim($application->organization->id).'',
+            'Repository' => 'https://github.com/' . $application->repositoryFullName,
+            'Environments' => collect($application->environments)->map(fn($env) => $env->name . ' ' . $this->dim($env->id) . '')->toArray(),
+            'Organization' => $application->organization->name . ' ' . $this->dim($application->organization->id) . '',
         ]);
     }
 }
