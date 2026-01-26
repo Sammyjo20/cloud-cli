@@ -12,6 +12,7 @@ use App\Dto\Deployment;
 use App\Dto\Domain;
 use App\Dto\Environment;
 use App\Dto\EnvironmentInstance;
+use App\Dto\EnvironmentLog;
 use App\Dto\Paginated;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
@@ -140,6 +141,41 @@ class CloudClient
         $response = $this->client->get("/environments/{$environmentId}");
 
         return Environment::fromApiResponse($response->json());
+    }
+
+    /**
+     * @return Paginated<EnvironmentLog>
+     */
+    public function getEnvironmentLogs(string $environmentId, string $from, string $to, ?string $cursor = null, ?string $type = null, ?string $query = null): Paginated
+    {
+        $params = array_filter([
+            'from' => $from,
+            'to' => $to,
+            'cursor' => $cursor,
+            'type' => $type,
+            'query' => $query,
+        ]);
+
+        $response = $this->client->get("/environments/{$environmentId}/logs", $params);
+
+        $responseData = $response->json();
+
+        $logs = array_map(
+            fn ($item) => EnvironmentLog::fromApiResponse($responseData, $item),
+            $responseData['data'] ?? []
+        );
+
+        $meta = $responseData['meta'] ?? [];
+        $links = [];
+
+        if (isset($meta['cursor'])) {
+            $links['next'] = $meta['cursor'];
+        }
+
+        return new Paginated(
+            data: $logs,
+            links: $links,
+        );
     }
 
     public function updateEnvironment(string $environmentId, array $data): Environment
