@@ -90,7 +90,8 @@ class BackgroundProcessCreate extends BaseCommand
                         default: $value ?? $this->getWorkerDefult('connection'),
                         required: true,
                     ))
-                    ->nonInteractively(fn () => $this->getWorkerDefult('connection')),
+                    ->nonInteractively(fn () => $this->getWorkerDefult('connection'))
+                    ->shouldPromptOnce(),
             );
 
             $this->addParam(
@@ -102,7 +103,8 @@ class BackgroundProcessCreate extends BaseCommand
                         required: true,
                         hint: 'Comma-separated for multiple queues',
                     ))
-                    ->nonInteractively(fn () => $this->getWorkerDefult('queue')),
+                    ->nonInteractively(fn () => $this->getWorkerDefult('queue'))
+                    ->shouldPromptOnce(),
             );
 
             $this->addParam(
@@ -118,7 +120,8 @@ class BackgroundProcessCreate extends BaseCommand
                         required: true,
                         hint: 'Number of times a job should be attempted',
                     ))
-                    ->nonInteractively(fn () => $this->getWorkerDefult('tries')),
+                    ->nonInteractively(fn () => $this->getWorkerDefult('tries'))
+                    ->shouldPromptOnce(),
             );
 
             $this->addParam(
@@ -134,7 +137,8 @@ class BackgroundProcessCreate extends BaseCommand
                         required: true,
                         hint: 'Number of seconds to wait before retrying a failed job.',
                     ))
-                    ->nonInteractively(fn () => $this->getWorkerDefult('backoff')),
+                    ->nonInteractively(fn () => $this->getWorkerDefult('backoff'))
+                    ->shouldPromptOnce(),
             );
 
             $this->addParam(
@@ -150,7 +154,8 @@ class BackgroundProcessCreate extends BaseCommand
                         required: true,
                         hint: 'Number of seconds to sleep when no jobs are available',
                     ))
-                    ->nonInteractively(fn () => $this->getWorkerDefult('sleep')),
+                    ->nonInteractively(fn () => $this->getWorkerDefult('sleep'))
+                    ->shouldPromptOnce(),
             );
 
             $this->addParam(
@@ -166,7 +171,8 @@ class BackgroundProcessCreate extends BaseCommand
                         required: true,
                         hint: 'Number of seconds to rest between jobs',
                     ))
-                    ->nonInteractively(fn () => $this->getWorkerDefult('rest')),
+                    ->nonInteractively(fn () => $this->getWorkerDefult('rest'))
+                    ->shouldPromptOnce(),
             );
 
             $this->addParam(
@@ -182,7 +188,8 @@ class BackgroundProcessCreate extends BaseCommand
                         required: true,
                         hint: 'Number of seconds a job can run before timing out',
                     ))
-                    ->nonInteractively(fn () => $this->getWorkerDefult('timeout')),
+                    ->nonInteractively(fn () => $this->getWorkerDefult('timeout'))
+                    ->shouldPromptOnce(),
             );
 
             $this->addParam(
@@ -191,10 +198,10 @@ class BackgroundProcessCreate extends BaseCommand
                     ->fromInput(fn (?string $value) => confirm(
                         label: 'Run in maintenance mode?',
                         default: $value ?? $this->getWorkerDefult('force'),
-                        required: true,
                         hint: 'Force the worker to run even in maintenance mode',
                     ))
-                    ->nonInteractively(fn () => $this->getWorkerDefult('force')),
+                    ->nonInteractively(fn () => $this->getWorkerDefult('force'))
+                    ->shouldPromptOnce(),
             );
         }
 

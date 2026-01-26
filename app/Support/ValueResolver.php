@@ -13,6 +13,8 @@ class ValueResolver
 
     protected ?ValidationErrors $errors = null;
 
+    protected $shouldPromptOnce = false;
+
     public function __construct(
         protected string $argumentName,
         protected bool $isInteractive,
@@ -25,6 +27,13 @@ class ValueResolver
     public function fromInput(callable $input): self
     {
         $this->fromInputCallback = $input;
+
+        return $this;
+    }
+
+    public function shouldPromptOnce(): self
+    {
+        $this->shouldPromptOnce = true;
 
         return $this;
     }
@@ -49,6 +58,12 @@ class ValueResolver
     protected function retrieveValue(): ?string
     {
         $this->errors ??= new ValidationErrors;
+
+        if ($this->shouldPromptOnce) {
+            $this->shouldPromptOnce = false;
+
+            return ($this->fromInputCallback)($this->value);
+        }
 
         if ($this->value && ! $this->errors->has($this->argumentName)) {
             return $this->value;
