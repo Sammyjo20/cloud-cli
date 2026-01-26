@@ -14,8 +14,10 @@ trait RequiresEnvironment
      */
     protected function getEnvironment(Collection $environments): Environment
     {
-        if ($this->argument('environment')) {
-            $environment = $environments->firstWhere('name', $this->argument('environment'));
+        $environmentArg = $this->hasArgument('environment') ? $this->argument('environment') : null;
+
+        if ($environmentArg) {
+            $environment = $environments->firstWhere('name', $environmentArg);
             answered(label: 'Environment', answer: "{$environment->name}");
 
             return $environment;
