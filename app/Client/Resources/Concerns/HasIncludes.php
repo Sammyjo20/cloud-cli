@@ -6,9 +6,9 @@ trait HasIncludes
 {
     protected ?array $includes = null;
 
-    public function include(string|array ...$includes): static
+    public function include(string ...$includes): static
     {
-        $this->includes = is_array($includes[0]) ? $includes[0] : $includes;
+        $this->includes = $includes;
 
         return $this;
     }
