@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Concerns\HasAClient;
+use App\Dto\Application;
 
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
@@ -23,25 +24,16 @@ class ApplicationList extends BaseCommand
 
         intro('Applications');
 
+        answered('Organization', $this->client->meta()->organization()->name);
+
         $applications = spin(
-            fn () => $this->client->applications()->include('organization', 'environments', 'defaultEnvironment')->list(),
+            fn () => $this->client->applications()->include('organization', 'environments')->list(),
             'Fetching applications...',
         );
 
         $items = $applications->collect();
 
-        if ($this->option('json')) {
-            $this->line(json_encode([
-                'data' => $items->map(fn ($app) => [
-                    'id' => $app->id,
-                    'name' => $app->name,
-                    'region' => $app->region,
-                    'repository' => $app->repositoryFullName ?? null,
-                ])->toArray(),
-            ], JSON_PRETTY_PRINT));
-
-            return;
-        }
+        $this->outputJsonIfWanted($items);
 
         if ($items->isEmpty()) {
             info('No applications found.');
@@ -51,7 +43,7 @@ class ApplicationList extends BaseCommand
 
         table(
             ['ID', 'Name', 'Region', 'Repository'],
-            $items->map(fn ($app) => [
+            $items->map(fn (Application $app) => [
                 $app->id,
                 $app->name,
                 $app->region,
