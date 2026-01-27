@@ -28,7 +28,7 @@ class DatabaseCluster extends Data
         //
     }
 
-    public static function fromJsonApi(array $response): self
+    public static function createFromResponse(array $response): self
     {
         $data = $response['data'] ?? [];
         $included = $response['included'] ?? [];
@@ -50,7 +50,7 @@ class DatabaseCluster extends Data
             ->filter(fn ($item) => $item['type'] === 'databaseSchemas')
             ->values()
             ->toArray();
-        $transformed['schemas'] = collect($schemaData)->map(fn ($item) => Database::fromJsonApi(['data' => $item, 'included' => $included])->toArray())->toArray();
+        $transformed['schemas'] = collect($schemaData)->map(fn ($item) => Database::createFromResponse(['data' => $item, 'included' => $included])->toArray())->toArray();
 
         return self::from($transformed);
     }

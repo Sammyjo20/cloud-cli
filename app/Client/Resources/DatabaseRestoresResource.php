@@ -22,6 +22,6 @@ class DatabaseRestoresResource
             pointInTime: $pointInTime,
         ));
 
-        return DatabaseCluster::fromJsonApi($response->json());
+        return DatabaseCluster::createFromResponse($response->json());
     }
 }

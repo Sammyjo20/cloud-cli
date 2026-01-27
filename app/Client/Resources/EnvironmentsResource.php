@@ -3,6 +3,7 @@
 namespace App\Client\Resources;
 
 use App\Client\Connector;
+use App\Client\Resources\Concerns\HasIncludes;
 use App\Client\Resources\Environments\AddEnvironmentVariablesRequest;
 use App\Client\Resources\Environments\CreateEnvironmentRequest;
 use App\Client\Resources\Environments\DeleteEnvironmentRequest;
@@ -19,6 +20,8 @@ use Saloon\PaginationPlugin\Paginator;
 
 class EnvironmentsResource
 {
+    use HasIncludes;
+
     public function __construct(
         protected Connector $connector,
     ) {
@@ -29,17 +32,17 @@ class EnvironmentsResource
     {
         $request = new ListEnvironmentsRequest($applicationId);
 
-        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => Environment::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]));
+        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => Environment::createFromResponse(['data' => $item, 'included' => $responseData['included'] ?? []]));
     }
 
-    public function get(string $environmentId, ?string $include = null): Environment
+    public function get(string $environmentId): Environment
     {
         $response = $this->connector->send(new GetEnvironmentRequest(
             environmentId: $environmentId,
-            include: $include,
+            include: $this->getIncludesString(),
         ));
 
-        return Environment::fromJsonApi($response->json());
+        return Environment::createFromResponse($response->json());
     }
 
     public function create(string $applicationId, string $name, ?string $branch = null): Environment
@@ -50,7 +53,7 @@ class EnvironmentsResource
             branch: $branch,
         ));
 
-        return Environment::fromJsonApi($response->json());
+        return Environment::createFromResponse($response->json());
     }
 
     public function update(string $environmentId, array $data): Environment
@@ -60,7 +63,7 @@ class EnvironmentsResource
             data: $data,
         ));
 
-        return Environment::fromJsonApi($response->json());
+        return Environment::createFromResponse($response->json());
     }
 
     public function delete(string $environmentId): void
@@ -81,7 +84,7 @@ class EnvironmentsResource
 
         $responseData = $response->json();
 
-        return collect($responseData['data'] ?? [])->map(fn ($item) => EnvironmentLog::fromJsonApi($item))->toArray();
+        return collect($responseData['data'] ?? [])->map(fn ($item) => EnvironmentLog::createFromResponse($item))->toArray();
     }
 
     public function addVariables(string $environmentId, array $variables): void

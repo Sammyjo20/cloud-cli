@@ -17,7 +17,7 @@ class Environment extends Data
         public readonly string $name,
         public readonly ?string $branch,
         public readonly ?string $status,
-        public readonly array $instances,
+        public readonly ?array $instances,
         public readonly ?string $buildCommand,
         public readonly ?string $deployCommand,
         public readonly string $slug,
@@ -47,7 +47,7 @@ class Environment extends Data
         //
     }
 
-    public static function fromJsonApi(array $response): self
+    public static function createFromResponse(array $response): self
     {
         $data = $response['data'] ?? [];
         $included = $response['included'] ?? [];

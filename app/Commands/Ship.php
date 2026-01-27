@@ -63,23 +63,25 @@ class Ship extends BaseCommand
         $repository = $this->git->remoteRepo();
 
         $applications = spin(
-            fn () => $this->client->applications()->list('organization,environments,defaultEnvironment'),
+            fn () => $this->client->applications()->include('organization', 'environments', 'defaultEnvironment')->list(),
             'Checking for existing application...',
         );
 
-        $existingApps = collect($applications->items())->filter(
+        $existingApps = $applications->collect()->filter(
             fn (Application $app) => $app->repositoryFullName === $repository,
         );
 
         if ($existingApps->isNotEmpty()) {
             info('Found '.$existingApps->count().' existing applications for this repository.');
 
-            $options = $existingApps->mapWithKeys(fn (Application $app) => [$app->id => 'Deploy '.$app->name]);
-            $options->prepend('Create new application', 'new');
+            $options = $existingApps
+                ->mapWithKeys(fn (Application $app) => [$app->id => 'Deploy '.$app->name])
+                ->collect()
+                ->prepend('Create new application', 'new');
 
             $selectedApp = select(
                 label: 'Application',
-                options: $options,
+                options: $options->toArray(),
             );
 
             if ($selectedApp !== 'new') {
@@ -91,7 +93,7 @@ class Ship extends BaseCommand
             }
         }
 
-        $mostUsedRegion = collect($applications->items())->pluck('region')->countBy()->sortDesc()->keys()->first();
+        $mostUsedRegion = $applications->collect()->pluck('region')->countBy()->sortDesc()->keys()->first();
         $defaultRegion = $mostUsedRegion ?? 'us-east-2';
 
         $application = $this->loopUntilValid(
@@ -102,7 +104,7 @@ class Ship extends BaseCommand
 
         success('Application created!');
 
-        $application = $this->client->applications()->get($application->id, 'organization,environments,defaultEnvironment');
+        $application = $this->client->applications()->include('organization', 'environments', 'defaultEnvironment')->get($application->id);
         $environment = $this->client->environments()->get($application->defaultEnvironmentId ?? '');
 
         $this->loopUntilValid(
@@ -270,7 +272,7 @@ class Ship extends BaseCommand
             $cluster = $this->getDatabaseCluster();
 
             if ($cluster) {
-                $cluster = $this->client->databaseClusters()->get($cluster->id, 'schemas');
+                $cluster = $this->client->databaseClusters()->include(['schemas'])->get($cluster->id);
                 $database = $this->getDatabase($cluster);
                 $environmentParams['database_schema_id'] = $database->id;
             }
@@ -331,7 +333,7 @@ class Ship extends BaseCommand
 
     protected function getDatabaseCluster(): ?DatabaseCluster
     {
-        $databasesPaginator = $this->client->databaseClusters()->list('schemas');
+        $databasesPaginator = $this->client->databaseClusters()->include(['schemas'])->list();
         $databases = collect($databasesPaginator->items());
 
         if ($databases->isEmpty()) {
@@ -440,7 +442,7 @@ class Ship extends BaseCommand
         dynamicSpinner(
             function () use ($application, $varsToAdd) {
                 while (count($application->environmentIds) === 0) {
-                    $application = $this->client->applications()->get($application->id, 'organization,environments,defaultEnvironment');
+                    $application = $this->client->applications()->include(['organization', 'environments', 'defaultEnvironment'])->get($application->id);
                     Sleep::for(CarbonInterval::seconds(1));
                 }
 

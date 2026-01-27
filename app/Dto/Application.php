@@ -34,7 +34,7 @@ class Application extends Data
         //
     }
 
-    public static function fromJsonApi(array $response): self
+    public static function createFromResponse(array $response): self
     {
         $data = $response['data'];
         $included = $response['included'] ?? [];
@@ -62,21 +62,22 @@ class Application extends Data
         if (isset($relationships['organization']['data']['id'])) {
             $transformed['organizationId'] = $relationships['organization']['data']['id'];
             $orgData = self::resolveIncluded($included, $relationships['organization'], 'organizations');
+
             if ($orgData) {
-                $transformed['organization'] = Organization::fromJsonApi(['data' => $orgData, 'included' => $included])->toArray();
+                $transformed['organization'] = Organization::createFromResponse(['data' => $orgData, 'included' => $included])->toArray();
             }
         }
 
         if (isset($relationships['environments']['data'])) {
             $transformed['environmentIds'] = array_column($relationships['environments']['data'], 'id');
             $envData = self::resolveIncludedCollection($included, $relationships['environments'], 'environments');
-            $transformed['environments'] = collect($envData)->map(fn ($item) => Environment::fromJsonApi(['data' => $item, 'included' => $included])->toArray())->toArray();
+            $transformed['environments'] = collect($envData)->map(fn ($item) => Environment::createFromResponse(['data' => $item, 'included' => $included])->toArray())->toArray();
         }
 
         if (isset($relationships['deployments']['data'])) {
             $transformed['deploymentIds'] = array_column($relationships['deployments']['data'], 'id');
             $deployData = self::resolveIncludedCollection($included, $relationships['deployments'], 'deployments');
-            $transformed['deployments'] = collect($deployData)->map(fn ($item) => Deployment::fromJsonApi(['data' => $item, 'included' => $included])->toArray())->toArray();
+            $transformed['deployments'] = collect($deployData)->map(fn ($item) => Deployment::createFromResponse(['data' => $item, 'included' => $included])->toArray())->toArray();
         }
 
         if (isset($relationships['defaultEnvironment']['data']['id'])) {

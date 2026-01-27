@@ -24,14 +24,14 @@ class DomainsResource
     {
         $request = new ListDomainsRequest($environmentId);
 
-        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => Domain::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]));
+        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => Domain::createFromResponse(['data' => $item, 'included' => $responseData['included'] ?? []]));
     }
 
     public function get(string $domainId): Domain
     {
         $response = $this->connector->send(new GetDomainRequest($domainId));
 
-        return Domain::fromJsonApi($response->json());
+        return Domain::createFromResponse($response->json());
     }
 
     public function create(string $environmentId, string $domain): Domain
@@ -41,7 +41,7 @@ class DomainsResource
             domain: $domain,
         ));
 
-        return Domain::fromJsonApi($response->json());
+        return Domain::createFromResponse($response->json());
     }
 
     public function update(string $domainId, array $data): Domain
@@ -51,7 +51,7 @@ class DomainsResource
             data: $data,
         ));
 
-        return Domain::fromJsonApi($response->json());
+        return Domain::createFromResponse($response->json());
     }
 
     public function delete(string $domainId): void

@@ -112,7 +112,7 @@ class EnvironmentLog extends Data
         return $output;
     }
 
-    public static function fromJsonApi(array $response): self
+    public static function createFromResponse(array $response): self
     {
         $data = $response;
 

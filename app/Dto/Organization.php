@@ -14,9 +14,9 @@ class Organization extends Data
         //
     }
 
-    public static function fromJsonApi(array $response): self
+    public static function createFromResponse(array $response): self
     {
-        $data = $response['data'] ?? $response;
+        $data = $response['data'] ?? [];
         $attributes = $data['attributes'] ?? [];
 
         return self::from([

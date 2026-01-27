@@ -28,7 +28,7 @@ class WebsocketApplication extends Data
         //
     }
 
-    public static function fromJsonApi(array $response): self
+    public static function createFromResponse(array $response): self
     {
         $data = $response['data'] ?? [];
         $included = $response['included'] ?? [];
@@ -53,7 +53,7 @@ class WebsocketApplication extends Data
             $transformed['serverId'] = $relationships['server']['data']['id'];
             $serverData = self::resolveIncluded($included, $relationships['server'], 'websocketServers');
             if ($serverData) {
-                $transformed['server'] = WebsocketCluster::fromJsonApi(['data' => $serverData, 'included' => $included])->toArray();
+                $transformed['server'] = WebsocketCluster::createFromResponse(['data' => $serverData, 'included' => $included])->toArray();
             }
         }
 

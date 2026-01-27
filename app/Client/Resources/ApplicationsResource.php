@@ -7,40 +7,41 @@ use App\Client\Resources\Applications\CreateApplicationRequest;
 use App\Client\Resources\Applications\GetApplicationRequest;
 use App\Client\Resources\Applications\ListApplicationsRequest;
 use App\Client\Resources\Applications\UpdateApplicationRequest;
+use App\Client\Resources\Concerns\HasIncludes;
 use App\Dto\Application;
 use Saloon\Data\MultipartValue;
 use Saloon\PaginationPlugin\Paginator;
 
 class ApplicationsResource
 {
+    use HasIncludes;
+
     public function __construct(
         protected Connector $connector,
     ) {
         //
     }
 
-    public function list(?string $include = null, ?string $name = null, ?string $region = null, ?string $slug = null): Paginator
+    public function list(?string $name = null, ?string $region = null, ?string $slug = null): Paginator
     {
         $request = new ListApplicationsRequest(
-            include: $include,
+            include: $this->getIncludesString(),
             name: $name,
             region: $region,
             slug: $slug,
         );
 
-        return $this->connector->paginate($request)->transform(
-            fn ($responseData, $item) => Application::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]),
-        );
+        return $this->connector->paginate($request);
     }
 
-    public function get(string $applicationId, ?string $include = null): Application
+    public function get(string $applicationId): Application
     {
         $response = $this->connector->send(new GetApplicationRequest(
             applicationId: $applicationId,
-            include: $include,
+            include: $this->getIncludesString(),
         ));
 
-        return Application::fromJsonApi($response->json());
+        return Application::createFromResponse($response->json());
     }
 
     public function create(string $repository, string $name, string $region): Application
@@ -51,7 +52,7 @@ class ApplicationsResource
             region: $region,
         ));
 
-        return Application::fromJsonApi($response->json());
+        return Application::createFromResponse($response->json());
     }
 
     public function update(string $applicationId, array $data): Application
@@ -76,6 +77,6 @@ class ApplicationsResource
             avatar: $avatar,
         ));
 
-        return Application::fromJsonApi($response->json());
+        return Application::createFromResponse($response->json());
     }
 }

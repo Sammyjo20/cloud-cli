@@ -23,14 +23,14 @@ class BackgroundProcessesResource
     {
         $request = new ListBackgroundProcessesRequest($instanceId);
 
-        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => BackgroundProcess::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]));
+        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => BackgroundProcess::createFromResponse(['data' => $item, 'included' => $responseData['included'] ?? []]));
     }
 
     public function get(string $backgroundProcessId): BackgroundProcess
     {
         $response = $this->connector->send(new GetBackgroundProcessRequest($backgroundProcessId));
 
-        return BackgroundProcess::fromJsonApi($response->json());
+        return BackgroundProcess::createFromResponse($response->json());
     }
 
     public function create(string $instanceId, array $data): BackgroundProcess
@@ -40,7 +40,7 @@ class BackgroundProcessesResource
             data: $data,
         ));
 
-        return BackgroundProcess::fromJsonApi($response->json());
+        return BackgroundProcess::createFromResponse($response->json());
     }
 
     public function update(string $backgroundProcessId, array $data): BackgroundProcess
@@ -50,7 +50,7 @@ class BackgroundProcessesResource
             data: $data,
         ));
 
-        return BackgroundProcess::fromJsonApi($response->json());
+        return BackgroundProcess::createFromResponse($response->json());
     }
 
     public function delete(string $backgroundProcessId): void

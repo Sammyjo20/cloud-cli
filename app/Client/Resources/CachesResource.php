@@ -9,27 +9,30 @@ use App\Client\Resources\Caches\GetCacheRequest;
 use App\Client\Resources\Caches\ListCachesRequest;
 use App\Client\Resources\Caches\ListCacheTypesRequest;
 use App\Client\Resources\Caches\UpdateCacheRequest;
+use App\Client\Resources\Concerns\HasIncludes;
 
 class CachesResource
 {
+    use HasIncludes;
+
     public function __construct(
         protected Connector $connector,
     ) {
         //
     }
 
-    public function list(?string $include = null): array
+    public function list(): array
     {
-        $response = $this->connector->send(new ListCachesRequest(include: $include));
+        $response = $this->connector->send(new ListCachesRequest(include: $this->getIncludesString()));
 
         return $response->json()['data'] ?? [];
     }
 
-    public function get(string $cacheId, ?string $include = null): array
+    public function get(string $cacheId): array
     {
         $response = $this->connector->send(new GetCacheRequest(
             cacheId: $cacheId,
-            include: $include,
+            include: $this->getIncludesString(),
         ));
 
         return $response->json()['data'] ?? [];

@@ -14,7 +14,7 @@ class Region extends Data
         //
     }
 
-    public static function fromJsonApi(array $response): self
+    public static function createFromResponse(array $response): self
     {
         $data = $response['data'] ?? [];
 

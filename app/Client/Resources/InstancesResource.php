@@ -24,14 +24,14 @@ class InstancesResource
     {
         $request = new ListInstancesRequest($environmentId);
 
-        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => EnvironmentInstance::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]));
+        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => EnvironmentInstance::createFromResponse(['data' => $item, 'included' => $responseData['included'] ?? []]));
     }
 
     public function get(string $instanceId): EnvironmentInstance
     {
         $response = $this->connector->send(new GetInstanceRequest($instanceId));
 
-        return EnvironmentInstance::fromJsonApi($response->json());
+        return EnvironmentInstance::createFromResponse($response->json());
     }
 
     public function create(string $environmentId, array $data): EnvironmentInstance
@@ -41,7 +41,7 @@ class InstancesResource
             data: $data,
         ));
 
-        return EnvironmentInstance::fromJsonApi($response->json());
+        return EnvironmentInstance::createFromResponse($response->json());
     }
 
     public function update(string $instanceId, array $data): EnvironmentInstance
@@ -51,7 +51,7 @@ class InstancesResource
             data: $data,
         ));
 
-        return EnvironmentInstance::fromJsonApi($response->json());
+        return EnvironmentInstance::createFromResponse($response->json());
     }
 
     public function delete(string $instanceId): void

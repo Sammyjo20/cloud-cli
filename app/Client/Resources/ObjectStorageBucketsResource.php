@@ -3,6 +3,7 @@
 namespace App\Client\Resources;
 
 use App\Client\Connector;
+use App\Client\Resources\Concerns\HasIncludes;
 use App\Client\Resources\ObjectStorageBuckets\CreateObjectStorageBucketRequest;
 use App\Client\Resources\ObjectStorageBuckets\DeleteObjectStorageBucketRequest;
 use App\Client\Resources\ObjectStorageBuckets\GetObjectStorageBucketRequest;
@@ -18,29 +19,31 @@ use Saloon\PaginationPlugin\Paginator;
 
 class ObjectStorageBucketsResource
 {
+    use HasIncludes;
+
     public function __construct(
         protected Connector $connector,
     ) {
         //
     }
 
-    public function list(?string $include = null, ?string $type = null, ?string $status = null, ?string $visibility = null): Paginator
+    public function list(?string $type = null, ?string $status = null, ?string $visibility = null): Paginator
     {
         $request = new ListObjectStorageBucketsRequest(
-            include: $include,
+            include: $this->getIncludesString(),
             type: $type,
             status: $status,
             visibility: $visibility,
         );
 
-        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => ObjectStorageBucket::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]));
+        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => ObjectStorageBucket::createFromResponse(['data' => $item, 'included' => $responseData['included'] ?? []]));
     }
 
-    public function get(string $bucketId, ?string $include = null): ObjectStorageBucket
+    public function get(string $bucketId): ObjectStorageBucket
     {
         $response = $this->connector->send(new GetObjectStorageBucketRequest(
             bucketId: $bucketId,
-            include: $include,
+            include: $this->getIncludesString(),
         ));
 
         $data = $response->json()['data'];

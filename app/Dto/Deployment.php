@@ -98,7 +98,7 @@ class Deployment extends Data
         return ! $this->isFinished();
     }
 
-    public static function fromJsonApi(array $response): self
+    public static function createFromResponse(array $response): self
     {
         $data = $response['data'] ?? [];
         $attributes = $data['attributes'] ?? [];

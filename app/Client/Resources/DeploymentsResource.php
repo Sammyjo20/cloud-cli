@@ -21,20 +21,20 @@ class DeploymentsResource
     {
         $request = new ListDeploymentsRequest($environmentId);
 
-        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => Deployment::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]));
+        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => Deployment::createFromResponse(['data' => $item, 'included' => $responseData['included'] ?? []]));
     }
 
     public function get(string $deploymentId): Deployment
     {
         $response = $this->connector->send(new GetDeploymentRequest($deploymentId));
 
-        return Deployment::fromJsonApi($response->json());
+        return Deployment::createFromResponse($response->json());
     }
 
     public function initiate(string $environmentId): Deployment
     {
         $response = $this->connector->send(new InitiateDeploymentRequest($environmentId));
 
-        return Deployment::fromJsonApi($response->json());
+        return Deployment::createFromResponse($response->json());
     }
 }

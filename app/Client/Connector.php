@@ -23,7 +23,9 @@ use App\Client\Resources\WebSocketClustersResource;
 use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Connector as SaloonConnector;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 use Saloon\PaginationPlugin\Contracts\HasPagination;
+use Saloon\PaginationPlugin\PagedPaginator;
 use Saloon\PaginationPlugin\Paginator as SaloonPaginator;
 use SensitiveParameter;
 
@@ -146,6 +148,17 @@ class Connector extends SaloonConnector implements HasPagination
 
     public function paginate(Request $request): SaloonPaginator
     {
-        return new JsonApiPaginator($this, $request);
+        return new class(connector: $this, request: $request) extends PagedPaginator
+        {
+            protected function isLastPage(Response $response): bool
+            {
+                return is_null($response->json('links.next'));
+            }
+
+            protected function getPageItems(Response $response, Request $request): array
+            {
+                return $request->createDtoFromResponse($response);
+            }
+        };
     }
 }

@@ -22,7 +22,7 @@ class DatabasesResource
     {
         $request = new ListDatabasesRequest($clusterId);
 
-        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => Database::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]));
+        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => Database::createFromResponse(['data' => $item, 'included' => $responseData['included'] ?? []]));
     }
 
     public function get(string $clusterId, string $databaseId): Database
@@ -32,7 +32,7 @@ class DatabasesResource
             databaseId: $databaseId,
         ));
 
-        return Database::fromJsonApi($response->json());
+        return Database::createFromResponse($response->json());
     }
 
     public function create(string $clusterId, string $name): Database
@@ -42,7 +42,7 @@ class DatabasesResource
             name: $name,
         ));
 
-        return Database::fromJsonApi($response->json());
+        return Database::createFromResponse($response->json());
     }
 
     public function delete(string $clusterId, string $databaseId): void

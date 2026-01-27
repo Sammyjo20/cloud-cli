@@ -26,7 +26,7 @@ trait RequiresDatabaseCluster
                 if (str_starts_with($identifier, 'db-')) {
                     try {
                         $database = spin(
-                            fn () => $this->client->databaseClusters()->get($identifier, 'schemas'),
+                            fn () => $this->client->databaseClusters()->include(['schemas'])->get($identifier),
                             'Fetching database...',
                         );
                     } catch (Exception $e) {
@@ -82,7 +82,7 @@ trait RequiresDatabaseCluster
     protected function fetchDatabases(): Collection
     {
         return collect(spin(
-            fn () => $this->client->databaseClusters()->list('schemas')->items(),
+            fn () => $this->client->databaseClusters()->include(['schemas'])->list()->items(),
             'Fetching databases...',
         ));
     }

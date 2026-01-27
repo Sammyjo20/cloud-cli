@@ -21,7 +21,7 @@ class MetaResource
     {
         $response = $this->connector->send(new GetOrganizationRequest);
 
-        return Organization::fromJsonApi($response->json());
+        return Organization::createFromResponse($response->json());
     }
 
     public function regions(): array
@@ -30,7 +30,7 @@ class MetaResource
 
         $responseData = $response->json();
 
-        return collect($responseData['data'] ?? [])->map(fn ($item) => Region::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]))->toArray();
+        return collect($responseData['data'] ?? [])->map(fn ($item) => Region::createFromResponse(['data' => $item, 'included' => $responseData['included'] ?? []]))->toArray();
     }
 
     public function ipAddresses(): array

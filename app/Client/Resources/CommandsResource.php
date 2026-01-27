@@ -21,14 +21,14 @@ class CommandsResource
     {
         $request = new ListCommandsRequest($environmentId);
 
-        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => Command::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]));
+        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => Command::createFromResponse(['data' => $item, 'included' => $responseData['included'] ?? []]));
     }
 
     public function get(string $commandId): Command
     {
         $response = $this->connector->send(new GetCommandRequest($commandId));
 
-        return Command::fromJsonApi($response->json());
+        return Command::createFromResponse($response->json());
     }
 
     public function run(string $environmentId, string $command): Command
@@ -38,6 +38,6 @@ class CommandsResource
             command: $command,
         ));
 
-        return Command::fromJsonApi($response->json());
+        return Command::createFromResponse($response->json());
     }
 }
