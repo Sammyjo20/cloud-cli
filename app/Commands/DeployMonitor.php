@@ -52,7 +52,7 @@ class DeployMonitor extends BaseCommand
             'Checking for existing application...',
         );
 
-        $existingApps = collect($applications->data ?? [])->filter(
+        $existingApps = collect($applications->items())->filter(
             fn ($app) => $app->repositoryFullName === $repository,
         );
 
@@ -79,7 +79,7 @@ class DeployMonitor extends BaseCommand
             'Checking for existing environments...',
         );
 
-        $environment = $this->getEnvironment(collect($environments->data));
+        $environment = $this->getEnvironment(collect($environments->items()));
 
         (new MonitorDeployments(
             fn ($deploymentId = null) => $this->getCurrentDeployment($environment, $deploymentId),
@@ -108,7 +108,7 @@ class DeployMonitor extends BaseCommand
             return null;
         }
 
-        $deployment = ($deployments->data[0]->isFinished()) ? null : $deployments->data[0];
+        $deployment = $deployments->first()?->isFinished() ? null : $deployments->first();
 
         return $deployment;
     }

@@ -40,7 +40,7 @@ class DatabaseOpen extends BaseCommand
             fn () => $this->client->environments()->list($app->id),
             'Fetching environments...',
         );
-        $environment = $this->getEnvironment(collect($environments->data));
+        $environment = $this->getEnvironment(collect($environments->items()));
 
         $environment = spin(
             fn () => $this->client->environments()->get($environment->id),
@@ -53,7 +53,7 @@ class DatabaseOpen extends BaseCommand
         );
 
         $database = $this->resolveDatabase(
-            collect($databases->data),
+            collect($databases->items()),
             $environment,
         );
 

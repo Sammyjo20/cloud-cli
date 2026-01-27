@@ -19,7 +19,7 @@ trait DeterminesDefaultRegion
             'Fetching applications...',
         );
 
-        $mostUsedRegion = collect($applications->data)
+        $mostUsedRegion = collect($applications->items())
             ->pluck('region')
             ->countBy()
             ->sortDesc()

@@ -2,15 +2,16 @@
 
 namespace App\Client;
 
+use Closure;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
 use Saloon\PaginationPlugin\Paginator as BasePaginator;
 
 class JsonApiPaginator extends BasePaginator
 {
-    protected ?\Closure $itemTransformer = null;
+    protected ?Closure $itemTransformer = null;
 
-    public function transform(\Closure $transformer): self
+    public function transform(Closure $transformer): self
     {
         $this->itemTransformer = $transformer;
 
@@ -31,9 +32,13 @@ class JsonApiPaginator extends BasePaginator
         if ($this->itemTransformer) {
             $responseData = $response->json();
 
-            return array_map(function ($item) use ($responseData) {
+            return array_filter(array_map(function ($item) use ($responseData) {
+                if (! is_array($item) || empty($item)) {
+                    return null;
+                }
+
                 return ($this->itemTransformer)($responseData, $item);
-            }, $items);
+            }, $items));
         }
 
         return $items;

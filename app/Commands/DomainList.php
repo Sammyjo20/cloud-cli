@@ -28,23 +28,24 @@ class DomainList extends BaseCommand
             'Fetching domains...',
         );
 
+        $items = collect($domains->items());
+
         if ($this->option('json')) {
             $this->line(json_encode([
-                'data' => array_map(fn ($domain) => [
+                'data' => $items->map(fn ($domain) => [
                     'id' => $domain->id,
                     'domain' => $domain->domain,
                     'status' => $domain->status,
                     'is_primary' => $domain->isPrimary,
                     'verification_status' => $domain->verificationStatus,
                     'created_at' => $domain->createdAt?->toIso8601String(),
-                ], $domains->data),
-                'links' => $domains->links,
+                ])->toArray(),
             ], JSON_PRETTY_PRINT));
 
             return;
         }
 
-        if (count($domains->data) === 0) {
+        if ($items->isEmpty()) {
             info('No domains found.');
 
             return;
@@ -52,7 +53,7 @@ class DomainList extends BaseCommand
 
         table(
             ['ID', 'Domain', 'Status', 'Primary'],
-            collect($domains->data)->map(fn ($domain) => [
+            $items->map(fn ($domain) => [
                 $domain->id,
                 $domain->domain,
                 $domain->status,

@@ -16,13 +16,13 @@ class Organization extends Data
 
     public static function fromJsonApi(array $response): self
     {
-        $data = $response['data'];
-        $attributes = $data['attributes'];
+        $data = $response['data'] ?? $response;
+        $attributes = $data['attributes'] ?? [];
 
         return self::from([
-            'id' => $data['id'],
-            'name' => $attributes['name'],
-            'slug' => $attributes['slug'],
+            'id' => $data['id'] ?? '',
+            'name' => $attributes['name'] ?? '',
+            'slug' => $attributes['slug'] ?? '',
         ]);
     }
 }

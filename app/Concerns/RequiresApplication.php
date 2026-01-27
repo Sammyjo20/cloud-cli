@@ -88,8 +88,8 @@ trait RequiresApplication
     protected function fetchApplications(): Collection
     {
         return collect(spin(
-            fn () => $this->client->applications()->list('organization,environments,defaultEnvironment'),
+            fn () => $this->client->applications()->list('organization,environments,defaultEnvironment')->items(),
             'Fetching applications...',
-        )->data);
+        ));
     }
 }

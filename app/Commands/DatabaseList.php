@@ -30,13 +30,24 @@ class DatabaseList extends BaseCommand
             'Fetching databases...',
         );
 
+        $items = collect($databases->items());
+
         if ($this->option('json')) {
-            $this->line($databases->toJson());
+            $this->line(json_encode([
+                'data' => $items->map(fn ($db) => [
+                    'id' => $db->id,
+                    'name' => $db->name,
+                    'type' => $db->type,
+                    'status' => $db->status,
+                    'region' => $db->region,
+                    'schemas' => collect($db->schemas)->pluck('name')->toArray(),
+                ])->toArray(),
+            ], JSON_PRETTY_PRINT));
 
             return;
         }
 
-        if (count($databases->data) === 0) {
+        if ($items->isEmpty()) {
             info('No databases found.');
 
             return;
@@ -44,7 +55,7 @@ class DatabaseList extends BaseCommand
 
         table(
             ['ID', 'Name', 'Type', 'Status', 'Region', 'Schemas'],
-            collect($databases->data)->map(fn ($db) => [
+            $items->map(fn ($db) => [
                 $db->id,
                 $db->name,
                 $db->type,

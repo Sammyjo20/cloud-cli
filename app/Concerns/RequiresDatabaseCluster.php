@@ -82,8 +82,8 @@ trait RequiresDatabaseCluster
     protected function fetchDatabases(): Collection
     {
         return collect(spin(
-            fn () => $this->client->databaseClusters()->list('schemas'),
+            fn () => $this->client->databaseClusters()->list('schemas')->items(),
             'Fetching databases...',
-        )->data);
+        ));
     }
 }

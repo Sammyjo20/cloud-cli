@@ -146,6 +146,6 @@ class Connector extends SaloonConnector implements HasPagination
 
     public function paginate(Request $request): SaloonPaginator
     {
-        return new \App\Client\JsonApiPaginator($this, $request);
+        return new JsonApiPaginator($this, $request);
     }
 }

@@ -35,7 +35,7 @@ class EnvironmentList extends BaseCommand
                 'Fetching applications...',
             );
 
-            $app = $this->getCloudApplication(collect($applications->data));
+            $app = $this->getCloudApplication(collect($applications->items()));
             $applicationId = $app->id;
         }
 
@@ -44,23 +44,24 @@ class EnvironmentList extends BaseCommand
             'Fetching environments...',
         );
 
+        $envItems = collect($environments->items());
+
         if ($this->option('json')) {
             $this->line(json_encode([
-                'data' => array_map(fn ($env) => [
+                'data' => $envItems->map(fn ($env) => [
                     'id' => $env->id,
                     'name' => $env->name,
                     'branch' => $env->branch,
                     'status' => $env->status,
                     'url' => $env->url,
                     'created_at' => $env->createdAt?->toIso8601String(),
-                ], $environments->data),
-                'links' => $environments->links,
+                ])->toArray(),
             ], JSON_PRETTY_PRINT));
 
             return;
         }
 
-        if (count($environments->data) === 0) {
+        if ($envItems->isEmpty()) {
             info('No environments found.');
 
             return;
@@ -68,7 +69,7 @@ class EnvironmentList extends BaseCommand
 
         table(
             ['ID', 'Name', 'Branch', 'Status', 'URL'],
-            collect($environments->data)->map(fn ($env) => [
+            $envItems->map(fn ($env) => [
                 $env->id,
                 $env->name,
                 $env->branch ?? 'N/A',

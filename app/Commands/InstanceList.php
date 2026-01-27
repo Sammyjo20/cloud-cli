@@ -28,9 +28,11 @@ class InstanceList extends BaseCommand
             'Fetching instances...',
         );
 
+        $items = collect($instances->items());
+
         if ($this->option('json')) {
             $this->line(json_encode([
-                'data' => array_map(fn ($instance) => [
+                'data' => $items->map(fn ($instance) => [
                     'id' => $instance->id,
                     'name' => $instance->name,
                     'type' => $instance->type,
@@ -39,14 +41,13 @@ class InstanceList extends BaseCommand
                     'min_replicas' => $instance->minReplicas,
                     'max_replicas' => $instance->maxReplicas,
                     'created_at' => $instance->createdAt?->toIso8601String(),
-                ], $instances->data),
-                'links' => $instances->links,
+                ])->toArray(),
             ], JSON_PRETTY_PRINT));
 
             return;
         }
 
-        if (count($instances->data) === 0) {
+        if ($items->isEmpty()) {
             info('No instances found.');
 
             return;
@@ -54,7 +55,7 @@ class InstanceList extends BaseCommand
 
         table(
             ['ID', 'Name', 'Type', 'Size', 'Replicas'],
-            collect($instances->data)->map(fn ($instance) => [
+            $items->map(fn ($instance) => [
                 $instance->id,
                 $instance->name,
                 $instance->type,

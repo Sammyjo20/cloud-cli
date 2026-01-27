@@ -28,9 +28,22 @@ class ApplicationList extends BaseCommand
             'Fetching applications...',
         );
 
-        $this->outputJsonIfWanted($applications);
+        $items = collect($applications->items());
 
-        if (count($applications->data) === 0) {
+        if ($this->option('json')) {
+            $this->line(json_encode([
+                'data' => $items->map(fn ($app) => [
+                    'id' => $app->id,
+                    'name' => $app->name,
+                    'region' => $app->region,
+                    'repository' => $app->repositoryFullName ?? null,
+                ])->toArray(),
+            ], JSON_PRETTY_PRINT));
+
+            return;
+        }
+
+        if ($items->isEmpty()) {
             info('No applications found.');
 
             return;
@@ -38,7 +51,7 @@ class ApplicationList extends BaseCommand
 
         table(
             ['ID', 'Name', 'Region', 'Repository'],
-            collect($applications->data)->map(fn ($app) => [
+            $items->map(fn ($app) => [
                 $app->id,
                 $app->name,
                 $app->region,

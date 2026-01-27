@@ -28,23 +28,24 @@ class CommandList extends BaseCommand
             'Fetching commands...',
         );
 
+        $items = collect($commands->items());
+
         if ($this->option('json')) {
             $this->line(json_encode([
-                'data' => array_map(fn ($cmd) => [
+                'data' => $items->map(fn ($cmd) => [
                     'id' => $cmd->id,
                     'command' => $cmd->command,
                     'status' => $cmd->status,
                     'exit_code' => $cmd->exitCode,
                     'started_at' => $cmd->startedAt?->toIso8601String(),
                     'finished_at' => $cmd->finishedAt?->toIso8601String(),
-                ], $commands->data),
-                'links' => $commands->links,
+                ])->toArray(),
             ], JSON_PRETTY_PRINT));
 
             return;
         }
 
-        if (count($commands->data) === 0) {
+        if ($items->isEmpty()) {
             info('No commands found.');
 
             return;
@@ -52,7 +53,7 @@ class CommandList extends BaseCommand
 
         table(
             ['ID', 'Command', 'Status', 'Exit Code', 'Started'],
-            collect($commands->data)->map(fn ($cmd) => [
+            $items->map(fn ($cmd) => [
                 $cmd->id,
                 substr($cmd->command, 0, 50),
                 $cmd->status,

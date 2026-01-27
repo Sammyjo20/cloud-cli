@@ -44,7 +44,7 @@ class Open extends BaseCommand
             'Checking for existing application...',
         );
 
-        $existingApps = collect($applications->data ?? [])->filter(
+        $existingApps = collect($applications->items())->filter(
             fn ($app) => $app->repositoryFullName === $repository,
         );
 
@@ -71,7 +71,7 @@ class Open extends BaseCommand
             'Checking for existing environments...',
         );
 
-        $environment = $this->getEnvironment(collect($environments->data));
+        $environment = $this->getEnvironment(collect($environments->items()));
 
         if ($environment->url) {
             Process::run('open '.$environment->url);

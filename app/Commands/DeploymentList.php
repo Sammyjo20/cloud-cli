@@ -28,9 +28,11 @@ class DeploymentList extends BaseCommand
             'Fetching deployments...',
         );
 
+        $items = collect($deployments->items());
+
         if ($this->option('json')) {
             $this->line(json_encode([
-                'data' => array_map(fn ($deployment) => [
+                'data' => $items->map(fn ($deployment) => [
                     'id' => $deployment->id,
                     'status' => $deployment->status->value,
                     'branch' => $deployment->branchName,
@@ -38,14 +40,13 @@ class DeploymentList extends BaseCommand
                     'commit_message' => $deployment->commitMessage,
                     'started_at' => $deployment->startedAt?->toIso8601String(),
                     'finished_at' => $deployment->finishedAt?->toIso8601String(),
-                ], $deployments->data),
-                'links' => $deployments->links,
+                ])->toArray(),
             ], JSON_PRETTY_PRINT));
 
             return;
         }
 
-        if (count($deployments->data) === 0) {
+        if ($items->isEmpty()) {
             info('No deployments found.');
 
             return;
@@ -53,7 +54,7 @@ class DeploymentList extends BaseCommand
 
         table(
             ['ID', 'Status', 'Branch', 'Commit', 'Started'],
-            collect($deployments->data)->map(fn ($deployment) => [
+            $items->map(fn ($deployment) => [
                 $deployment->id,
                 $deployment->status->label(),
                 $deployment->branchName,

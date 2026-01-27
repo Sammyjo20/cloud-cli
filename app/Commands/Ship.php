@@ -67,7 +67,7 @@ class Ship extends BaseCommand
             'Checking for existing application...',
         );
 
-        $existingApps = collect($applications->data)->filter(
+        $existingApps = collect($applications->items())->filter(
             fn (Application $app) => $app->repositoryFullName === $repository,
         );
 
@@ -91,7 +91,7 @@ class Ship extends BaseCommand
             }
         }
 
-        $mostUsedRegion = collect($applications->data)->pluck('region')->countBy()->sortDesc()->keys()->first();
+        $mostUsedRegion = collect($applications->items())->pluck('region')->countBy()->sortDesc()->keys()->first();
         $defaultRegion = $mostUsedRegion ?? 'us-east-2';
 
         $application = $this->loopUntilValid(
@@ -331,7 +331,8 @@ class Ship extends BaseCommand
 
     protected function getDatabaseCluster(): ?DatabaseCluster
     {
-        $databases = collect($this->client->databaseClusters()->list('schemas')->items());
+        $databasesPaginator = $this->client->databaseClusters()->list('schemas');
+        $databases = collect($databasesPaginator->items());
 
         if ($databases->isEmpty()) {
             info('No databases found!');
@@ -345,18 +346,18 @@ class Ship extends BaseCommand
             return null;
         }
 
-        $options = collect($databases->data)->mapWithKeys(fn (DatabaseCluster $database) => [$database->id => $database->name]);
+        $options = $databases->mapWithKeys(fn (DatabaseCluster $database) => [$database->id => $database->name]);
         $options->prepend('Create new database cluster', 'new');
 
         $database = select(
             label: 'Database cluster',
             options: $options,
-            default: $databases->data[0]?->id ?? null,
+            default: $databases->first()?->id ?? null,
             required: true,
         );
 
         if ($database !== 'new') {
-            return collect($databases->data)->firstWhere('id', $database);
+            return $databases->firstWhere('id', $database);
         }
 
         return $this->createDatabase();
