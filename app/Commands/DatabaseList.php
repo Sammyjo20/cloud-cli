@@ -30,7 +30,7 @@ class DatabaseList extends BaseCommand
             'Fetching databases...',
         );
 
-        $items = collect($databases->items());
+        $items = $databases->collect();
 
         if ($this->option('json')) {
             $this->line(json_encode([

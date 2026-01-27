@@ -28,7 +28,7 @@ class BackgroundProcessList extends BaseCommand
             'Fetching background processes...',
         );
 
-        $items = collect($processes->items());
+        $items = $processes->collect();
 
         if ($this->option('json')) {
             $this->line(json_encode([

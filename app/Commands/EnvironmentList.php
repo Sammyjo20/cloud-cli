@@ -35,7 +35,7 @@ class EnvironmentList extends BaseCommand
                 'Fetching applications...',
             );
 
-            $app = $this->getCloudApplication(collect($applications->items()));
+            $app = $this->getCloudApplication($applications->collect());
             $applicationId = $app->id;
         }
 
@@ -44,7 +44,7 @@ class EnvironmentList extends BaseCommand
             'Fetching environments...',
         );
 
-        $envItems = collect($environments->items());
+        $envItems = $environments->collect();
 
         if ($this->option('json')) {
             $this->line(json_encode([

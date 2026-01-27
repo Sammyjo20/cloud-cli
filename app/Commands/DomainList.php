@@ -28,7 +28,7 @@ class DomainList extends BaseCommand
             'Fetching domains...',
         );
 
-        $items = collect($domains->items());
+        $items = $domains->collect();
 
         if ($this->option('json')) {
             $this->line(json_encode([

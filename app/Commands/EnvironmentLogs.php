@@ -39,7 +39,7 @@ class EnvironmentLogs extends BaseCommand
 
         $app = $this->getCloudApplication();
         $environments = spin(
-            fn () => collect($this->client->environments()->list($app->id)->items()),
+            fn () => $this->client->environments()->list($app->id)->collect(),
             'Fetching environments...',
         );
         $environment = $this->getEnvironment($environments);

@@ -28,7 +28,7 @@ class ApplicationList extends BaseCommand
             'Fetching applications...',
         );
 
-        $items = collect($applications->items());
+        $items = $applications->collect();
 
         if ($this->option('json')) {
             $this->line(json_encode([

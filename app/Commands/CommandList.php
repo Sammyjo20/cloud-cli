@@ -28,7 +28,7 @@ class CommandList extends BaseCommand
             'Fetching commands...',
         );
 
-        $items = collect($commands->items());
+        $items = $commands->collect();
 
         if ($this->option('json')) {
             $this->line(json_encode([

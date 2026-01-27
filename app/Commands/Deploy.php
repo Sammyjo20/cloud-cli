@@ -54,7 +54,7 @@ class Deploy extends BaseCommand
             'Checking for existing application...',
         );
 
-        $existingApps = collect($applications->items())->filter(
+        $existingApps = $applications->collect()->filter(
             fn ($app) => $app->repositoryFullName === $repository,
         );
 
@@ -81,7 +81,7 @@ class Deploy extends BaseCommand
             'Checking for existing environments...',
         );
 
-        $environment = $this->getEnvironment(collect($environments->items()));
+        $environment = $this->getEnvironment($environments->collect());
 
         $deployment = $this->client->deployments()->initiate($environment->id);
 

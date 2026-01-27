@@ -28,7 +28,7 @@ class DeploymentList extends BaseCommand
             'Fetching deployments...',
         );
 
-        $items = collect($deployments->items());
+        $items = $deployments->collect();
 
         if ($this->option('json')) {
             $this->line(json_encode([

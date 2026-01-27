@@ -339,7 +339,7 @@ class Ship extends BaseCommand
     protected function getDatabaseCluster(): ?DatabaseCluster
     {
         $databasesPaginator = $this->client->databaseClusters()->include('schemas')->list();
-        $databases = collect($databasesPaginator->items());
+        $databases = $databasesPaginator->collect();
 
         if ($databases->isEmpty()) {
             info('No databases found!');

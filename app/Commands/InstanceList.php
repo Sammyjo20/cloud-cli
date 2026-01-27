@@ -28,7 +28,7 @@ class InstanceList extends BaseCommand
             'Fetching instances...',
         );
 
-        $items = collect($instances->items());
+        $items = $instances->collect();
 
         if ($this->option('json')) {
             $this->line(json_encode([
