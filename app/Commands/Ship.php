@@ -28,6 +28,7 @@ use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
+use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
@@ -115,7 +116,9 @@ class Ship extends BaseCommand
             fn () => $this->collectOptionsToEnable($environment),
         );
 
-        // $this->outro(sprintf('https://cloud.laravel.com/%s/%s', $application->organizationId, $application->slug));
+        $organization = $this->client->meta()->organization();
+
+        outro(sprintf('https://cloud.laravel.com/%s/%s', $organization->slug, $application->slug));
 
         if (! confirm('Do you want to deploy the application?')) {
             return;

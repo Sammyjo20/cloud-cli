@@ -9,8 +9,6 @@ use LaravelZero\Framework\Commands\Command;
 use RuntimeException;
 
 use function Laravel\Prompts\error;
-use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 
 abstract class BaseCommand extends Command
 {
@@ -49,28 +47,6 @@ abstract class BaseCommand extends Command
                 $resolver->key() => $resolver->value(),
             ],
         )->toArray();
-    }
-
-    protected function intro(string $title, ?string $suffix = null): void
-    {
-        if ($this->wantsJson()) {
-            return;
-        }
-
-        if ($suffix) {
-            $title .= ': '.$suffix;
-        }
-
-        intro($title);
-    }
-
-    protected function outro(string $title): void
-    {
-        if ($this->wantsJson()) {
-            return;
-        }
-
-        outro($title);
     }
 
     protected function ensureInteractive(string $message): void
