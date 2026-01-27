@@ -8,6 +8,7 @@ use App\Client\Resources\Applications\GetApplicationRequest;
 use App\Client\Resources\Applications\ListApplicationsRequest;
 use App\Client\Resources\Applications\UpdateApplicationRequest;
 use App\Dto\Application;
+use Saloon\Data\MultipartValue;
 use Saloon\PaginationPlugin\Paginator;
 
 class ApplicationsResource
@@ -58,7 +59,7 @@ class ApplicationsResource
         $avatar = null;
         if (isset($data['avatar']) && is_array($data['avatar']) && count($data['avatar']) === 2) {
             [$avatarContent, $extension] = $data['avatar'];
-            $avatar = new \Saloon\Data\MultipartValue(
+            $avatar = new MultipartValue(
                 value: $avatarContent,
                 filename: 'avatar.'.$extension,
             );

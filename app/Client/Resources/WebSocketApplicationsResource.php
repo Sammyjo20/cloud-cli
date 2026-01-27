@@ -9,6 +9,7 @@ use App\Client\Resources\WebSocketApplications\GetWebSocketApplicationRequest;
 use App\Client\Resources\WebSocketApplications\ListWebSocketApplicationsRequest;
 use App\Client\Resources\WebSocketApplications\UpdateWebSocketApplicationRequest;
 use App\Dto\WebsocketApplication;
+use Carbon\CarbonImmutable;
 
 class WebSocketApplicationsResource
 {
@@ -35,7 +36,7 @@ class WebSocketApplicationsResource
             maxConnections: $item['attributes']['max_connections'],
             key: $item['attributes']['key'],
             secret: $item['attributes']['secret'],
-            createdAt: isset($item['attributes']['created_at']) ? \Carbon\CarbonImmutable::parse($item['attributes']['created_at']) : null,
+            createdAt: isset($item['attributes']['created_at']) ? CarbonImmutable::parse($item['attributes']['created_at']) : null,
             serverId: $item['relationships']['server']['data']['id'] ?? null,
         ))->toArray();
     }
@@ -60,7 +61,7 @@ class WebSocketApplicationsResource
             maxConnections: $data['attributes']['max_connections'],
             key: $data['attributes']['key'],
             secret: $data['attributes']['secret'],
-            createdAt: isset($data['attributes']['created_at']) ? \Carbon\CarbonImmutable::parse($data['attributes']['created_at']) : null,
+            createdAt: isset($data['attributes']['created_at']) ? CarbonImmutable::parse($data['attributes']['created_at']) : null,
             serverId: $data['relationships']['server']['data']['id'] ?? null,
         );
     }
@@ -85,7 +86,7 @@ class WebSocketApplicationsResource
             maxConnections: $responseData['attributes']['max_connections'],
             key: $responseData['attributes']['key'],
             secret: $responseData['attributes']['secret'],
-            createdAt: isset($responseData['attributes']['created_at']) ? \Carbon\CarbonImmutable::parse($responseData['attributes']['created_at']) : null,
+            createdAt: isset($responseData['attributes']['created_at']) ? CarbonImmutable::parse($responseData['attributes']['created_at']) : null,
             serverId: $responseData['relationships']['server']['data']['id'] ?? null,
         );
     }
@@ -111,7 +112,7 @@ class WebSocketApplicationsResource
             maxConnections: $responseData['attributes']['max_connections'],
             key: $responseData['attributes']['key'],
             secret: $responseData['attributes']['secret'],
-            createdAt: isset($responseData['attributes']['created_at']) ? \Carbon\CarbonImmutable::parse($responseData['attributes']['created_at']) : null,
+            createdAt: isset($responseData['attributes']['created_at']) ? CarbonImmutable::parse($responseData['attributes']['created_at']) : null,
             serverId: $responseData['relationships']['server']['data']['id'] ?? null,
         );
     }

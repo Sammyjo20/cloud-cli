@@ -9,6 +9,11 @@ use App\Client\Resources\ObjectStorageBuckets\GetObjectStorageBucketRequest;
 use App\Client\Resources\ObjectStorageBuckets\ListObjectStorageBucketsRequest;
 use App\Client\Resources\ObjectStorageBuckets\UpdateObjectStorageBucketRequest;
 use App\Dto\ObjectStorageBucket;
+use App\Enums\FilesystemJurisdiction;
+use App\Enums\FilesystemStatus;
+use App\Enums\FilesystemType;
+use App\Enums\FilesystemVisibility;
+use Carbon\CarbonImmutable;
 use Saloon\PaginationPlugin\Paginator;
 
 class ObjectStorageBucketsResource
@@ -43,14 +48,14 @@ class ObjectStorageBucketsResource
         return new ObjectStorageBucket(
             id: $data['id'],
             name: $data['attributes']['name'],
-            type: \App\Enums\FilesystemType::from($data['attributes']['type']),
-            status: \App\Enums\FilesystemStatus::from($data['attributes']['status']),
-            visibility: \App\Enums\FilesystemVisibility::from($data['attributes']['visibility']),
-            jurisdiction: \App\Enums\FilesystemJurisdiction::from($data['attributes']['jurisdiction']),
+            type: FilesystemType::from($data['attributes']['type']),
+            status: FilesystemStatus::from($data['attributes']['status']),
+            visibility: FilesystemVisibility::from($data['attributes']['visibility']),
+            jurisdiction: FilesystemJurisdiction::from($data['attributes']['jurisdiction']),
             endpoint: $data['attributes']['endpoint'] ?? null,
             url: $data['attributes']['url'] ?? null,
             allowedOrigins: $data['attributes']['allowed_origins'] ?? null,
-            createdAt: isset($data['attributes']['created_at']) ? \Carbon\CarbonImmutable::parse($data['attributes']['created_at']) : null,
+            createdAt: isset($data['attributes']['created_at']) ? CarbonImmutable::parse($data['attributes']['created_at']) : null,
             keyIds: array_column($data['relationships']['keys']['data'] ?? [], 'id'),
         );
     }
@@ -72,14 +77,14 @@ class ObjectStorageBucketsResource
         return new ObjectStorageBucket(
             id: $data['id'],
             name: $data['attributes']['name'],
-            type: \App\Enums\FilesystemType::from($data['attributes']['type']),
-            status: \App\Enums\FilesystemStatus::from($data['attributes']['status']),
-            visibility: \App\Enums\FilesystemVisibility::from($data['attributes']['visibility']),
-            jurisdiction: \App\Enums\FilesystemJurisdiction::from($data['attributes']['jurisdiction']),
+            type: FilesystemType::from($data['attributes']['type']),
+            status: FilesystemStatus::from($data['attributes']['status']),
+            visibility: FilesystemVisibility::from($data['attributes']['visibility']),
+            jurisdiction: FilesystemJurisdiction::from($data['attributes']['jurisdiction']),
             endpoint: $data['attributes']['endpoint'] ?? null,
             url: $data['attributes']['url'] ?? null,
             allowedOrigins: $data['attributes']['allowed_origins'] ?? null,
-            createdAt: isset($data['attributes']['created_at']) ? \Carbon\CarbonImmutable::parse($data['attributes']['created_at']) : null,
+            createdAt: isset($data['attributes']['created_at']) ? CarbonImmutable::parse($data['attributes']['created_at']) : null,
             keyIds: array_column($data['relationships']['keys']['data'] ?? [], 'id'),
         );
     }
@@ -96,14 +101,14 @@ class ObjectStorageBucketsResource
         return new ObjectStorageBucket(
             id: $responseData['id'],
             name: $responseData['attributes']['name'],
-            type: \App\Enums\FilesystemType::from($responseData['attributes']['type']),
-            status: \App\Enums\FilesystemStatus::from($responseData['attributes']['status']),
-            visibility: \App\Enums\FilesystemVisibility::from($responseData['attributes']['visibility']),
-            jurisdiction: \App\Enums\FilesystemJurisdiction::from($responseData['attributes']['jurisdiction']),
+            type: FilesystemType::from($responseData['attributes']['type']),
+            status: FilesystemStatus::from($responseData['attributes']['status']),
+            visibility: FilesystemVisibility::from($responseData['attributes']['visibility']),
+            jurisdiction: FilesystemJurisdiction::from($responseData['attributes']['jurisdiction']),
             endpoint: $responseData['attributes']['endpoint'] ?? null,
             url: $responseData['attributes']['url'] ?? null,
             allowedOrigins: $responseData['attributes']['allowed_origins'] ?? null,
-            createdAt: isset($responseData['attributes']['created_at']) ? \Carbon\CarbonImmutable::parse($responseData['attributes']['created_at']) : null,
+            createdAt: isset($responseData['attributes']['created_at']) ? CarbonImmutable::parse($responseData['attributes']['created_at']) : null,
             keyIds: array_column($responseData['relationships']['keys']['data'] ?? [], 'id'),
         );
     }
