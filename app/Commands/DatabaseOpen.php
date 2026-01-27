@@ -37,18 +37,18 @@ class DatabaseOpen extends BaseCommand
 
         $app = $this->getCloudApplication();
         $environments = spin(
-            fn () => $this->client->listEnvironments($app->id),
+            fn () => $this->client->environments()->list($app->id),
             'Fetching environments...',
         );
         $environment = $this->getEnvironment(collect($environments->data));
 
         $environment = spin(
-            fn () => $this->client->getEnvironment($environment->id),
+            fn () => $this->client->environments()->get($environment->id),
             'Fetching environment details...',
         );
 
         $databases = spin(
-            fn () => $this->client->listDatabases(),
+            fn () => $this->client->databaseClusters()->list('schemas'),
             'Fetching databases...',
         );
 

@@ -29,7 +29,7 @@ class CommandRun extends BaseCommand
 
         try {
             $cmd = spin(
-                fn () => $this->client->runCommand(
+                fn () => $this->client->commands()->run(
                     $this->argument('environment'),
                     $this->argument('command'),
                 ),

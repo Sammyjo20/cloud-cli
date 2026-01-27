@@ -23,7 +23,7 @@ class DomainGet extends BaseCommand
         intro('Domain Details');
 
         $domain = spin(
-            fn () => $this->client->getDomain($this->argument('domain')),
+            fn () => $this->client->domains()->get($this->argument('domain')),
             'Fetching domain...',
         );
 

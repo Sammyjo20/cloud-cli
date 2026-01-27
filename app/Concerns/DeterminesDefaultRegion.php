@@ -15,7 +15,7 @@ trait DeterminesDefaultRegion
         }
 
         $applications = spin(
-            fn () => $this->client->listApplications(),
+            fn () => $this->client->applications()->list(),
             'Fetching applications...',
         );
 

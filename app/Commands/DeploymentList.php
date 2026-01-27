@@ -24,7 +24,7 @@ class DeploymentList extends BaseCommand
         intro('Listing Deployments');
 
         $deployments = spin(
-            fn () => $this->client->listDeployments($this->argument('environment')),
+            fn () => $this->client->deployments()->list($this->argument('environment')),
             'Fetching deployments...',
         );
 

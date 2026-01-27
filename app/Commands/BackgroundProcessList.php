@@ -24,7 +24,7 @@ class BackgroundProcessList extends BaseCommand
         intro('Listing Background Processes');
 
         $processes = spin(
-            fn () => $this->client->listBackgroundProcesses($this->argument('instance')),
+            fn () => $this->client->backgroundProcesses()->list($this->argument('instance')),
             'Fetching background processes...',
         );
 

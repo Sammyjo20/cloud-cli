@@ -23,7 +23,7 @@ class InstanceGet extends BaseCommand
         intro('Instance Details');
 
         $instance = spin(
-            fn () => $this->client->getInstance($this->argument('instance')),
+            fn () => $this->client->instances()->get($this->argument('instance')),
             'Fetching instance...',
         );
 

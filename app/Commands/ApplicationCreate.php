@@ -70,7 +70,7 @@ class ApplicationCreate extends BaseCommand
         );
 
         $regions = spin(
-            fn () => $this->client->getRegions(),
+            fn () => $this->client->meta()->regions(),
             'Fetching regions...',
         );
 
@@ -89,7 +89,7 @@ class ApplicationCreate extends BaseCommand
         );
 
         return spin(
-            fn () => $this->client->createApplication(
+            fn () => $this->client->applications()->create(
                 $this->getParam('repository'),
                 $this->getParam('name'),
                 $this->getParam('region'),

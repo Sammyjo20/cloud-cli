@@ -70,14 +70,14 @@ class DeploymentGet extends BaseCommand
     {
         if ($this->argument('deployment')) {
             return spin(
-                fn () => $this->client->getDeployment($this->argument('deployment')),
+                fn () => $this->client->deployments()->get($this->argument('deployment')),
                 'Fetching deployment...',
             );
         }
 
         $deployments = collect(
             spin(
-                fn () => $this->client->listDeployments($environment->id),
+                fn () => $this->client->deployments()->list($environment->id),
                 'Fetching deployments...',
             )->data,
         );

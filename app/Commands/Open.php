@@ -40,7 +40,7 @@ class Open extends BaseCommand
         $repository = app(Git::class)->remoteRepo();
 
         $applications = spin(
-            fn () => $this->client->listApplications(),
+            fn () => $this->client->applications()->list('organization,environments,defaultEnvironment'),
             'Checking for existing application...',
         );
 
@@ -67,7 +67,7 @@ class Open extends BaseCommand
         $app = $this->getCloudApplication($existingApps);
 
         $environments = spin(
-            fn () => $this->client->listEnvironments($app->id),
+            fn () => $this->client->environments()->list($app->id),
             'Checking for existing environments...',
         );
 

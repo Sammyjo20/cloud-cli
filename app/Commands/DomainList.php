@@ -24,7 +24,7 @@ class DomainList extends BaseCommand
         intro('Listing Domains');
 
         $domains = spin(
-            fn () => $this->client->listDomains($this->argument('environment')),
+            fn () => $this->client->domains()->list($this->argument('environment')),
             'Fetching domains...',
         );
 

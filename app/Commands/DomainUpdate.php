@@ -41,7 +41,7 @@ class DomainUpdate extends BaseCommand
 
         try {
             $domain = spin(
-                fn () => $this->client->updateDomain($this->argument('domain'), $data),
+                fn () => $this->client->domains()->update($this->argument('domain'), $data),
                 'Updating domain...',
             );
 

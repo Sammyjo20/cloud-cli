@@ -29,7 +29,7 @@ class DomainDelete extends BaseCommand
 
         if (! $this->option('force')) {
             $domain = spin(
-                fn () => $this->client->getDomain($domainId),
+                fn () => $this->client->domains()->get($domainId),
                 'Fetching domain...',
             );
 
@@ -42,7 +42,7 @@ class DomainDelete extends BaseCommand
 
         try {
             spin(
-                fn () => $this->client->deleteDomain($domainId),
+                fn () => $this->client->domains()->delete($domainId),
                 'Deleting domain...',
             );
 

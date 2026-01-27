@@ -24,7 +24,7 @@ class CommandList extends BaseCommand
         intro('Listing Commands');
 
         $commands = spin(
-            fn () => $this->client->listCommands($this->argument('environment')),
+            fn () => $this->client->commands()->list($this->argument('environment')),
             'Fetching commands...',
         );
 

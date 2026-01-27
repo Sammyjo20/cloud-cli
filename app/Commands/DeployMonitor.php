@@ -48,7 +48,7 @@ class DeployMonitor extends BaseCommand
         $repository = app(Git::class)->remoteRepo();
 
         $applications = spin(
-            fn () => $this->client->listApplications(),
+            fn () => $this->client->applications()->list('organization,environments,defaultEnvironment'),
             'Checking for existing application...',
         );
 
@@ -75,7 +75,7 @@ class DeployMonitor extends BaseCommand
         $app = $this->getCloudApplication($existingApps);
 
         $environments = spin(
-            fn () => $this->client->listEnvironments($app->id),
+            fn () => $this->client->environments()->list($app->id),
             'Checking for existing environments...',
         );
 
@@ -90,7 +90,7 @@ class DeployMonitor extends BaseCommand
     protected function getCurrentDeployment(Environment $environment, ?string $deploymentId = null): ?Deployment
     {
         if ($deploymentId) {
-            $deployment = $this->client->getDeployment($deploymentId);
+            $deployment = $this->client->deployments()->get($deploymentId);
 
             if ($deployment->isFinished()) {
                 Notification::send(
@@ -102,7 +102,7 @@ class DeployMonitor extends BaseCommand
             return $deployment;
         }
 
-        $deployments = $this->client->listDeployments($environment->id);
+        $deployments = $this->client->deployments()->list($environment->id);
 
         if (count($deployments->data) === 0) {
             return null;

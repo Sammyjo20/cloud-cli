@@ -29,7 +29,7 @@ class DomainCreate extends BaseCommand
 
         try {
             $domain = spin(
-                fn () => $this->client->createDomain(
+                fn () => $this->client->domains()->create(
                     $this->argument('environment'),
                     $this->argument('domain'),
                 ),

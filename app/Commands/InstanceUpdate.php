@@ -56,7 +56,7 @@ class InstanceUpdate extends BaseCommand
 
         try {
             $instance = spin(
-                fn () => $this->client->updateInstance($this->argument('instance'), $data),
+                fn () => $this->client->instances()->update($this->argument('instance'), $data),
                 'Updating instance...',
             );
 

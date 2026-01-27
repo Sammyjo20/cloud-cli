@@ -23,7 +23,7 @@ class BackgroundProcessGet extends BaseCommand
         intro('Background Process Details');
 
         $process = spin(
-            fn () => $this->client->getBackgroundProcess($this->argument('process')),
+            fn () => $this->client->backgroundProcesses()->get($this->argument('process')),
             'Fetching background process...',
         );
 

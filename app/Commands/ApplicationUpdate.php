@@ -132,7 +132,7 @@ class ApplicationUpdate extends BaseCommand
                     exit(self::FAILURE);
                 }
 
-                return spin(fn () => $this->client->updateApplication($application->id, $data), 'Updating application...');
+                return spin(fn () => $this->client->applications()->update($application->id, $data), 'Updating application...');
             },
         );
 

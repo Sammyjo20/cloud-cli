@@ -30,7 +30,7 @@ class IpAddresses extends BaseCommand
         $this->ensureClient();
 
         $addresses = spin(
-            fn () => collect($this->client->getIpAddresses()),
+            fn () => collect($this->client->meta()->ipAddresses()),
             'Fetching IP addresses...',
         );
 

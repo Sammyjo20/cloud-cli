@@ -23,7 +23,7 @@ class EnvironmentGet extends BaseCommand
         intro('Environment Details');
 
         $environment = spin(
-            fn () => $this->client->getEnvironment($this->argument('environment')),
+            fn () => $this->client->environments()->get($this->argument('environment'), 'instances,currentDeployment'),
             'Fetching environment...',
         );
 

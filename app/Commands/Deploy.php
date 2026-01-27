@@ -50,7 +50,7 @@ class Deploy extends BaseCommand
         $repository = app(Git::class)->remoteRepo();
 
         $applications = spin(
-            fn () => $this->client->listApplications(),
+            fn () => $this->client->applications()->list('organization,environments,defaultEnvironment'),
             'Checking for existing application...',
         );
 
@@ -77,20 +77,20 @@ class Deploy extends BaseCommand
         $app = $this->getCloudApplication($existingApps);
 
         $environments = spin(
-            fn () => $this->client->listEnvironments($app->id),
+            fn () => $this->client->environments()->list($app->id),
             'Checking for existing environments...',
         );
 
         $environment = $this->getEnvironment(collect($environments->data));
 
-        $deployment = $this->client->initiateDeployment($environment->id);
+        $deployment = $this->client->deployments()->initiate($environment->id);
 
         dynamicSpinner(
             fn (callable $updateMessage) => $this->updateDeploymentStatus($deployment, $updateMessage),
             $this->getDeploymentMessage($deployment),
         );
 
-        $deployment = $this->client->getDeployment($deployment->id);
+        $deployment = $this->client->deployments()->get($deployment->id);
 
         if ($deployment->failed()) {
             error('Deployment failed: '.$deployment->failureReason);
@@ -131,7 +131,7 @@ class Deploy extends BaseCommand
 
         do {
             if ($checkApi) {
-                $deploymentStatus = $this->client->getDeployment($deployment->id);
+                $deploymentStatus = $this->client->deployments()->get($deployment->id);
             }
 
             $newMessage = $this->getDeploymentMessage($deploymentStatus);

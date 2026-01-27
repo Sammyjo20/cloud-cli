@@ -24,7 +24,7 @@ class InstanceList extends BaseCommand
         intro('Listing Instances');
 
         $instances = spin(
-            fn () => $this->client->listInstances($this->argument('environment')),
+            fn () => $this->client->instances()->list($this->argument('environment')),
             'Fetching instances...',
         );
 

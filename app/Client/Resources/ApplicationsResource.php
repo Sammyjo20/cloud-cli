@@ -52,9 +52,24 @@ class ApplicationsResource
 
     public function update(string $applicationId, array $data): Application
     {
+        $avatar = null;
+        if (isset($data['avatar']) && is_array($data['avatar']) && count($data['avatar']) === 2) {
+            [$avatarContent, $extension] = $data['avatar'];
+            $avatar = new \Saloon\Data\MultipartValue(
+                value: $avatarContent,
+                filename: 'avatar.'.$extension,
+            );
+            unset($data['avatar']);
+        }
+
         $response = $this->connector->send(new UpdateApplicationRequest(
             applicationId: $applicationId,
-            ...$data,
+            name: $data['name'] ?? null,
+            slug: $data['slug'] ?? null,
+            defaultEnvironmentId: $data['default_environment_id'] ?? null,
+            repository: $data['repository'] ?? null,
+            slackChannel: $data['slack_channel'] ?? null,
+            avatar: $avatar,
         ));
 
         return ResponseMapper::mapApplication($response->json());

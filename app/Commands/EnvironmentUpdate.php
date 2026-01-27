@@ -51,7 +51,7 @@ class EnvironmentUpdate extends BaseCommand
 
         try {
             $environment = spin(
-                fn () => $this->client->updateEnvironment($this->argument('environment'), $data),
+                fn () => $this->client->environments()->update($this->argument('environment'), $data),
                 'Updating environment...',
             );
 

@@ -2,7 +2,7 @@
 
 namespace App\Commands;
 
-use App\CloudClient;
+use App\Client\Connector;
 use App\ConfigRepository;
 use App\Contracts\NoAuthRequired;
 use Illuminate\Support\Collection;
@@ -101,9 +101,9 @@ class Auth extends BaseCommand implements NoAuthRequired
         $orgs = spin(
             function () use ($existingTokens) {
                 return $existingTokens->map(function ($token) {
-                    $client = new CloudClient($token);
+                    $client = new Connector($token);
 
-                    $organization = $client->getMyOrganization();
+                    $organization = $client->meta()->organization();
 
                     return [
                         'token' => $token,

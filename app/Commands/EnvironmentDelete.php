@@ -31,7 +31,7 @@ class EnvironmentDelete extends BaseCommand
 
         if (! $this->option('force')) {
             $environment = spin(
-                fn () => $this->client->getEnvironment($environmentId),
+                fn () => $this->client->environments()->get($environmentId),
                 'Fetching environment...',
             );
 
@@ -44,7 +44,7 @@ class EnvironmentDelete extends BaseCommand
 
         try {
             spin(
-                fn () => $this->client->deleteEnvironment($environmentId),
+                fn () => $this->client->environments()->delete($environmentId),
                 'Deleting environment...',
             );
 

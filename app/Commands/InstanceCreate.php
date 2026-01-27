@@ -153,7 +153,7 @@ class InstanceCreate extends BaseCommand
         );
 
         return spin(
-            fn () => $this->client->createInstance(
+            fn () => $this->client->instances()->create(
                 $environmentId,
                 $this->getParams(),
             ),

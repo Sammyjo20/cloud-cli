@@ -30,7 +30,7 @@ trait RequiresApplication
                 if (str_starts_with($identifier, 'app-')) {
                     try {
                         $app = spin(
-                            fn () => $this->client->getApplication($identifier),
+                            fn () => $this->client->applications()->get($identifier, 'organization,environments,defaultEnvironment'),
                             'Fetching application...',
                         );
                     } catch (Exception $e) {
@@ -88,7 +88,7 @@ trait RequiresApplication
     protected function fetchApplications(): Collection
     {
         return collect(spin(
-            fn () => $this->client->listApplications(),
+            fn () => $this->client->applications()->list('organization,environments,defaultEnvironment'),
             'Fetching applications...',
         )->data);
     }

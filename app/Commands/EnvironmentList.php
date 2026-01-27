@@ -31,7 +31,7 @@ class EnvironmentList extends BaseCommand
 
         if (! $applicationId) {
             $applications = spin(
-                fn () => $this->client->listApplications(),
+                fn () => $this->client->applications()->list('organization,environments,defaultEnvironment'),
                 'Fetching applications...',
             );
 
@@ -40,7 +40,7 @@ class EnvironmentList extends BaseCommand
         }
 
         $environments = spin(
-            fn () => $this->client->listEnvironments($applicationId),
+            fn () => $this->client->environments()->list($applicationId),
             'Fetching environments...',
         );
 

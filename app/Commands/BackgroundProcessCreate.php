@@ -244,7 +244,7 @@ class BackgroundProcessCreate extends BaseCommand
         }
 
         return spin(
-            fn () => $this->client->createBackgroundProcess($instanceId, $data),
+            fn () => $this->client->backgroundProcesses()->create($instanceId, $data),
             'Creating background process...',
         );
     }
@@ -257,7 +257,7 @@ class BackgroundProcessCreate extends BaseCommand
 
         $application = $this->getCloudApplication();
         $environment = $this->getEnvironment(collect($application->environments));
-        $environment = $this->client->getEnvironment($environment->id);
+        $environment = $this->client->environments()->get($environment->id);
         $instances = collect($environment->instances);
 
         if ($instances->isEmpty()) {

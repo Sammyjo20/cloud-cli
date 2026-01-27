@@ -23,7 +23,7 @@ class CommandGet extends BaseCommand
         intro('Command Details');
 
         $cmd = spin(
-            fn () => $this->client->getCommand($this->argument('command')),
+            fn () => $this->client->commands()->get($this->argument('command')),
             'Fetching command...',
         );
 

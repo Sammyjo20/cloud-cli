@@ -46,7 +46,7 @@ class BackgroundProcessUpdate extends BaseCommand
 
         try {
             $process = spin(
-                fn () => $this->client->updateBackgroundProcess($this->argument('process'), $data),
+                fn () => $this->client->backgroundProcesses()->update($this->argument('process'), $data),
                 'Updating background process...',
             );
 

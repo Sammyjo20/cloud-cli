@@ -2,7 +2,7 @@
 
 namespace App\Concerns;
 
-use App\CloudClient;
+use App\Client\Connector;
 use App\ConfigRepository;
 use App\LocalConfig;
 
@@ -12,13 +12,13 @@ use function Laravel\Prompts\spin;
 
 trait HasAClient
 {
-    protected CloudClient $client;
+    protected Connector $client;
 
     protected function ensureClient(bool $ignoreLocalConfig = false)
     {
         $apiToken = $this->resolveApiToken($ignoreLocalConfig);
 
-        $this->client = new CloudClient($apiToken);
+        $this->client = new Connector($apiToken);
     }
 
     protected function ensureApiTokenExists(): void
@@ -46,9 +46,9 @@ trait HasAClient
             $orgs = spin(
                 function () use ($apiTokens) {
                     return $apiTokens->mapWithKeys(function ($token) {
-                        $client = new CloudClient($token);
+                        $client = new Connector($token);
 
-                        return [$token => $client->getMyOrganization()];
+                        return [$token => $client->meta()->organization()];
                     });
                 },
                 'Fetching token details',

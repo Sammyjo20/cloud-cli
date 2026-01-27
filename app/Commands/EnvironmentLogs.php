@@ -39,7 +39,7 @@ class EnvironmentLogs extends BaseCommand
 
         $app = $this->getCloudApplication();
         $environments = spin(
-            fn () => $this->client->listEnvironments($app->id),
+            fn () => $this->client->environments()->list($app->id),
             'Fetching environments...',
         );
         $environment = $this->getEnvironment(collect($environments->data));
@@ -48,7 +48,7 @@ class EnvironmentLogs extends BaseCommand
         $to = $this->option('to') ?? now()->toIso8601String();
 
         $logsResponse = spin(
-            fn () => $this->client->getEnvironmentLogs($environment->id, $from, $to),
+            fn () => $this->client->environments()->logs($environment->id, $from, $to),
             'Fetching logs...',
         );
 
@@ -89,7 +89,7 @@ class EnvironmentLogs extends BaseCommand
         while (true) {
             Sleep::for(CarbonInterval::seconds(3));
 
-            $logsResponse = $this->client->getEnvironmentLogs($environmentId, $from, $to);
+            $logsResponse = $this->client->environments()->logs($environmentId, $from, $to);
             $logs = $logsResponse->data;
 
             foreach ($logs as $log) {

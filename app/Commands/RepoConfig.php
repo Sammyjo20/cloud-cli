@@ -69,7 +69,7 @@ class RepoConfig extends BaseCommand
     protected function resolveOrganization(): Organization
     {
         return spin(
-            fn () => $this->client->getMyOrganization(),
+            fn () => $this->client->meta()->organization(),
             'Fetching organization...',
         );
     }
@@ -77,7 +77,7 @@ class RepoConfig extends BaseCommand
     protected function selectApplication($currentApplicationId): ?Application
     {
         $applications = spin(
-            fn () => collect($this->client->listApplications()->data),
+            fn () => collect($this->client->applications()->list('organization,environments,defaultEnvironment')->data),
             'Fetching applications...',
         );
 

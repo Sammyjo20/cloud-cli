@@ -66,7 +66,7 @@ class EnvironmentCreate extends BaseCommand
         );
 
         return spin(
-            fn () => $this->client->createEnvironment(
+            fn () => $this->client->environments()->create(
                 $applicationId,
                 $this->getParam('name'),
                 $this->getParam('branch'),

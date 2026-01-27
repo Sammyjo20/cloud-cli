@@ -63,7 +63,7 @@ class Ship extends BaseCommand
         $repository = $this->git->remoteRepo();
 
         $applications = spin(
-            fn () => $this->client->listApplications(),
+            fn () => $this->client->applications()->list('organization,environments,defaultEnvironment'),
             'Checking for existing application...',
         );
 
@@ -102,8 +102,8 @@ class Ship extends BaseCommand
 
         success('Application created!');
 
-        $application = $this->client->getApplication($application->id);
-        $environment = $this->client->getEnvironment($application->defaultEnvironmentId ?? '');
+        $application = $this->client->applications()->get($application->id, 'organization,environments,defaultEnvironment');
+        $environment = $this->client->environments()->get($application->defaultEnvironmentId ?? '');
 
         $this->loopUntilValid(
             fn () => $this->pushCustomEnvironmentVariables($application),
@@ -146,7 +146,7 @@ class Ship extends BaseCommand
         }
 
         try {
-            $this->client->updateApplication($application->id, [
+            $this->client->applications()->update($application->id, [
                 'avatar' => $avatars->first(),
             ]);
         } catch (Throwable $e) {
@@ -176,7 +176,7 @@ class Ship extends BaseCommand
 
         if (! $this->region || $errors->has('region')) {
             $regions = spin(
-                fn () => $this->client->getRegions(),
+                fn () => $this->client->meta()->regions(),
                 'Fetching regions...',
             );
 
@@ -192,7 +192,7 @@ class Ship extends BaseCommand
         }
 
         $application = dynamicSpinner(
-            fn () => $this->client->createApplication(
+            fn () => $this->client->applications()->create(
                 $repository,
                 $this->appName,
                 $this->region,
@@ -270,7 +270,7 @@ class Ship extends BaseCommand
             $cluster = $this->getDatabaseCluster();
 
             if ($cluster) {
-                $cluster = $this->client->getDatabase($cluster->id);
+                $cluster = $this->client->databaseClusters()->get($cluster->id, 'schemas');
                 $database = $this->getDatabase($cluster);
                 $environmentParams['database_schema_id'] = $database->id;
             }
@@ -279,7 +279,7 @@ class Ship extends BaseCommand
         if (count($instanceParams) > 0) {
             $this->loopUntilValid(
                 fn () => spin(
-                    fn () => $this->client->updateInstance($environment->instances[0], $instanceParams),
+                    fn () => $this->client->instances()->update($environment->instances[0], $instanceParams),
                     'Updating instance...',
                 ),
             );
@@ -293,7 +293,7 @@ class Ship extends BaseCommand
                         Sleep::for(CarbonInterval::seconds(5));
                     }
 
-                    return spin(fn () => $this->client->updateEnvironment($environment->id, $environmentParams), 'Updating environment...');
+                    return spin(fn () => $this->client->environments()->update($environment->id, $environmentParams), 'Updating environment...');
                 },
             );
         }
@@ -326,12 +326,12 @@ class Ship extends BaseCommand
             },
         );
 
-        return $this->client->createDatabase($database->id, $name);
+        return $this->client->databases()->create($database->id, $name);
     }
 
     protected function getDatabaseCluster(): ?DatabaseCluster
     {
-        $databases = $this->client->listDatabases();
+        $databases = $this->client->databaseClusters()->list('schemas');
 
         if (count($databases->data) === 0) {
             info('No databases found!');
@@ -376,7 +376,7 @@ class Ship extends BaseCommand
 
         info('More information about Cloud Database Clusters: https://cloud.laravel.com/docs/resources/databases');
 
-        $types = $this->client->listDatabaseTypes();
+        $types = $this->client->databaseClusters()->types();
 
         $selectedType = select(
             label: 'Database cluster type',
@@ -387,7 +387,7 @@ class Ship extends BaseCommand
         $type = collect($types)->firstWhere('type', $selectedType);
 
         $regions = spin(
-            fn () => $this->client->getRegions(),
+            fn () => $this->client->meta()->regions(),
             'Fetching regions...',
         );
 
@@ -439,11 +439,11 @@ class Ship extends BaseCommand
         dynamicSpinner(
             function () use ($application, $varsToAdd) {
                 while (count($application->environmentIds) === 0) {
-                    $application = $this->client->getApplication($application->id);
+                    $application = $this->client->applications()->get($application->id, 'organization,environments,defaultEnvironment');
                     Sleep::for(CarbonInterval::seconds(1));
                 }
 
-                $this->client->replaceEnvironmentVariables($application->environmentIds[0], $varsToAdd->toArray());
+                $this->client->environments()->replaceVariables($application->environmentIds[0], $varsToAdd->toArray());
             },
             'Adding selected variables to Cloud environment',
         );

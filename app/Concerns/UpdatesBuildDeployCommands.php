@@ -29,7 +29,7 @@ trait UpdatesBuildDeployCommands
         $this->loopUntilValid(
             function () use ($environment, $data) {
                 return dynamicSpinner(
-                    fn () => $this->client->updateEnvironment($environment->id, $data),
+                    fn () => $this->client->environments()->update($environment->id, $data),
                     'Updating commands',
                 );
             },
