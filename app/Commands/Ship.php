@@ -73,7 +73,7 @@ class Ship extends BaseCommand
         );
 
         if ($existingApps->isNotEmpty()) {
-            info('Found '.$existingApps->count().' existing applications for this repository.');
+            info('Found '.$existingApps->count().' existing '.str('application')->plural($existingApps->count()).' for this repository.');
 
             $options = $existingApps
                 ->mapWithKeys(fn (Application $app) => [$app->id => 'Deploy '.$app->name])
@@ -106,7 +106,7 @@ class Ship extends BaseCommand
         success('Application created!');
 
         $application = $this->client->applications()->include('organization', 'environments', 'defaultEnvironment')->get($application->id);
-        $environment = $this->client->environments()->get($application->defaultEnvironmentId ?? '');
+        $environment = $this->client->environments()->include('instances')->get($application->defaultEnvironmentId ?? '');
 
         $this->loopUntilValid(
             fn () => $this->pushCustomEnvironmentVariables($application),
@@ -118,7 +118,7 @@ class Ship extends BaseCommand
 
         $organization = $this->client->meta()->organization();
 
-        outro(sprintf('https://cloud.laravel.com/%s/%s', $organization->slug, $application->slug));
+        outro(sprintf('https://cloud.laravel.com/%s/%s/%s', $organization->slug, $application->slug, $environment->name));
 
         if (! confirm('Do you want to deploy the application?')) {
             return;
@@ -171,41 +171,43 @@ class Ship extends BaseCommand
 
     protected function createApplication(ValidationErrors $errors, string $defaultRegion, string $repository): ?Application
     {
-        if (! $this->appName || $errors->has('name')) {
-            $this->appName = text(
+        $this->addParam(
+            'name',
+            fn ($resolver) => $resolver->fromInput(fn ($value) => text(
                 label: 'Application name',
-                default: $this->appName ?? $this->git->currentDirectoryName(),
+                default: $value ?? $this->git->currentDirectoryName(),
                 required: true,
-            );
-        }
+            )),
+        );
 
-        if (! $this->region || $errors->has('region')) {
-            $regions = spin(
-                fn () => $this->client->meta()->regions(),
-                'Fetching regions...',
-            );
+        $this->addParam(
+            'region',
+            fn ($resolver) => $resolver->fromInput(function ($value) use ($defaultRegion) {
+                $regions = spin(
+                    fn () => $this->client->meta()->regions(),
+                    'Fetching regions...',
+                );
 
-            $this->region = select(
-                label: 'Application region',
-                options: collect($regions)->mapWithKeys(
-                    fn (Region $region) => [
-                        $region->value => $region->label,
-                    ],
-                ),
-                default: $this->region ?? $defaultRegion,
-            );
-        }
+                return select(
+                    label: 'Region',
+                    options: collect($regions)->mapWithKeys(
+                        fn (Region $region) => [
+                            $region->value => $region->label,
+                        ],
+                    ),
+                    default: $value ?? $defaultRegion,
+                );
+            }),
+        );
 
-        $application = dynamicSpinner(
+        return dynamicSpinner(
             fn () => $this->client->applications()->create(
                 $repository,
-                $this->appName,
-                $this->region,
+                $this->getParam('name'),
+                $this->getParam('region'),
             ),
             'Creating application',
         );
-
-        return $application;
     }
 
     protected function collectOptionsToEnable(Environment $environment): void
@@ -275,7 +277,7 @@ class Ship extends BaseCommand
             $cluster = $this->getDatabaseCluster();
 
             if ($cluster) {
-                $cluster = $this->client->databaseClusters()->include(['schemas'])->get($cluster->id);
+                $cluster = $this->client->databaseClusters()->include('schemas')->get($cluster->id);
                 $database = $this->getDatabase($cluster);
                 $environmentParams['database_schema_id'] = $database->id;
             }
@@ -336,7 +338,7 @@ class Ship extends BaseCommand
 
     protected function getDatabaseCluster(): ?DatabaseCluster
     {
-        $databasesPaginator = $this->client->databaseClusters()->include(['schemas'])->list();
+        $databasesPaginator = $this->client->databaseClusters()->include('schemas')->list();
         $databases = collect($databasesPaginator->items());
 
         if ($databases->isEmpty()) {
@@ -445,7 +447,7 @@ class Ship extends BaseCommand
         dynamicSpinner(
             function () use ($application, $varsToAdd) {
                 while (count($application->environmentIds) === 0) {
-                    $application = $this->client->applications()->include(['organization', 'environments', 'defaultEnvironment'])->get($application->id);
+                    $application = $this->client->applications()->include('organization', 'environments', 'defaultEnvironment')->get($application->id);
                     Sleep::for(CarbonInterval::seconds(1));
                 }
 

@@ -16,6 +16,8 @@ class ReplaceEnvironmentVariablesRequest extends Request implements HasBody
     public function __construct(
         protected string $environmentId,
         protected array $variables,
+        /** @var 'append' | 'set' */
+        protected string $insertMethod = 'append',
     ) {
         //
     }
@@ -28,7 +30,7 @@ class ReplaceEnvironmentVariablesRequest extends Request implements HasBody
     protected function defaultBody(): array
     {
         return [
-            'method' => 'replace',
+            'method' => $this->insertMethod,
             'variables' => collect($this->variables)->map(fn ($value, $key) => [
                 'key' => $key,
                 'value' => $value,

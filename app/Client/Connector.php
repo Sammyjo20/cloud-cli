@@ -20,6 +20,11 @@ use App\Client\Resources\MetaResource;
 use App\Client\Resources\ObjectStorageBucketsResource;
 use App\Client\Resources\WebSocketApplicationsResource;
 use App\Client\Resources\WebSocketClustersResource;
+use Illuminate\Support\Facades\Cache;
+use Saloon\CachePlugin\Contracts\Cacheable;
+use Saloon\CachePlugin\Contracts\Driver;
+use Saloon\CachePlugin\Drivers\LaravelCacheDriver;
+use Saloon\CachePlugin\Traits\HasCaching;
 use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Connector as SaloonConnector;
 use Saloon\Http\Request;
@@ -27,10 +32,24 @@ use Saloon\Http\Response;
 use Saloon\PaginationPlugin\Contracts\HasPagination;
 use Saloon\PaginationPlugin\PagedPaginator;
 use Saloon\PaginationPlugin\Paginator as SaloonPaginator;
+use Saloon\Traits\Plugins\AlwaysThrowOnErrors;
 use SensitiveParameter;
 
-class Connector extends SaloonConnector implements HasPagination
+class Connector extends SaloonConnector implements Cacheable, HasPagination
 {
+    use AlwaysThrowOnErrors;
+    use HasCaching;
+
+    public function resolveCacheDriver(): Driver
+    {
+        return new LaravelCacheDriver(Cache::store('array'));
+    }
+
+    public function cacheExpiryInSeconds(): int
+    {
+        return 60 * 60 * 24;
+    }
+
     public function __construct(
         #[SensitiveParameter]
         protected string $apiToken,
@@ -150,6 +169,8 @@ class Connector extends SaloonConnector implements HasPagination
     {
         return new class(connector: $this, request: $request) extends PagedPaginator
         {
+            protected bool $detectInfiniteLoop = false;
+
             protected function isLastPage(Response $response): bool
             {
                 return is_null($response->json('links.next'));

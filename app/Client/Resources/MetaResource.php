@@ -7,7 +7,6 @@ use App\Client\Resources\Meta\GetOrganizationRequest;
 use App\Client\Resources\Meta\ListIpAddressesRequest;
 use App\Client\Resources\Meta\ListRegionsRequest;
 use App\Dto\Organization;
-use App\Dto\Region;
 
 class MetaResource
 {
@@ -28,11 +27,11 @@ class MetaResource
 
     public function regions(): array
     {
-        $response = $this->connector->send(new ListRegionsRequest);
+        $request = new ListRegionsRequest;
 
-        $responseData = $response->json();
+        $response = $this->connector->send($request);
 
-        return collect($responseData['data'] ?? [])->map(fn ($item) => Region::createFromResponse(['data' => $item, 'included' => $responseData['included'] ?? []]))->toArray();
+        return $request->createDtoFromResponse($response);
     }
 
     public function ipAddresses(): array

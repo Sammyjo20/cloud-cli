@@ -4,8 +4,8 @@ namespace App\Concerns;
 
 use App\Commands\BaseCommand;
 use App\Dto\ValidationErrors;
-use Illuminate\Http\Client\RequestException;
 use RuntimeException;
+use Saloon\Exceptions\Request\RequestException;
 
 use function Laravel\Prompts\error;
 
@@ -42,8 +42,8 @@ trait Validates
             } catch (RequestException $e) {
                 $this->errors->clear();
 
-                if ($e->response?->status() === 422) {
-                    $responseErrors = $e->response->json()['errors'] ?? [];
+                if ($e->getResponse()?->status() === 422) {
+                    $responseErrors = $e->getResponse()->json('errors', []);
 
                     if (count($responseErrors) > 0) {
                         foreach ($responseErrors as $field => $messages) {
@@ -52,7 +52,7 @@ trait Validates
                             $this->errors->add($field, implode(', ', $messages));
                         }
                     } else {
-                        $message = $e->response->json()['message'] ?? 'Unknown validation error';
+                        $message = $e->getResponse()->json('message', 'Unknown validation error');
 
                         $this->displayValidationError($message, $suppressOutput);
                     }
