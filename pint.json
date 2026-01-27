@@ -1,5 +1,16 @@
 {
     "rules": {
+        "blank_line_before_statement": {
+            "statements": [
+                "break",
+                "continue",
+                "declare",
+                "if",
+                "return",
+                "throw",
+                "try"
+            ]
+        },
         "trailing_comma_in_multiline": {
             "elements": [
                 "arguments",

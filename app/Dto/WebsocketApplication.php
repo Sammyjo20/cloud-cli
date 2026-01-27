@@ -52,6 +52,7 @@ class WebsocketApplication extends Data
         if (isset($relationships['server']['data']['id'])) {
             $transformed['serverId'] = $relationships['server']['data']['id'];
             $serverData = self::resolveIncluded($included, $relationships['server'], 'websocketServers');
+
             if ($serverData) {
                 $transformed['server'] = WebsocketCluster::createFromResponse(['data' => $serverData, 'included' => $included])->toArray();
             }

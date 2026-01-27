@@ -71,6 +71,7 @@ class MultiSelectPromptRenderer extends Renderer implements Scrolling
 
                 $index = array_search($key, array_keys($prompt->options));
                 $active = $index === $prompt->highlighted;
+
                 if (array_is_list($prompt->options)) {
                     $value = $prompt->options[$index];
                 } else {

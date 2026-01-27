@@ -104,6 +104,7 @@ class EnvironmentLog extends Data
 
         if ($this->isExceptionLog() && $exceptionData = $this->getExceptionData()) {
             $output .= " | {$exceptionData['class']}";
+
             if ($exceptionData['code']) {
                 $output .= " ({$exceptionData['code']})";
             }

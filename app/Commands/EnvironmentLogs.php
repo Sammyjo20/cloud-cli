@@ -114,6 +114,7 @@ class EnvironmentLogs extends BaseCommand
 
                 if ($log->isExceptionLog() && $exceptionData = $log->getExceptionData()) {
                     $output .= " | {$exceptionData['class']}";
+
                     if ($exceptionData['code']) {
                         $output .= " ({$exceptionData['code']})";
                     }

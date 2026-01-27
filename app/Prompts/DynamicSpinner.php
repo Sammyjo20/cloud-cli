@@ -165,6 +165,7 @@ class DynamicSpinner extends Prompt
             foreach (array_reverse($messages) as $msg) {
                 if ($msg !== '') {
                     $lastMessage = $msg;
+
                     break;
                 }
             }
