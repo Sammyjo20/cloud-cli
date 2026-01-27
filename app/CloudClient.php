@@ -13,7 +13,9 @@ use App\Dto\Domain;
 use App\Dto\Environment;
 use App\Dto\EnvironmentInstance;
 use App\Dto\EnvironmentLog;
+use App\Dto\Organization;
 use App\Dto\Paginated;
+use App\Dto\Region;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use Psr\Http\Message\RequestInterface;
@@ -229,6 +231,20 @@ class CloudClient
     public function deleteInstance(string $instanceId): void
     {
         $this->client->delete("/instances/{$instanceId}");
+    }
+
+    public function getMyOrganization(): Organization
+    {
+        $response = $this->client->get('/meta/organization');
+
+        return Organization::fromApiResponse($response->json());
+    }
+
+    public function getRegions()
+    {
+        $response = $this->client->get('/meta/regions');
+
+        return array_map(fn ($item) => Region::fromApiResponse($response->json(), $item), $response->json()['data'] ?? []);
     }
 
     public function createEnvironment(string $applicationId, string $name, ?string $branch = null): Environment
