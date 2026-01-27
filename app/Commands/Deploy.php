@@ -38,9 +38,7 @@ class Deploy extends BaseCommand
 
     public function handle()
     {
-        $this->newLine();
         slideIn('TO THE *CLOUD*');
-        $this->newLine();
 
         intro('Deploying Application To Laravel Cloud');
 

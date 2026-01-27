@@ -56,6 +56,7 @@ class Ship extends BaseCommand
         $this->git = $git;
 
         slideIn('WE MUST *SHIP*');
+
         intro('Shipping Application To Laravel Cloud');
 
         $this->ensureClient();

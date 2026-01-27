@@ -36,9 +36,7 @@ class DeployMonitor extends BaseCommand
 
     public function handle()
     {
-        $this->newLine();
         slideIn('EYES ON THE *SKY*');
-        $this->newLine();
 
         intro('Monitoring Application Deployments');
 
