@@ -66,25 +66,25 @@ class ApplicationUpdate extends BaseCommand
                 return self::FAILURE;
             }
 
-            $updatedApplication = spin(
+            spin(
                 fn () => $this->client->applications()->update($application->id, $data),
                 'Updating application...',
             );
 
+            $updatedApplication = $this->client->applications()->get($application->id);
+
             $this->outputJsonIfWanted($updatedApplication);
-
-            outro('Application updated');
-
-            return self::SUCCESS;
+        } else {
+            $this->loopUntilValid(
+                fn () => $this->collectDataAndUpdate($fields, $application),
+            );
         }
 
-        $this->loopUntilValid(
-            fn () => $this->collectDataAndUpdate($fields, $application),
-        );
+        $updatedApplication ??= $this->client->applications()->get($application->id);
 
         success('Application updated');
 
-        outro($application->url());
+        outro($updatedApplication->url());
     }
 
     protected function getFieldDefinitions(Application $application): array

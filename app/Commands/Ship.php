@@ -65,7 +65,7 @@ class Ship extends BaseCommand
         $repository = $this->git->remoteRepo();
 
         $applications = spin(
-            fn () => $this->client->applications()->include('organization', 'environments', 'defaultEnvironment')->list(),
+            fn () => $this->client->applications()->withDefaultIncludes()->list(),
             'Checking for existing application...',
         );
 
@@ -106,7 +106,7 @@ class Ship extends BaseCommand
 
         success('Application created!');
 
-        $application = $this->client->applications()->include('organization', 'environments', 'defaultEnvironment')->get($application->id);
+        $application = $this->client->applications()->withDefaultIncludes()->get($application->id);
         $environment = $this->client->environments()->include('instances')->get($application->defaultEnvironmentId ?? '');
 
         $this->loopUntilValid(
@@ -446,7 +446,7 @@ class Ship extends BaseCommand
         dynamicSpinner(
             function () use ($application, $varsToAdd) {
                 while (count($application->environmentIds) === 0) {
-                    $application = $this->client->applications()->include('organization', 'environments', 'defaultEnvironment')->get($application->id);
+                    $application = $this->client->applications()->withDefaultIncludes()->get($application->id);
                     Sleep::for(CarbonInterval::seconds(1));
                 }
 

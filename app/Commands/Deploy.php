@@ -48,7 +48,7 @@ class Deploy extends BaseCommand
         $repository = app(Git::class)->remoteRepo();
 
         $applications = spin(
-            fn () => $this->client->applications()->include('organization', 'environments', 'defaultEnvironment')->list(),
+            fn () => $this->client->applications()->withDefaultIncludes()->list(),
             'Checking for existing application...',
         );
 

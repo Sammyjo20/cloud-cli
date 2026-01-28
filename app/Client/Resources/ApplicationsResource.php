@@ -41,6 +41,10 @@ class ApplicationsResource
 
     public function get(string $applicationId): Application
     {
+        if (empty($this->includes)) {
+            $this->withDefaultIncludes();
+        }
+
         $request = new GetApplicationRequest(
             applicationId: $applicationId,
             include: $this->getIncludesString(),

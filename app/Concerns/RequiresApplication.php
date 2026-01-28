@@ -31,7 +31,7 @@ trait RequiresApplication
                 if (str_starts_with($identifier, 'app-')) {
                     try {
                         $app = spin(
-                            fn () => $this->client->applications()->include('organization', 'environments', 'defaultEnvironment')->get($identifier),
+                            fn () => $this->client->applications()->withDefaultIncludes()->get($identifier),
                             'Fetching application...',
                         );
                     } catch (Exception $e) {
@@ -89,7 +89,7 @@ trait RequiresApplication
     protected function fetchApplications(): Collection|LazyCollection
     {
         return collect(spin(
-            fn () => $this->client->applications()->include('organization', 'environments', 'defaultEnvironment')->list()->items(),
+            fn () => $this->client->applications()->withDefaultIncludes()->list()->items(),
             'Fetching applications...',
         ));
     }

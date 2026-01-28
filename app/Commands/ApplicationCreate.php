@@ -42,7 +42,7 @@ class ApplicationCreate extends BaseCommand
 
         success('Application created');
 
-        $application = $this->client->applications()->include('organization', 'defaultEnvironment')->get($application->id);
+        $application = $this->client->applications()->get($application->id);
 
         outro($application->url());
     }
