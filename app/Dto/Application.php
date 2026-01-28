@@ -87,9 +87,13 @@ class Application extends Data
         return self::from($transformed);
     }
 
-    public function url()
+    public function url(): string
     {
         $environment = collect($this->environments)->firstWhere('id', $this->defaultEnvironmentId);
+
+        if (! $environment) {
+            return sprintf('https://cloud.laravel.com/%s/%s', $this->organization->slug, $this->slug);
+        }
 
         return sprintf('https://cloud.laravel.com/%s/%s/%s', $this->organization->slug, $this->slug, $environment->name);
     }
