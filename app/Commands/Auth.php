@@ -114,6 +114,12 @@ class Auth extends BaseCommand implements NoAuthRequired
             'Fetching token details',
         );
 
+        if ($orgs->isEmpty()) {
+            info('No API tokens found!');
+
+            return;
+        }
+
         table(
             headers: ['Organization', 'API Token'],
             rows: $orgs->map(fn ($org) => [$org['organization'], $org['token']]),

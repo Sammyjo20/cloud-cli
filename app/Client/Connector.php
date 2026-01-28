@@ -6,6 +6,7 @@ use App\Client\Resources\ApplicationsResource;
 use App\Client\Resources\BackgroundProcessesResource;
 use App\Client\Resources\BucketKeysResource;
 use App\Client\Resources\CachesResource;
+use App\Client\Resources\CliAuthResource;
 use App\Client\Resources\CommandsResource;
 use App\Client\Resources\DatabaseClustersResource;
 use App\Client\Resources\DatabaseRestoresResource;
@@ -54,9 +55,14 @@ class Connector extends SaloonConnector implements HasPagination
         //
     }
 
+    public static function unauthenticated(): self
+    {
+        return new self('');
+    }
+
     public function resolveBaseUrl(): string
     {
-        return 'https://cloud.laravel.com/api';
+        return 'https://app.dev-laravel.cloud/api';
     }
 
     protected function defaultAuth(): TokenAuthenticator
@@ -160,6 +166,11 @@ class Connector extends SaloonConnector implements HasPagination
     public function dedicatedClusters(): DedicatedClustersResource
     {
         return new DedicatedClustersResource($this);
+    }
+
+    public function cliAuth(): CliAuthResource
+    {
+        return new CliAuthResource(self::unauthenticated());
     }
 
     public function paginate(Request $request): SaloonPaginator

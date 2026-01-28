@@ -37,7 +37,7 @@ class ConfigRepository
 
     public function removeApiToken(string $token): void
     {
-        $this->config['api_tokens'] = $this->apiTokens()->reject(fn ($t) => $t === $token);
+        $this->config['api_tokens'] = $this->apiTokens()->reject(fn ($t) => $t === $token)->values();
         $this->save();
     }
 
