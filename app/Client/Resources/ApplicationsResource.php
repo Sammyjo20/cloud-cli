@@ -22,6 +22,11 @@ class ApplicationsResource
         //
     }
 
+    public function withDefaultIncludes(): static
+    {
+        return $this->include('organization', 'environments', 'defaultEnvironment');
+    }
+
     public function list(?string $name = null, ?string $region = null, ?string $slug = null): Paginator
     {
         $request = new ListApplicationsRequest(
