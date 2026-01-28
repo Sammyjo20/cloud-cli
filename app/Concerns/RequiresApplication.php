@@ -26,7 +26,7 @@ trait RequiresApplication
             $identifier = $defaultApplicationId;
 
             if ($apps) {
-                $app = $this->getByNameOrId($identifier, $apps);
+                $app = $this->getApplicationByNameOrId($identifier, $apps);
             } else {
                 if (str_starts_with($identifier, 'app-')) {
                     try {
@@ -35,10 +35,10 @@ trait RequiresApplication
                             'Fetching application...',
                         );
                     } catch (Exception $e) {
-                        $app = $this->getByNameOrId($identifier);
+                        $app = $this->getApplicationByNameOrId($identifier);
                     }
                 } else {
-                    $app = $this->getByNameOrId($identifier);
+                    $app = $this->getApplicationByNameOrId($identifier);
                 }
             }
 
@@ -71,7 +71,7 @@ trait RequiresApplication
         return $apps->firstWhere('id', $selectedApp);
     }
 
-    protected function getByNameOrId(string $identifier, null|Collection|LazyCollection $apps = null): Application
+    protected function getApplicationByNameOrId(string $identifier, null|Collection|LazyCollection $apps = null): Application
     {
         $apps ??= $this->fetchApplications();
 
