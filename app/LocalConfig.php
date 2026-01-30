@@ -38,6 +38,16 @@ class LocalConfig
         return $this->getConfig()[$key] ?? $default;
     }
 
+    public function applicationId(): ?string
+    {
+        return $this->get('application_id');
+    }
+
+    public function environmentId(): ?string
+    {
+        return $this->get('environment_id');
+    }
+
     public function setMany(array $values): void
     {
         $config = $this->getConfig();

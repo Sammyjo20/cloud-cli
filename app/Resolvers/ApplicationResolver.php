@@ -2,7 +2,7 @@
 
 namespace App\Resolvers;
 
-use App\Dto\Application as ApplicationDto;
+use App\Dto\Application;
 use App\Git;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
@@ -12,18 +12,29 @@ use Throwable;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 
-class Application extends Resolver
+class ApplicationResolver extends Resolver
 {
-    public function from(?string $idOrName = null): ?ApplicationDto
+    public function resolve(): ?Application
     {
-        $identifier = $idOrName ?? $this->localConfig->get('application_id');
-
-        return ($identifier ? $this->fromIdentifier($identifier) : null)
-            ?? $this->fromRepo()
-            ?? $this->fromInput();
+        return $this->from();
     }
 
-    public function fromIdentifier(string $identifier): ?ApplicationDto
+    public function from(?string $idOrName = null): ?Application
+    {
+        $identifier = $idOrName ?? $this->localConfig->applicationId();
+
+        $app = ($identifier ? $this->fromIdentifier($identifier) : null)
+            ?? $this->fromRepo()
+            ?? $this->fromInput();
+
+        if (! $app) {
+            $this->failAndExit('Unable to resolve application: '.($idOrName ?? 'Provide a valid application ID or name as an argument.'));
+        }
+
+        return $app;
+    }
+
+    public function fromIdentifier(string $identifier): ?Application
     {
         if (str_starts_with($identifier, 'app-')) {
             try {
@@ -47,7 +58,7 @@ class Application extends Resolver
         return $app;
     }
 
-    public function fromRepo(): ?ApplicationDto
+    public function fromRepo(): ?Application
     {
         $repository = app(Git::class)->remoteRepo();
         $apps = $this->fetchAll();
@@ -55,7 +66,7 @@ class Application extends Resolver
         return $apps->firstWhere('repositoryFullName', $repository);
     }
 
-    public function fromInput(): ?ApplicationDto
+    public function fromInput(): ?Application
     {
         $apps = $this->fetchAll();
 
@@ -77,12 +88,12 @@ class Application extends Resolver
         return $apps->fromCollection($apps, $selectedApp);
     }
 
-    public function fromCollection(Collection|LazyCollection $apps, string $identifier): ?ApplicationDto
+    public function fromCollection(Collection|LazyCollection $apps, string $identifier): ?Application
     {
         return $apps->firstWhere('id', $identifier) ?? $apps->firstWhere('name', $identifier);
     }
 
-    public function fetchAndFind(string $identifier): ?ApplicationDto
+    public function fetchAndFind(string $identifier): ?Application
     {
         return $this->fromCollection($this->fetchAll(), $identifier);
     }

@@ -2,9 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
-use App\Concerns\RequiresApplication;
-use App\Concerns\RequiresEnvironment;
 use App\Enums\LogLevel;
 use App\Enums\LogType;
 use Carbon\CarbonInterval;
@@ -16,10 +13,6 @@ use function Laravel\Prompts\spin;
 
 class EnvironmentLogs extends BaseCommand
 {
-    use HasAClient;
-    use RequiresApplication;
-    use RequiresEnvironment;
-
     protected $signature = 'environment:logs
                             {application? : The application ID or name}
                             {environment? : The name of the environment}
@@ -37,12 +30,8 @@ class EnvironmentLogs extends BaseCommand
 
         intro('Environment Logs');
 
-        $app = $this->getCloudApplication();
-        $environments = spin(
-            fn () => $this->client->environments()->list($app->id)->collect(),
-            'Fetching environments...',
-        );
-        $environment = $this->getEnvironment($environments);
+        $app = $this->resolvers()->application()->from($this->argument('application'));
+        $environment = $this->resolvers()->environment()->withApplication($app)->from($this->argument('environment'));
 
         $from = $this->option('from') ?? now()->subDays(1)->toIso8601String();
         $to = $this->option('to') ?? now()->toIso8601String();

@@ -2,16 +2,10 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
-use App\Concerns\RequiresApplication;
-
 use function Laravel\Prompts\intro;
 
 class ApplicationGet extends BaseCommand
 {
-    use HasAClient;
-    use RequiresApplication;
-
     protected $signature = 'application:get {application? : The application ID or name} {--json : Output as JSON}';
 
     protected $description = 'Get application details';
@@ -22,7 +16,7 @@ class ApplicationGet extends BaseCommand
 
         intro('Application Details');
 
-        $application = $this->getCloudApplication(showPrompt: false);
+        $application = $this->resolvers()->application()->from($this->argument('application'));
 
         $this->outputJsonIfWanted($application);
 

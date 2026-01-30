@@ -2,8 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
-use App\Concerns\RequiresApplication;
 use App\Concerns\Validates;
 use App\Git;
 
@@ -14,8 +12,6 @@ use function Laravel\Prompts\text;
 
 class EnvironmentCreate extends BaseCommand
 {
-    use HasAClient;
-    use RequiresApplication;
     use Validates;
 
     protected $signature = 'environment:create
@@ -32,7 +28,7 @@ class EnvironmentCreate extends BaseCommand
 
         intro('Creating Environment');
 
-        $application = $this->getCloudApplication();
+        $application = $this->resolvers()->application()->from($this->argument('application'));
 
         $environment = $this->loopUntilValid(
             fn () => $this->createEnvironment($application->id),

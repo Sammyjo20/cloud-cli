@@ -3,8 +3,6 @@
 namespace App\Commands;
 
 use App\Concerns\HandlesAvatars;
-use App\Concerns\HasAClient;
-use App\Concerns\RequiresApplication;
 use App\Concerns\Validates;
 use App\Dto\Application;
 use App\Git;
@@ -22,8 +20,6 @@ use function Laravel\Prompts\text;
 class ApplicationUpdate extends BaseCommand
 {
     use HandlesAvatars;
-    use HasAClient;
-    use RequiresApplication;
     use Validates;
 
     protected $signature = 'application:update
@@ -45,7 +41,7 @@ class ApplicationUpdate extends BaseCommand
 
         intro('Updating Application');
 
-        $application = $this->getCloudApplication(showPrompt: false);
+        $application = $this->resolvers()->application()->from($this->argument('application'));
 
         $fields = $this->getFieldDefinitions($application);
 

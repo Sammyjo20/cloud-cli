@@ -10,17 +10,23 @@ class Resolvers
     public function __construct(
         protected Connector $client,
         protected LocalConfig $localConfig,
+        protected bool $isInteractive,
     ) {
         //
     }
 
-    public function application(): Application
+    public function application(): ApplicationResolver
     {
-        return new Application($this->client, $this->localConfig);
+        return $this->make(ApplicationResolver::class);
     }
 
-    public function environment(): Environment
+    public function environment(): EnvironmentResolver
     {
-        return new Environment($this->client, $this->localConfig);
+        return $this->make(EnvironmentResolver::class);
+    }
+
+    protected function make(string $resolver): Resolver
+    {
+        return new $resolver($this->client, $this->localConfig, $this->isInteractive);
     }
 }

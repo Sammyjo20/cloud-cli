@@ -2,9 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
-use App\Concerns\RequiresApplication;
-
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
@@ -12,9 +9,6 @@ use function Laravel\Prompts\table;
 
 class EnvironmentList extends BaseCommand
 {
-    use HasAClient;
-    use RequiresApplication;
-
     protected $signature = 'environment:list
                             {application? : The application ID or name}
                             {--json : Output as JSON}';
@@ -27,21 +21,12 @@ class EnvironmentList extends BaseCommand
 
         intro('Environments');
 
-        $applicationId = $this->argument('application');
+        $application = $this->resolvers()->application()->from($this->argument('application'));
 
-        if (! $applicationId) {
-            $applications = spin(
-                fn () => $this->client->applications()->withDefaultIncludes()->list(),
-                'Fetching applications...',
-            );
-
-            $app = $this->getCloudApplication($applications->collect());
-            $applicationId = $app->id;
-            answered('Application', $app->name);
-        }
+        answered('Application', $application->name);
 
         $environments = spin(
-            fn () => $this->client->environments()->list($applicationId),
+            fn () => $this->client->environments()->list($application->id),
             'Fetching environments...',
         );
 

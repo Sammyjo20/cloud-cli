@@ -2,9 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
-use App\Concerns\RequiresApplication;
-use App\Concerns\RequiresEnvironment;
 use App\Dto\Deployment;
 use App\Dto\Environment;
 use App\Git;
@@ -16,10 +13,6 @@ use function Laravel\Prompts\warning;
 
 class DeploymentGet extends BaseCommand
 {
-    use HasAClient;
-    use RequiresApplication;
-    use RequiresEnvironment;
-
     protected $signature = 'deployment:get
                             {application? : The application ID or name}
                             {environment? : The environment ID or name}
@@ -34,8 +27,8 @@ class DeploymentGet extends BaseCommand
 
         intro('Deployment Details');
 
-        $application = $this->getCloudApplication();
-        $environment = $this->getEnvironment(collect($application->environments));
+        $application = $this->resolvers()->application()->from($this->argument('application'));
+        $environment = $this->resolvers()->environment()->withApplication($application)->from($this->argument('environment'));
         $deployment = $this->getDeployment($environment);
 
         if (! $deployment) {

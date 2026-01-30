@@ -2,9 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
-use App\Concerns\RequiresApplication;
-use App\Concerns\RequiresEnvironment;
 use App\Enums\InstanceSize;
 
 use function Laravel\Prompts\confirm;
@@ -18,10 +15,6 @@ use function Laravel\Prompts\text;
 
 class InstanceCreate extends BaseCommand
 {
-    use HasAClient;
-    use RequiresApplication;
-    use RequiresEnvironment;
-
     protected $signature = 'instance:create
                             {environment? : The environment ID}
                             {--name= : Instance name}
@@ -39,8 +32,10 @@ class InstanceCreate extends BaseCommand
 
         intro('Create Instance');
 
-        $application = $this->getCloudApplication();
-        $environment = $this->getEnvironment(collect($application->environments));
+        $environment = $this->resolvers()
+            ->environment()
+            ->withApplication($this->argument('application'))
+            ->from($this->argument('environment'));
 
         $instance = $this->loopUntilValid(fn () => $this->createInstance($environment->id));
 

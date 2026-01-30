@@ -2,9 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
-use App\Concerns\RequiresApplication;
-use App\Concerns\RequiresEnvironment;
 use App\Concerns\RequiresRemoteGitRepo;
 use App\Concerns\UpdatesBuildDeployCommands;
 use App\Dto\Deployment;
@@ -18,14 +15,10 @@ use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class Deploy extends BaseCommand
 {
-    use HasAClient;
-    use RequiresApplication;
-    use RequiresEnvironment;
     use RequiresRemoteGitRepo;
     use UpdatesBuildDeployCommands;
 
@@ -47,16 +40,9 @@ class Deploy extends BaseCommand
 
         $repository = app(Git::class)->remoteRepo();
 
-        $applications = spin(
-            fn () => $this->client->applications()->withDefaultIncludes()->list(),
-            'Checking for existing application...',
-        );
+        $app = $this->resolvers()->application()->from($this->argument('application'));
 
-        $existingApps = $applications->collect()->filter(
-            fn ($app) => $app->repositoryFullName === $repository,
-        );
-
-        if ($existingApps->isEmpty()) {
+        if (! $app) {
             warning('No existing Cloud application found for this repository.');
 
             $shouldShip = confirm('Do you want to ship this application to Laravel Cloud?');
@@ -72,14 +58,7 @@ class Deploy extends BaseCommand
             exit(1);
         }
 
-        $app = $this->getCloudApplication($existingApps);
-
-        $environments = spin(
-            fn () => $this->client->environments()->list($app->id),
-            'Checking for existing environments...',
-        );
-
-        $environment = $this->getEnvironment($environments->collect());
+        $environment = $this->resolvers()->environment()->withApplication($app)->from($this->argument('environment'));
 
         $deployment = $this->client->deployments()->initiate($environment->id);
 

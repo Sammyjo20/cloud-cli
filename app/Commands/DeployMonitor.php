@@ -2,14 +2,10 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
-use App\Concerns\RequiresApplication;
-use App\Concerns\RequiresEnvironment;
 use App\Concerns\RequiresRemoteGitRepo;
 use App\Concerns\UpdatesBuildDeployCommands;
 use App\Dto\Deployment;
 use App\Dto\Environment;
-use App\Git;
 use App\Prompts\MonitorDeployments;
 use App\Support\Notification;
 use Illuminate\Support\Facades\Artisan;
@@ -17,14 +13,10 @@ use Illuminate\Support\Facades\Artisan;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class DeployMonitor extends BaseCommand
 {
-    use HasAClient;
-    use RequiresApplication;
-    use RequiresEnvironment;
     use RequiresRemoteGitRepo;
     use UpdatesBuildDeployCommands;
 
@@ -43,18 +35,9 @@ class DeployMonitor extends BaseCommand
         $this->ensureClient();
         $this->ensureRemoteGitRepo();
 
-        $repository = app(Git::class)->remoteRepo();
+        $app = $this->resolvers()->application()->from($this->argument('application'));
 
-        $applications = spin(
-            fn () => $this->client->applications()->include('organization', 'environments', 'defaultEnvironment')->list(),
-            'Checking for existing application...',
-        );
-
-        $existingApps = $applications->collect()->filter(
-            fn ($app) => $app->repositoryFullName === $repository,
-        );
-
-        if ($existingApps->isEmpty()) {
+        if (! $app) {
             warning('No existing Cloud application found for this repository.');
 
             $shouldShip = confirm('Do you want to ship this application to Laravel Cloud?');
@@ -70,14 +53,7 @@ class DeployMonitor extends BaseCommand
             exit(1);
         }
 
-        $app = $this->getCloudApplication($existingApps);
-
-        $environments = spin(
-            fn () => $this->client->environments()->list($app->id),
-            'Checking for existing environments...',
-        );
-
-        $environment = $this->getEnvironment($environments->collect());
+        $environment = $this->resolvers()->environment()->withApplication($app)->from($this->argument('environment'));
 
         (new MonitorDeployments(
             fn ($deploymentId = null) => $this->getCurrentDeployment($environment, $deploymentId),

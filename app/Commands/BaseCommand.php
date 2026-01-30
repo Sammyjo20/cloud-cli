@@ -38,7 +38,7 @@ abstract class BaseCommand extends Command
 
     protected function resolvers(): Resolvers
     {
-        return $this->resolvers ??= app(Resolvers::class, ['client' => $this->client]);
+        return $this->resolvers ??= app(Resolvers::class, ['client' => $this->client, 'isInteractive' => $this->isInteractive()]);
     }
 
     protected function failAndExit(string $message): void

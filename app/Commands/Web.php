@@ -3,7 +3,6 @@
 namespace App\Commands;
 
 use App\Concerns\HasAClient;
-use App\Concerns\RequiresApplication;
 use App\Concerns\RequiresRemoteGitRepo;
 use Illuminate\Support\Facades\Process;
 
@@ -13,7 +12,6 @@ use function Laravel\Prompts\outro;
 class Web extends BaseCommand
 {
     use HasAClient;
-    use RequiresApplication;
     use RequiresRemoteGitRepo;
 
     protected $signature = 'web
@@ -29,15 +27,6 @@ class Web extends BaseCommand
         $this->ensureRemoteGitRepo();
 
         $app = $this->resolvers()->application()->from($this->argument('application'));
-
-        if (! $app) {
-            if ($this->argument('application')) {
-                $this->failAndExit('Unable to resolve application: '.$this->argument('application'));
-            }
-
-            $this->failAndExit('Unable to resolve application from current directory, provide an application ID or name as an argument.');
-        }
-
         $url = $app->url();
 
         Process::run('open '.$url);

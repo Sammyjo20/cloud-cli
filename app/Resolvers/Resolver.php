@@ -4,17 +4,19 @@ namespace App\Resolvers;
 
 use App\Client\Connector;
 use App\LocalConfig;
+use Illuminate\Console\Command;
 use RuntimeException;
+
+use function Laravel\Prompts\error;
 
 abstract class Resolver
 {
     protected bool $displayResolved = true;
 
-    protected bool $isInteractive = true;
-
     public function __construct(
         protected Connector $client,
         protected LocalConfig $localConfig,
+        protected bool $isInteractive,
     ) {
         //
     }
@@ -26,11 +28,20 @@ abstract class Resolver
         return $this;
     }
 
-    public function isInteractive(bool $isInteractive = true): self
+    protected function failAndExit(string $message): void
     {
-        $this->isInteractive = $isInteractive;
+        error($message);
 
-        return $this;
+        exit(Command::FAILURE);
+    }
+
+    protected function resolvers(): Resolvers
+    {
+        return app(Resolvers::class, [
+            'client' => $this->client,
+            'localConfig' => $this->localConfig,
+            'isInteractive' => $this->isInteractive,
+        ]);
     }
 
     protected function ensureInteractive(string $message): void

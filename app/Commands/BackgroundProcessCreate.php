@@ -2,10 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
-use App\Concerns\RequiresApplication;
-use App\Concerns\RequiresEnvironment;
-use App\Concerns\Validates;
 use RuntimeException;
 
 use function Laravel\Prompts\confirm;
@@ -17,11 +13,6 @@ use function Laravel\Prompts\text;
 
 class BackgroundProcessCreate extends BaseCommand
 {
-    use HasAClient;
-    use RequiresApplication;
-    use RequiresEnvironment;
-    use Validates;
-
     protected $signature = 'background-process:create
                             {instance? : The instance ID}
                             {--type= : Process type (worker|custom)}

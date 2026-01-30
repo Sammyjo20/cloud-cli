@@ -2,9 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
-use App\Concerns\RequiresApplication;
-use App\Concerns\RequiresEnvironment;
 use App\Dto\DatabaseCluster;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Process;
@@ -18,10 +15,6 @@ use function Laravel\Prompts\spin;
 
 class DatabaseOpen extends BaseCommand
 {
-    use HasAClient;
-    use RequiresApplication;
-    use RequiresEnvironment;
-
     protected $signature = 'database:open
                             {application? : The application ID or name}
                             {environment? : The name of the environment}
@@ -35,17 +28,8 @@ class DatabaseOpen extends BaseCommand
 
         intro('Opening Database In TablePlus');
 
-        $app = $this->getCloudApplication();
-        $environments = spin(
-            fn () => $this->client->environments()->list($app->id),
-            'Fetching environments...',
-        );
-        $environment = $this->getEnvironment($environments->collect());
-
-        $environment = spin(
-            fn () => $this->client->environments()->get($environment->id),
-            'Fetching environment details...',
-        );
+        $app = $this->resolvers()->application()->from($this->argument('application'));
+        $environment = $this->resolvers()->environment()->withApplication($app)->from($this->argument('environment'));
 
         $databases = spin(
             fn () => $this->client->databaseClusters()->include('schemas')->list(),
