@@ -71,127 +71,7 @@ class BackgroundProcessCreate extends BaseCommand
                 ),
             );
         } elseif ($this->wantsToEditWorkerDefaults()) {
-            $this->addParam(
-                'connection',
-                fn ($resolver) => $resolver
-                    ->fromInput(fn (?string $value) => text(
-                        label: 'Connection',
-                        default: $value ?? $this->getWorkerDefult('connection'),
-                        required: true,
-                    ))
-                    ->nonInteractively(fn () => $this->getWorkerDefult('connection'))
-                    ->shouldPromptOnce(),
-            );
-
-            $this->addParam(
-                'queue',
-                fn ($resolver) => $resolver
-                    ->fromInput(fn (?string $value) => text(
-                        label: 'Queue',
-                        default: $value ?? $this->getWorkerDefult('queue'),
-                        required: true,
-                        hint: 'Comma-separated for multiple queues',
-                    ))
-                    ->nonInteractively(fn () => $this->getWorkerDefult('queue'))
-                    ->shouldPromptOnce(),
-            );
-
-            $this->addParam(
-                'tries',
-                fn ($resolver) => $resolver
-                    ->fromInput(fn (?string $value) => text(
-                        label: 'Tries',
-                        default: $value ?? $this->getWorkerDefult('tries'),
-                        validate: fn ($value) => match (true) {
-                            ! is_numeric($value) => 'The number of tries must be a number.',
-                            default => null,
-                        },
-                        required: true,
-                        hint: 'Number of times a job should be attempted',
-                    ))
-                    ->nonInteractively(fn () => $this->getWorkerDefult('tries'))
-                    ->shouldPromptOnce(),
-            );
-
-            $this->addParam(
-                'backoff',
-                fn ($resolver) => $resolver
-                    ->fromInput(fn (?string $value) => text(
-                        label: 'Backoff',
-                        default: $value ?? $this->getWorkerDefult('backoff'),
-                        validate: fn ($value) => match (true) {
-                            ! is_numeric($value) => 'The backoff time must be a number.',
-                            default => null,
-                        },
-                        required: true,
-                        hint: 'Number of seconds to wait before retrying a failed job.',
-                    ))
-                    ->nonInteractively(fn () => $this->getWorkerDefult('backoff'))
-                    ->shouldPromptOnce(),
-            );
-
-            $this->addParam(
-                'sleep',
-                fn ($resolver) => $resolver
-                    ->fromInput(fn (?string $value) => text(
-                        label: 'Sleep',
-                        default: $value ?? $this->getWorkerDefult('sleep'),
-                        validate: fn ($value) => match (true) {
-                            ! is_numeric($value) => 'The sleep time must be a number.',
-                            default => null,
-                        },
-                        required: true,
-                        hint: 'Number of seconds to sleep when no jobs are available',
-                    ))
-                    ->nonInteractively(fn () => $this->getWorkerDefult('sleep'))
-                    ->shouldPromptOnce(),
-            );
-
-            $this->addParam(
-                'rest',
-                fn ($resolver) => $resolver
-                    ->fromInput(fn (?string $value) => text(
-                        label: 'Rest',
-                        default: $value ?? $this->getWorkerDefult('rest'),
-                        validate: fn ($value) => match (true) {
-                            ! is_numeric($value) => 'The rest time must be a number.',
-                            default => null,
-                        },
-                        required: true,
-                        hint: 'Number of seconds to rest between jobs',
-                    ))
-                    ->nonInteractively(fn () => $this->getWorkerDefult('rest'))
-                    ->shouldPromptOnce(),
-            );
-
-            $this->addParam(
-                'timeout',
-                fn ($resolver) => $resolver
-                    ->fromInput(fn (?string $value) => text(
-                        label: 'Timeout',
-                        default: $value ?? $this->getWorkerDefult('timeout'),
-                        validate: fn ($value) => match (true) {
-                            ! is_numeric($value) => 'The timeout time must be a number.',
-                            default => null,
-                        },
-                        required: true,
-                        hint: 'Number of seconds a job can run before timing out',
-                    ))
-                    ->nonInteractively(fn () => $this->getWorkerDefult('timeout'))
-                    ->shouldPromptOnce(),
-            );
-
-            $this->addParam(
-                'force',
-                fn ($resolver) => $resolver
-                    ->fromInput(fn (?string $value) => confirm(
-                        label: 'Run in maintenance mode?',
-                        default: $value ?? $this->getWorkerDefult('force'),
-                        hint: 'Force the worker to run even in maintenance mode',
-                    ))
-                    ->nonInteractively(fn () => $this->getWorkerDefult('force'))
-                    ->shouldPromptOnce(),
-            );
+            $this->addWorkerParams();
         }
 
         $this->addParam(
@@ -235,6 +115,131 @@ class BackgroundProcessCreate extends BaseCommand
         return spin(
             fn () => $this->client->backgroundProcesses()->create($instanceId, $data),
             'Creating background process...',
+        );
+    }
+
+    protected function addWorkerParams(): void
+    {
+        $this->addParam(
+            'connection',
+            fn ($resolver) => $resolver
+                ->fromInput(fn (?string $value) => text(
+                    label: 'Connection',
+                    default: $value ?? $this->getWorkerDefult('connection'),
+                    required: true,
+                ))
+                ->nonInteractively(fn () => $this->getWorkerDefult('connection'))
+                ->shouldPromptOnce(),
+        );
+
+        $this->addParam(
+            'queue',
+            fn ($resolver) => $resolver
+                ->fromInput(fn (?string $value) => text(
+                    label: 'Queue',
+                    default: $value ?? $this->getWorkerDefult('queue'),
+                    required: true,
+                    hint: 'Comma-separated for multiple queues',
+                ))
+                ->nonInteractively(fn () => $this->getWorkerDefult('queue'))
+                ->shouldPromptOnce(),
+        );
+
+        $this->addParam(
+            'tries',
+            fn ($resolver) => $resolver
+                ->fromInput(fn (?string $value) => text(
+                    label: 'Tries',
+                    default: $value ?? $this->getWorkerDefult('tries'),
+                    validate: fn ($value) => match (true) {
+                        ! is_numeric($value) => 'The number of tries must be a number.',
+                        default => null,
+                    },
+                    required: true,
+                    hint: 'Number of times a job should be attempted',
+                ))
+                ->nonInteractively(fn () => $this->getWorkerDefult('tries'))
+                ->shouldPromptOnce(),
+        );
+
+        $this->addParam(
+            'backoff',
+            fn ($resolver) => $resolver
+                ->fromInput(fn (?string $value) => text(
+                    label: 'Backoff',
+                    default: $value ?? $this->getWorkerDefult('backoff'),
+                    validate: fn ($value) => match (true) {
+                        ! is_numeric($value) => 'The backoff time must be a number.',
+                        default => null,
+                    },
+                    required: true,
+                    hint: 'Number of seconds to wait before retrying a failed job.',
+                ))
+                ->nonInteractively(fn () => $this->getWorkerDefult('backoff'))
+                ->shouldPromptOnce(),
+        );
+
+        $this->addParam(
+            'sleep',
+            fn ($resolver) => $resolver
+                ->fromInput(fn (?string $value) => text(
+                    label: 'Sleep',
+                    default: $value ?? $this->getWorkerDefult('sleep'),
+                    validate: fn ($value) => match (true) {
+                        ! is_numeric($value) => 'The sleep time must be a number.',
+                        default => null,
+                    },
+                    required: true,
+                    hint: 'Number of seconds to sleep when no jobs are available',
+                ))
+                ->nonInteractively(fn () => $this->getWorkerDefult('sleep'))
+                ->shouldPromptOnce(),
+        );
+
+        $this->addParam(
+            'rest',
+            fn ($resolver) => $resolver
+                ->fromInput(fn (?string $value) => text(
+                    label: 'Rest',
+                    default: $value ?? $this->getWorkerDefult('rest'),
+                    validate: fn ($value) => match (true) {
+                        ! is_numeric($value) => 'The rest time must be a number.',
+                        default => null,
+                    },
+                    required: true,
+                    hint: 'Number of seconds to rest between jobs',
+                ))
+                ->nonInteractively(fn () => $this->getWorkerDefult('rest'))
+                ->shouldPromptOnce(),
+        );
+
+        $this->addParam(
+            'timeout',
+            fn ($resolver) => $resolver
+                ->fromInput(fn (?string $value) => text(
+                    label: 'Timeout',
+                    default: $value ?? $this->getWorkerDefult('timeout'),
+                    validate: fn ($value) => match (true) {
+                        ! is_numeric($value) => 'The timeout time must be a number.',
+                        default => null,
+                    },
+                    required: true,
+                    hint: 'Number of seconds a job can run before timing out',
+                ))
+                ->nonInteractively(fn () => $this->getWorkerDefult('timeout'))
+                ->shouldPromptOnce(),
+        );
+
+        $this->addParam(
+            'force',
+            fn ($resolver) => $resolver
+                ->fromInput(fn (?string $value) => confirm(
+                    label: 'Run in maintenance mode?',
+                    default: $value ?? $this->getWorkerDefult('force'),
+                    hint: 'Force the worker to run even in maintenance mode',
+                ))
+                ->nonInteractively(fn () => $this->getWorkerDefult('force'))
+                ->shouldPromptOnce(),
         );
     }
 
