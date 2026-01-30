@@ -7,9 +7,9 @@ use App\Prompts\SlideIn;
 use Laravel\Prompts\Note;
 
 if (! function_exists('answered')) {
-    function answered(string $label, string $answer, ?string $hint = null): void
+    function answered(string $label, string $answer, ?string $info = null): void
     {
-        (new Answered(label: $label, answer: $answer, hint: $hint))->display();
+        (new Answered(label: $label, answer: $answer, info: $info))->display();
     }
 }
 

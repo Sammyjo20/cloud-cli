@@ -51,10 +51,10 @@ abstract class Resolver
         }
     }
 
-    protected function displayResolved(string $label, string $answer, ?string $hint = null): void
+    protected function displayResolved(string $label, string $answer, ?string $info = null): void
     {
         if ($this->displayResolved) {
-            answered(label: $label, answer: $answer, hint: $hint);
+            answered(label: $label, answer: $answer, info: $info);
         }
     }
 }

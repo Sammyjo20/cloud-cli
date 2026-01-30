@@ -23,7 +23,7 @@ class TextPromptRenderer extends Renderer
                     $this->dim($this->truncate($prompt->label, $prompt->terminal()->cols() - 6)),
                     $this->truncate($prompt->value(), $maxWidth),
                     symbol: TimelineSymbol::SUCCESS,
-                    info: $prompt instanceof Answered && $prompt->hint ? $prompt->hint : '',
+                    info: $prompt instanceof Answered && $prompt->info ? $prompt->info : '',
                 ),
 
             'cancel' => $this
