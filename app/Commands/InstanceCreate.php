@@ -32,10 +32,7 @@ class InstanceCreate extends BaseCommand
 
         intro('Create Instance');
 
-        $environment = $this->resolvers()
-            ->environment()
-            ->withApplication($this->argument('application'))
-            ->from($this->argument('environment'));
+        $environment = $this->resolvers()->environment()->from($this->argument('environment'));
 
         $instance = $this->loopUntilValid(fn () => $this->createInstance($environment->id));
 
