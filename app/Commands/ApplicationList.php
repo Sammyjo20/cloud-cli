@@ -29,13 +29,11 @@ class ApplicationList extends BaseCommand
         $applications = spin(
             fn () => $this->client->applications()->include('organization', 'environments')->list(),
             'Fetching applications...',
-        );
+        )->collect();
 
-        $items = $applications->collect();
+        $this->outputJsonIfWanted($applications);
 
-        $this->outputJsonIfWanted($items);
-
-        if ($items->isEmpty()) {
+        if ($applications->isEmpty()) {
             info('No applications found.');
 
             return;
@@ -43,7 +41,7 @@ class ApplicationList extends BaseCommand
 
         table(
             ['ID', 'Name', 'Region', 'Repository'],
-            $items->map(fn (Application $app) => [
+            $applications->map(fn (Application $app) => [
                 $app->id,
                 $app->name,
                 $app->region,
