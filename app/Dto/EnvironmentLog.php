@@ -2,6 +2,7 @@
 
 namespace App\Dto;
 
+use App\Concerns\HasDescriptiveArray;
 use App\Enums\LogLevel;
 use App\Enums\LogType;
 use Carbon\CarbonImmutable;
@@ -12,6 +13,8 @@ use Spatie\LaravelData\Data;
 
 class EnvironmentLog extends Data
 {
+    use HasDescriptiveArray;
+
     public function __construct(
         public readonly string $message,
         #[WithCast(EnumCast::class)]

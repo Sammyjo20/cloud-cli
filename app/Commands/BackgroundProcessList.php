@@ -13,7 +13,7 @@ class BackgroundProcessList extends BaseCommand
 {
     use HasAClient;
 
-    protected $signature = 'background-process:list {instance : The instance ID} {--json : Output as JSON}';
+    protected $signature = 'background-process:list {instance? : The instance ID} {--json : Output as JSON}';
 
     protected $description = 'List all background processes for an instance';
 
@@ -23,8 +23,10 @@ class BackgroundProcessList extends BaseCommand
 
         intro('Background Processes');
 
+        $instance = $this->resolvers()->instance()->from($this->argument('instance'));
+
         $processes = spin(
-            fn () => $this->client->backgroundProcesses()->list($this->argument('instance')),
+            fn () => $this->client->backgroundProcesses()->list($instance->id),
             'Fetching background processes...',
         );
 

@@ -2,10 +2,13 @@
 
 namespace App\Dto;
 
+use App\Concerns\HasDescriptiveArray;
 use Spatie\LaravelData\Data;
 
 class ConfigSchema extends Data
 {
+    use HasDescriptiveArray;
+
     public function __construct(
         public readonly string $name,
         public readonly string $type,

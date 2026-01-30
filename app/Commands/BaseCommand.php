@@ -6,6 +6,7 @@ use App\Concerns\HasAClient;
 use App\Concerns\Validates;
 use App\Resolvers\Resolvers;
 use App\Support\ValueResolver;
+use Illuminate\Contracts\Support\Jsonable;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 use RuntimeException;
@@ -142,9 +143,15 @@ abstract class BaseCommand extends Command
     protected function outputJsonIfWanted(mixed $data): void
     {
         if ($this->wantsJson()) {
-            $this->line($data->toJson());
+            if (is_string($data)) {
+                $this->line(json_encode(['message' => $data]));
+            } elseif ($data instanceof Jsonable) {
+                $this->line($data->toJson());
+            } else {
+                $this->line(json_encode($data));
+            }
 
-            exit(0);
+            exit(self::SUCCESS);
         }
     }
 

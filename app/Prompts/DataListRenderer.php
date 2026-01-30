@@ -22,7 +22,7 @@ class DataListRenderer extends Renderer
             $value = is_array($value) ? $value : [$value];
 
             foreach ($value as $item) {
-                $this->lineWithBorder($this->green($item));
+                $this->lineWithBorder($this->green($item ?? '—'));
             }
 
             $this->lineWithBorder('');

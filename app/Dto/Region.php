@@ -2,10 +2,13 @@
 
 namespace App\Dto;
 
+use App\Concerns\HasDescriptiveArray;
 use Spatie\LaravelData\Data;
 
 class Region extends Data
 {
+    use HasDescriptiveArray;
+
     public function __construct(
         public readonly string $value,
         public readonly string $label,

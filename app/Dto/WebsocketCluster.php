@@ -2,6 +2,7 @@
 
 namespace App\Dto;
 
+use App\Concerns\HasDescriptiveArray;
 use App\Enums\WebsocketServerConnectionDistributionStrategy;
 use App\Enums\WebsocketServerMaxConnection;
 use App\Enums\WebsocketServerStatus;
@@ -14,6 +15,8 @@ use Spatie\LaravelData\Data;
 
 class WebsocketCluster extends Data
 {
+    use HasDescriptiveArray;
+
     public function __construct(
         public readonly string $id,
         public readonly string $name,

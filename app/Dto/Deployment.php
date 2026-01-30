@@ -2,6 +2,7 @@
 
 namespace App\Dto;
 
+use App\Concerns\HasDescriptiveArray;
 use App\Enums\DeploymentStatus;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
@@ -12,6 +13,8 @@ use Spatie\LaravelData\Data;
 
 class Deployment extends Data
 {
+    use HasDescriptiveArray;
+
     public function __construct(
         public readonly string $id,
         #[WithCast(EnumCast::class)]

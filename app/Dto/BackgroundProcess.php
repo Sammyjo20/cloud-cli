@@ -2,6 +2,7 @@
 
 namespace App\Dto;
 
+use App\Concerns\HasDescriptiveArray;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
@@ -9,6 +10,8 @@ use Spatie\LaravelData\Data;
 
 class BackgroundProcess extends Data
 {
+    use HasDescriptiveArray;
+
     public function __construct(
         public readonly string $id,
         public readonly string $command,
