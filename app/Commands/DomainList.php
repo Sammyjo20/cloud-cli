@@ -2,8 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
-
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
@@ -11,8 +9,6 @@ use function Laravel\Prompts\table;
 
 class DomainList extends BaseCommand
 {
-    use HasAClient;
-
     protected $signature = 'domain:list {environment : The environment ID} {--json : Output as JSON}';
 
     protected $description = 'List all domains for an environment';

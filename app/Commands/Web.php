@@ -2,7 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
 use App\Concerns\RequiresRemoteGitRepo;
 use Illuminate\Support\Facades\Process;
 
@@ -11,7 +10,6 @@ use function Laravel\Prompts\outro;
 
 class Web extends BaseCommand
 {
-    use HasAClient;
     use RequiresRemoteGitRepo;
 
     protected $signature = 'web

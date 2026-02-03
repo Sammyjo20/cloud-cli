@@ -2,7 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
 use App\Dto\Application;
 use App\Dto\Organization;
 use App\Git;
@@ -17,8 +16,6 @@ use function Laravel\Prompts\warning;
 
 class RepoConfig extends BaseCommand
 {
-    use HasAClient;
-
     protected $signature = 'repo:config';
 
     protected $description = 'Configure Laravel Cloud defaults for the current repository';

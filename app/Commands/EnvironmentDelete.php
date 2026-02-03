@@ -2,7 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
 use Illuminate\Http\Client\RequestException;
 
 use function Laravel\Prompts\confirm;
@@ -13,8 +12,6 @@ use function Laravel\Prompts\spin;
 
 class EnvironmentDelete extends BaseCommand
 {
-    use HasAClient;
-
     protected $signature = 'environment:delete
                             {environment : The environment ID}
                             {--force : Skip confirmation}';

@@ -2,16 +2,12 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
-
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
 class DomainGet extends BaseCommand
 {
-    use HasAClient;
-
     protected $signature = 'domain:get {domain : The domain ID} {--json : Output as JSON}';
 
     protected $description = 'Get domain details';

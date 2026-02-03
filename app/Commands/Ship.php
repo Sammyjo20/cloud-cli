@@ -3,7 +3,6 @@
 namespace App\Commands;
 
 use App\Concerns\HandlesAvatars;
-use App\Concerns\HasAClient;
 use App\Concerns\RequiresRemoteGitRepo;
 use App\Concerns\UpdatesBuildDeployCommands;
 use App\Concerns\Validates;
@@ -36,7 +35,6 @@ use function Laravel\Prompts\text;
 class Ship extends BaseCommand
 {
     use HandlesAvatars;
-    use HasAClient;
     use RequiresRemoteGitRepo;
     use UpdatesBuildDeployCommands;
     use Validates;

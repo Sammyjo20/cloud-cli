@@ -2,7 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
 use App\Concerns\InteractsWithClipbboard;
 use App\Dto\Command;
 use App\Prompts\MonitorCommand;
@@ -13,7 +12,6 @@ use function Laravel\Prompts\text;
 
 class CommandRun extends BaseCommand
 {
-    use HasAClient;
     use InteractsWithClipbboard;
 
     protected $signature = 'command:run

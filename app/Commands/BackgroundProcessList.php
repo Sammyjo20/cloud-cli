@@ -2,7 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\info;
@@ -11,8 +10,6 @@ use function Laravel\Prompts\spin;
 
 class BackgroundProcessList extends BaseCommand
 {
-    use HasAClient;
-
     protected $signature = 'background-process:list {instance? : The instance ID} {--json : Output as JSON}';
 
     protected $description = 'List all background processes for an instance';

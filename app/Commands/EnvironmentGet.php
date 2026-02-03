@@ -2,16 +2,12 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
-
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
 class EnvironmentGet extends BaseCommand
 {
-    use HasAClient;
-
     protected $signature = 'environment:get {environment : The environment ID} {--json : Output as JSON}';
 
     protected $description = 'Get environment details';

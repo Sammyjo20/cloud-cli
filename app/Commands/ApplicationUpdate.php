@@ -53,8 +53,8 @@ class ApplicationUpdate extends BaseCommand
 
                 $this->reportChange(
                     $field['label'],
-                    $field['current'],
-                    $this->option($optionName),
+                    (string) $field['current'],
+                    (string) $this->option($optionName),
                 );
             }
         }

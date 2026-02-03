@@ -3,7 +3,6 @@
 namespace App\Commands;
 
 use App\Concerns\DeterminesDefaultRegion;
-use App\Concerns\HasAClient;
 use App\Concerns\RequiresRemoteGitRepo;
 use App\Concerns\Validates;
 use App\Dto\Region;
@@ -18,7 +17,6 @@ use function Laravel\Prompts\text;
 class ApplicationCreate extends BaseCommand
 {
     use DeterminesDefaultRegion;
-    use HasAClient;
     use RequiresRemoteGitRepo;
     use Validates;
 

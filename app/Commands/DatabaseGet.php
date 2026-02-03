@@ -2,14 +2,12 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
 use App\Concerns\RequiresDatabaseCluster;
 
 use function Laravel\Prompts\intro;
 
 class DatabaseGet extends BaseCommand
 {
-    use HasAClient;
     use RequiresDatabaseCluster;
 
     protected $signature = 'database:get {database? : The database ID or name} {--json : Output as JSON}';

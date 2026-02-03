@@ -2,7 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
 use Illuminate\Http\Client\RequestException;
 
 use function Laravel\Prompts\error;
@@ -12,8 +11,6 @@ use function Laravel\Prompts\spin;
 
 class InstanceUpdate extends BaseCommand
 {
-    use HasAClient;
-
     protected $signature = 'instance:update
                             {instance : The instance ID}
                             {--size= : Instance size}

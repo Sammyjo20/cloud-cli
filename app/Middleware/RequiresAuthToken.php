@@ -2,14 +2,11 @@
 
 namespace App\Middleware;
 
-use App\Concerns\HasAClient;
 use App\Contracts\NoAuthRequired;
 use Illuminate\Support\Facades\Artisan;
 
 class RequiresAuthToken implements CommandMiddleware
 {
-    use HasAClient;
-
     public function handle($command, callable $next)
     {
         if ($command === 'list') {

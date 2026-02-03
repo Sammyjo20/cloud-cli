@@ -2,14 +2,12 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
 use App\Concerns\InteractsWithClipbboard;
 
 use function Laravel\Prompts\intro;
 
 class CommandGet extends BaseCommand
 {
-    use HasAClient;
     use InteractsWithClipbboard;
 
     protected $signature = 'command:get {commandId? : The command ID} {--json : Output as JSON} {--copy-output : Copy the output to the clipboard}';

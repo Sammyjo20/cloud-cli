@@ -2,7 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
 use App\Dto\BackgroundProcess;
 use App\Support\UpdateFields;
 
@@ -16,8 +15,6 @@ use function Laravel\Prompts\text;
 
 class BackgroundProcessUpdate extends BaseCommand
 {
-    use HasAClient;
-
     protected $signature = 'background-process:update
                             {process? : The background process ID}
                             {--command= : The command to run}

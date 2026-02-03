@@ -2,7 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
 use App\Dto\Application;
 use Laravel\Prompts\Key;
 
@@ -12,8 +11,6 @@ use function Laravel\Prompts\spin;
 
 class ApplicationList extends BaseCommand
 {
-    use HasAClient;
-
     protected $signature = 'application:list {--json : Output as JSON}';
 
     protected $description = 'List all applications';

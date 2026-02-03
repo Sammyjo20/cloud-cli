@@ -2,7 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
 use Illuminate\Http\Client\RequestException;
 
 use function Laravel\Prompts\error;
@@ -12,8 +11,6 @@ use function Laravel\Prompts\spin;
 
 class DomainCreate extends BaseCommand
 {
-    use HasAClient;
-
     protected $signature = 'domain:create
                             {environment : The environment ID}
                             {domain : The domain name}

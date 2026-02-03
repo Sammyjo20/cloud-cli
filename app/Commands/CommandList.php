@@ -2,15 +2,12 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
 
 class CommandList extends BaseCommand
 {
-    use HasAClient;
-
     protected $signature = 'command:list {environment? : The environment ID} {--json : Output as JSON}';
 
     protected $description = 'List all commands for an environment';

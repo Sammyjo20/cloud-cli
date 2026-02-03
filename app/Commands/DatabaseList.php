@@ -2,8 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
-
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
@@ -11,8 +9,6 @@ use function Laravel\Prompts\table;
 
 class DatabaseList extends BaseCommand
 {
-    use HasAClient;
-
     protected $signature = 'database:list {--json : Output as JSON}';
 
     protected $description = 'List all database clusters';

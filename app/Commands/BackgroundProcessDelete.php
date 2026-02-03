@@ -2,7 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
 use Illuminate\Http\Client\RequestException;
 
 use function Laravel\Prompts\confirm;
@@ -13,8 +12,6 @@ use function Laravel\Prompts\warning;
 
 class BackgroundProcessDelete extends BaseCommand
 {
-    use HasAClient;
-
     protected $signature = 'background-process:delete {process? : The background process ID} {--force : Skip confirmation} {--json : Output as JSON}';
 
     protected $description = 'Delete a background process';

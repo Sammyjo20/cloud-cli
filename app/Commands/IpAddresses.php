@@ -2,7 +2,6 @@
 
 namespace App\Commands;
 
-use App\Concerns\HasAClient;
 use App\Concerns\InteractsWithClipbboard;
 use Illuminate\Support\Collection;
 
@@ -14,7 +13,6 @@ use function Laravel\Prompts\warning;
 
 class IpAddresses extends BaseCommand
 {
-    use HasAClient;
     use InteractsWithClipbboard;
 
     protected $signature = 'ip:addresses

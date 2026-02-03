@@ -67,6 +67,7 @@ class DataTable extends Prompt
         $this->keyBindingsHelp = new KeyBindingsHelp;
         $this->totalPages = $this->getTotalPages($rows);
         $this->listener = KeyPressListener::for($this);
+        $this->perPage = min($this->perPage, count($rows));
     }
 
     protected function getTotalPages(array $records): int
