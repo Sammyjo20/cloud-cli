@@ -4,11 +4,11 @@ namespace App\Commands;
 
 use App\Concerns\HasAClient;
 use App\Dto\Application;
+use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\table;
 
 class ApplicationList extends BaseCommand
 {
@@ -39,7 +39,7 @@ class ApplicationList extends BaseCommand
             return;
         }
 
-        table(
+        dataTable(
             ['ID', 'Name', 'Region', 'Repository'],
             $applications->map(fn (Application $app) => [
                 $app->id,
@@ -47,6 +47,12 @@ class ApplicationList extends BaseCommand
                 $app->region,
                 $app->repositoryFullName ?? 'N/A',
             ])->toArray(),
+            [
+                Key::ENTER => [
+                    fn ($row) => $this->call('application:get', ['application' => $row[0]]),
+                    'View',
+                ],
+            ],
         );
     }
 }
