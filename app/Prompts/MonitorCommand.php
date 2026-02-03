@@ -63,16 +63,17 @@ class MonitorCommand extends Prompt
 
             if ($this->lastCheck === null || $this->lastCheck->diffInSeconds(CarbonImmutable::now()) >= $this->checkEvery) {
                 $this->lastCheck = CarbonImmutable::now();
-                $updated = ($this->getCommand)($this->command->id);
 
-                if ($updated) {
+                if ($updated = ($this->getCommand)($this->command->id)) {
                     $this->command = $updated;
 
                     if ($this->command->isFinished()) {
-                        $this->lastCommand = $this->command;
+                        $this->lastCommand = ($this->getCommand)($this->command->id);
                         $this->command = null;
+                        $this->state = 'submit';
                         $this->render();
-                        exit(0);
+
+                        break;
                     }
                 }
             }

@@ -5,10 +5,12 @@ namespace App\Prompts;
 use App\Concerns\DrawsThemeBoxes;
 use App\Enums\CommandStatus;
 use App\Enums\TimelineSymbol;
+use Laravel\Prompts\Themes\Default\Concerns\InteractsWithStrings;
 
 class MonitorCommandRenderer extends Renderer
 {
     use DrawsThemeBoxes;
+    use InteractsWithStrings;
 
     /**
      * The frames of the spinner.
@@ -34,6 +36,12 @@ class MonitorCommandRenderer extends Renderer
 
             $symbol = $command->status === CommandStatus::SUCCESS ? TimelineSymbol::SUCCESS : TimelineSymbol::FAILURE;
 
+            if ($command->output) {
+                $body .= PHP_EOL;
+                $body .= PHP_EOL;
+                $body .= $this->mbWordwrap($command->output, $monitor->terminal()->cols() - 15, cut_long_words: true);
+            }
+
             $this->box(
                 title: $this->dim('Command Completed'),
                 body: $body,
@@ -51,8 +59,8 @@ class MonitorCommandRenderer extends Renderer
 
             $this->lineWithBorder(
                 $this->dim($monitor->command->timeElapsed()->format('%I:%S')).' '.
-                $monitor->command->status->label().
-                $this->ellipsisFrames[$monitor->ellipsisCount % count($this->ellipsisFrames)],
+                    $monitor->command->status->label().
+                    $this->ellipsisFrames[$monitor->ellipsisCount % count($this->ellipsisFrames)],
             );
         }
 

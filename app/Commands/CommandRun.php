@@ -3,22 +3,24 @@
 namespace App\Commands;
 
 use App\Concerns\HasAClient;
+use App\Concerns\InteractsWithClipbboard;
 use App\Dto\Command;
 use App\Prompts\MonitorCommand;
 use App\Support\ValueResolver;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\text;
 
 class CommandRun extends BaseCommand
 {
     use HasAClient;
+    use InteractsWithClipbboard;
 
     protected $signature = 'command:run
                             {environment? : The environment ID}
                             {--command= : The command to run}
                             {--monitor : Monitor the command in real-time}
+                            {--copy-output : Copy the output to the clipboard}
                             {--json : Output as JSON}';
 
     protected $description = 'Run a command on an environment';
@@ -41,7 +43,11 @@ class CommandRun extends BaseCommand
             ))->display();
         }
 
-        outro('Command queued');
+        if ($this->option('copy-output')) {
+            $command = $this->client->commands()->get($command->id);
+            $this->copyToClipboard($command->output ?? '');
+            success('Output copied to clipboard');
+        }
     }
 
     protected function runCommandOnEnvironment(string $environmentId): Command
