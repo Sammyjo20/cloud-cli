@@ -3,11 +3,11 @@
 namespace App\Commands;
 
 use App\Concerns\HasAClient;
+use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\table;
 
 class BackgroundProcessList extends BaseCommand
 {
@@ -40,7 +40,7 @@ class BackgroundProcessList extends BaseCommand
             return;
         }
 
-        table(
+        dataTable(
             ['ID', 'Command', 'Type', 'Instances'],
             $items->map(fn ($process) => [
                 $process->id,
@@ -48,6 +48,12 @@ class BackgroundProcessList extends BaseCommand
                 $process->type,
                 $process->instances,
             ])->toArray(),
+            actions: [
+                Key::ENTER => [
+                    fn ($row) => $this->call('background-process:get', ['process' => $row[0]]),
+                    'View',
+                ],
+            ],
         );
     }
 }
