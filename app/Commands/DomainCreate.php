@@ -2,18 +2,20 @@
 
 namespace App\Commands;
 
-use Illuminate\Http\Client\RequestException;
+use App\Concerns\Validates;
 
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
+use function Laravel\Prompts\text;
 
 class DomainCreate extends BaseCommand
 {
+    use Validates;
+
     protected $signature = 'domain:create
-                            {environment : The environment ID}
-                            {domain : The domain name}
+                            {--environment= : The environment ID}
+                            {--domain= : The domain name}
                             {--json : Output as JSON}';
 
     protected $description = 'Create a new domain';
@@ -24,38 +26,37 @@ class DomainCreate extends BaseCommand
 
         intro('Creating Domain');
 
-        try {
-            $domain = spin(
-                fn () => $this->client->domains()->create(
-                    $this->argument('environment'),
-                    $this->argument('domain'),
-                ),
-                'Creating domain...',
-            );
+        $environment = $this->resolvers()->environment()->from($this->option('environment'));
 
-            if ($this->option('json')) {
-                $this->line(json_encode([
-                    'id' => $domain->id,
-                    'domain' => $domain->domain,
-                    'status' => $domain->status,
-                    'created_at' => $domain->createdAt?->toIso8601String(),
-                ], JSON_PRETTY_PRINT));
+        $domain = $this->loopUntilValid(fn () => $this->createDomain($environment->id));
 
-                return;
-            }
+        $this->outputJsonIfWanted($domain);
 
-            outro("Domain created: {$domain->domain}");
-        } catch (RequestException $e) {
-            if ($e->response?->status() === 422) {
-                $errors = $e->response->json()['errors'] ?? [];
-                foreach ($errors as $field => $messages) {
-                    error(ucwords($field).': '.implode(', ', $messages));
-                }
-            } else {
-                error('Failed to create domain: '.$e->getMessage());
-            }
+        success('Domain created');
 
-            return 1;
-        }
+        outro("Domain created: {$domain->domain}");
+    }
+
+    protected function createDomain(string $environmentId)
+    {
+        $this->addParam(
+            'domain',
+            fn ($resolver) => $resolver
+                ->fromInput(fn (?string $value) => text(
+                    label: 'Domain name',
+                    default: $value ?? '',
+                    placeholder: 'example.com',
+                    required: true,
+                ))
+                ->nonInteractively(fn () => $this->option('domain')),
+        );
+
+        return spin(
+            fn () => $this->client->domains()->create(
+                $environmentId,
+                $this->getParam('domain'),
+            ),
+            'Creating domain...',
+        );
     }
 }
