@@ -2,7 +2,6 @@
 
 namespace App\Client\Resources;
 
-use App\Client\Connector;
 use App\Client\Resources\WebSocketApplications\CreateWebSocketApplicationRequest;
 use App\Client\Resources\WebSocketApplications\DeleteWebSocketApplicationRequest;
 use App\Client\Resources\WebSocketApplications\GetWebSocketApplicationRequest;
@@ -11,17 +10,11 @@ use App\Client\Resources\WebSocketApplications\UpdateWebSocketApplicationRequest
 use App\Dto\WebsocketApplication;
 use Carbon\CarbonImmutable;
 
-class WebSocketApplicationsResource
+class WebSocketApplicationsResource extends Resource
 {
-    public function __construct(
-        protected Connector $connector,
-    ) {
-        //
-    }
-
     public function list(string $clusterId): array
     {
-        $response = $this->connector->send(new ListWebSocketApplicationsRequest($clusterId));
+        $response = $this->send(new ListWebSocketApplicationsRequest($clusterId));
 
         $responseData = $response->json();
 
@@ -43,10 +36,11 @@ class WebSocketApplicationsResource
 
     public function get(string $clusterId, string $applicationId): WebsocketApplication
     {
-        $response = $this->connector->send(new GetWebSocketApplicationRequest(
+        $request = new GetWebSocketApplicationRequest(
             clusterId: $clusterId,
             applicationId: $applicationId,
-        ));
+        );
+        $response = $this->send($request);
 
         $data = $response->json()['data'];
 
@@ -68,7 +62,7 @@ class WebSocketApplicationsResource
 
     public function create(string $clusterId, array $data): WebsocketApplication
     {
-        $response = $this->connector->send(new CreateWebSocketApplicationRequest(
+        $response = $this->send(new CreateWebSocketApplicationRequest(
             clusterId: $clusterId,
             data: $data,
         ));
@@ -93,7 +87,7 @@ class WebSocketApplicationsResource
 
     public function update(string $clusterId, string $applicationId, array $data): WebsocketApplication
     {
-        $response = $this->connector->send(new UpdateWebSocketApplicationRequest(
+        $response = $this->send(new UpdateWebSocketApplicationRequest(
             clusterId: $clusterId,
             applicationId: $applicationId,
             data: $data,
@@ -119,7 +113,7 @@ class WebSocketApplicationsResource
 
     public function delete(string $clusterId, string $applicationId): void
     {
-        $this->connector->send(new DeleteWebSocketApplicationRequest(
+        $this->send(new DeleteWebSocketApplicationRequest(
             clusterId: $clusterId,
             applicationId: $applicationId,
         ));

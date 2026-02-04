@@ -2,20 +2,13 @@
 
 namespace App\Client\Resources;
 
-use App\Client\Connector;
 use App\Client\Resources\DedicatedClusters\ListDedicatedClustersRequest;
 
-class DedicatedClustersResource
+class DedicatedClustersResource extends Resource
 {
-    public function __construct(
-        protected Connector $connector,
-    ) {
-        //
-    }
-
     public function list(): array
     {
-        $response = $this->connector->send(new ListDedicatedClustersRequest);
+        $response = $this->send(new ListDedicatedClustersRequest);
 
         return $response->json()['data'] ?? [];
     }

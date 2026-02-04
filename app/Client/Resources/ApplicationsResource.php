@@ -2,55 +2,31 @@
 
 namespace App\Client\Resources;
 
-use App\Client\Connector;
 use App\Client\Resources\Applications\CreateApplicationRequest;
 use App\Client\Resources\Applications\GetApplicationRequest;
 use App\Client\Resources\Applications\ListApplicationsRequest;
 use App\Client\Resources\Applications\UpdateApplicationRequest;
-use App\Client\Resources\Concerns\HasIncludes;
 use App\Dto\Application;
 use Saloon\Data\MultipartValue;
 use Saloon\PaginationPlugin\Paginator;
 
-class ApplicationsResource
+class ApplicationsResource extends Resource
 {
-    use HasIncludes;
-
-    public function __construct(
-        protected Connector $connector,
-    ) {
-        //
-    }
-
-    public function withDefaultIncludes(): static
-    {
-        return $this->include('organization', 'environments', 'defaultEnvironment');
-    }
-
     public function list(?string $name = null, ?string $region = null, ?string $slug = null): Paginator
     {
         $request = new ListApplicationsRequest(
-            include: $this->getIncludesString(),
             name: $name,
             region: $region,
             slug: $slug,
         );
 
-        return $this->connector->paginate($request);
+        return $this->paginate($request);
     }
 
     public function get(string $applicationId): Application
     {
-        if (empty($this->includes)) {
-            $this->withDefaultIncludes();
-        }
-
-        $request = new GetApplicationRequest(
-            applicationId: $applicationId,
-            include: $this->getIncludesString(),
-        );
-
-        $response = $this->connector->send($request);
+        $request = new GetApplicationRequest($applicationId);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }
@@ -63,7 +39,7 @@ class ApplicationsResource
             region: $region,
         );
 
-        $response = $this->connector->send($request);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }
@@ -94,8 +70,13 @@ class ApplicationsResource
             avatar: $avatar,
         );
 
-        $response = $this->connector->send($request);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
+    }
+
+    public function withDefaultIncludes(): static
+    {
+        return $this->include('organization', 'environments', 'defaultEnvironment');
     }
 }

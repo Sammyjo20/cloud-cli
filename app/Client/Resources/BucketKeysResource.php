@@ -2,41 +2,35 @@
 
 namespace App\Client\Resources;
 
-use App\Client\Connector;
 use App\Client\Resources\BucketKeys\CreateBucketKeyRequest;
 use App\Client\Resources\BucketKeys\DeleteBucketKeyRequest;
 use App\Client\Resources\BucketKeys\GetBucketKeyRequest;
 use App\Client\Resources\BucketKeys\ListBucketKeysRequest;
 use App\Client\Resources\BucketKeys\UpdateBucketKeyRequest;
 
-class BucketKeysResource
+class BucketKeysResource extends Resource
 {
-    public function __construct(
-        protected Connector $connector,
-    ) {
-        //
-    }
-
     public function list(string $bucketId): array
     {
-        $response = $this->connector->send(new ListBucketKeysRequest($bucketId));
+        $response = $this->send(new ListBucketKeysRequest($bucketId));
 
         return $response->json()['data'] ?? [];
     }
 
     public function get(string $bucketId, string $keyId): array
     {
-        $response = $this->connector->send(new GetBucketKeyRequest(
+        $request = new GetBucketKeyRequest(
             bucketId: $bucketId,
             keyId: $keyId,
-        ));
+        );
+        $response = $this->send($request);
 
         return $response->json()['data'] ?? [];
     }
 
     public function create(string $bucketId, string $name, string $permission): array
     {
-        $response = $this->connector->send(new CreateBucketKeyRequest(
+        $response = $this->send(new CreateBucketKeyRequest(
             bucketId: $bucketId,
             name: $name,
             permission: $permission,
@@ -47,7 +41,7 @@ class BucketKeysResource
 
     public function update(string $bucketId, string $keyId, array $data): array
     {
-        $response = $this->connector->send(new UpdateBucketKeyRequest(
+        $response = $this->send(new UpdateBucketKeyRequest(
             bucketId: $bucketId,
             keyId: $keyId,
             data: $data,
@@ -58,7 +52,7 @@ class BucketKeysResource
 
     public function delete(string $bucketId, string $keyId): void
     {
-        $this->connector->send(new DeleteBucketKeyRequest(
+        $this->send(new DeleteBucketKeyRequest(
             bucketId: $bucketId,
             keyId: $keyId,
         ));

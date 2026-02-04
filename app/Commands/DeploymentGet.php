@@ -2,20 +2,13 @@
 
 namespace App\Commands;
 
-use App\Dto\Deployment;
-use App\Dto\Environment;
 use App\Git;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\select;
-use function Laravel\Prompts\spin;
-use function Laravel\Prompts\warning;
 
 class DeploymentGet extends BaseCommand
 {
     protected $signature = 'deployment:get
-                            {application? : The application ID or name}
-                            {environment? : The environment ID or name}
                             {deployment? : The deployment ID}
                             {--json : Output as JSON}';
 
@@ -27,27 +20,16 @@ class DeploymentGet extends BaseCommand
 
         intro('Deployment Details');
 
-        $application = $this->resolvers()->application()->from($this->argument('application'));
-        $environment = $this->resolvers()->environment()->withApplication($application)->from($this->argument('environment'));
-        $deployment = $this->getDeployment($environment);
+        $deployment = $this->resolvers()->deployment()->from($this->argument('deployment'));
+        $environment = $this->resolvers()->environment()->include('application')->from($deployment->environment->id);
 
-        if (! $deployment) {
-            warning('No deployments found for environment '.$environment->name);
-
-            return;
-        }
-
-        if ($this->wantsJson()) {
-            $this->line($deployment->toJson());
-
-            return;
-        }
+        $this->outputJsonIfWanted($deployment);
 
         $data = [
             'ID' => $deployment->id,
             'Status' => $deployment->status->label(),
-            'Branch' => Git::branchUrl($application->repositoryFullName, $deployment->branchName),
-            'Commit' => Git::commitUrl($application->repositoryFullName, $deployment->commitHash),
+            'Branch' => Git::branchUrl($environment->application->repositoryFullName, $deployment->branchName),
+            'Commit' => Git::commitUrl($environment->application->repositoryFullName, $deployment->commitHash),
             'Message' => $deployment->commitMessage,
             'Author' => $deployment->commitAuthor ?? '—',
             'Started At' => $deployment->startedAt?->toIso8601String() ?? '—',
@@ -56,38 +38,6 @@ class DeploymentGet extends BaseCommand
             'Failure Reason' => $deployment->failureReason,
         ];
 
-        dataList(array_filter($data));
-    }
-
-    protected function getDeployment(Environment $environment): ?Deployment
-    {
-        if ($this->argument('deployment')) {
-            return spin(
-                fn () => $this->client->deployments()->get($this->argument('deployment')),
-                'Fetching deployment...',
-            );
-        }
-
-        $deployments = collect(
-            spin(
-                fn () => $this->client->deployments()->list($environment->id)->items(),
-                'Fetching deployments...',
-            ),
-        );
-
-        if (! $deployments->containsManyItems()) {
-            return $deployments->first();
-        }
-
-        $this->ensureInteractive('Please provide a deployment ID.');
-
-        $selection = select(
-            label: 'Deployment',
-            options: $deployments->mapWithKeys(fn ($deployment) => [
-                $deployment->id => $deployment->startedAt?->toIso8601String().$this->dim(' ('.str($deployment->commitMessage)->limit(10).')'),
-            ]),
-        );
-
-        return $deployments->firstWhere('id', $selection);
+        dataList($data);
     }
 }

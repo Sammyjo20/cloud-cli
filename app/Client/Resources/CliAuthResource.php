@@ -2,23 +2,15 @@
 
 namespace App\Client\Resources;
 
-use App\Client\Connector;
 use App\Client\Resources\CliAuth\CreateAuthSessionRequest;
 use App\Client\Resources\CliAuth\ExchangeCodeRequest;
 
-class CliAuthResource
+class CliAuthResource extends Resource
 {
-    public function __construct(
-        protected Connector $connector,
-    ) {
-        //
-    }
-
     public function createAuthSession(int $port): string
     {
         $request = new CreateAuthSessionRequest($port);
-
-        $response = $this->connector->send($request);
+        $response = $this->send($request);
 
         return $response->json()['redirect_url'];
     }
@@ -29,8 +21,7 @@ class CliAuthResource
     public function exchangeCode(string $exchangeCode): array
     {
         $request = new ExchangeCodeRequest($exchangeCode);
-
-        $response = $this->connector->send($request);
+        $response = $this->send($request);
 
         return $response->json()['tokens'];
     }

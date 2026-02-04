@@ -2,7 +2,6 @@
 
 namespace App\Prompts;
 
-use Laravel\Prompts\DataTable;
 use Laravel\Prompts\Output\BufferedConsoleOutput;
 use Laravel\Prompts\Themes\Default\Concerns\InteractsWithStrings;
 use Symfony\Component\Console\Helper\Table as SymfonyTable;

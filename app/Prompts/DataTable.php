@@ -4,10 +4,9 @@ namespace App\Prompts;
 
 use App\Support\KeyBindingsHelp;
 use App\Support\KeyPressListener;
-use Carbon\CarbonInterval;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Sleep;
 use Laravel\Prompts\Concerns\TypedValue;
+use Laravel\Prompts\Key;
 use Laravel\Prompts\Prompt;
 use Throwable;
 
@@ -137,13 +136,13 @@ class DataTable extends Prompt
         }
 
         $this->browse();
+        $this->addDefaultKeyBindings();
+        $this->render();
 
-        while ($this->keepLooping) {
-            $this->listener->once();
+        $this->listener->afterEveryKey(function () {
             $this->addDefaultKeyBindings();
             $this->render();
-            Sleep::for(CarbonInterval::milliseconds(100));
-        }
+        })->listenNow();
 
         return true;
     }
@@ -166,15 +165,23 @@ class DataTable extends Prompt
             ->on(
                 [Key::RIGHT, Key::RIGHT_ARROW],
                 function () {
+                    $prevPage = $this->page;
                     $this->page = min($this->totalPages, $this->page + 1);
-                    $this->index = 0;
+
+                    if ($prevPage !== $this->page) {
+                        $this->index = 0;
+                    }
                 },
             )
             ->on(
                 [Key::LEFT, Key::LEFT_ARROW],
                 function () {
+                    $prevPage = $this->page;
                     $this->page = max(1, $this->page - 1);
-                    $this->index = 0;
+
+                    if ($prevPage !== $this->page) {
+                        $this->index = 0;
+                    }
                 },
             )
             ->on(Key::ENTER, $this->submit(...))

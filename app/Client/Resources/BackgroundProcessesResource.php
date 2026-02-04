@@ -2,7 +2,6 @@
 
 namespace App\Client\Resources;
 
-use App\Client\Connector;
 use App\Client\Resources\BackgroundProcesses\CreateBackgroundProcessRequest;
 use App\Client\Resources\BackgroundProcesses\DeleteBackgroundProcessRequest;
 use App\Client\Resources\BackgroundProcesses\GetBackgroundProcessRequest;
@@ -11,26 +10,19 @@ use App\Client\Resources\BackgroundProcesses\UpdateBackgroundProcessRequest;
 use App\Dto\BackgroundProcess;
 use Saloon\PaginationPlugin\Paginator;
 
-class BackgroundProcessesResource
+class BackgroundProcessesResource extends Resource
 {
-    public function __construct(
-        protected Connector $connector,
-    ) {
-        //
-    }
-
     public function list(string $instanceId): Paginator
     {
         $request = new ListBackgroundProcessesRequest($instanceId);
 
-        return $this->connector->paginate($request);
+        return $this->paginate($request);
     }
 
     public function get(string $backgroundProcessId): BackgroundProcess
     {
         $request = new GetBackgroundProcessRequest($backgroundProcessId);
-
-        $response = $this->connector->send($request);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }
@@ -42,7 +34,7 @@ class BackgroundProcessesResource
             data: $data,
         );
 
-        $response = $this->connector->send($request);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }
@@ -54,13 +46,13 @@ class BackgroundProcessesResource
             data: $data,
         );
 
-        $response = $this->connector->send($request);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }
 
     public function delete(string $backgroundProcessId): void
     {
-        $this->connector->send(new DeleteBackgroundProcessRequest($backgroundProcessId));
+        $this->send(new DeleteBackgroundProcessRequest($backgroundProcessId));
     }
 }

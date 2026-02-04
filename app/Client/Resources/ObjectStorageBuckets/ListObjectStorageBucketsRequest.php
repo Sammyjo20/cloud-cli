@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\ObjectStorageBuckets;
 
+use App\Client\Resources\Concerns\AcceptsInclude;
 use App\Dto\ObjectStorageBucket;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -10,10 +11,11 @@ use Saloon\PaginationPlugin\Contracts\Paginatable;
 
 class ListObjectStorageBucketsRequest extends Request implements Paginatable
 {
+    use AcceptsInclude;
+
     protected Method $method = Method::GET;
 
     public function __construct(
-        protected ?string $include = null,
         protected ?string $type = null,
         protected ?string $status = null,
         protected ?string $visibility = null,
@@ -28,12 +30,14 @@ class ListObjectStorageBucketsRequest extends Request implements Paginatable
 
     protected function defaultQuery(): array
     {
-        return array_filter([
-            'include' => $this->include,
-            'filter[type]' => $this->type,
-            'filter[status]' => $this->status,
-            'filter[visibility]' => $this->visibility,
-        ]);
+        return array_merge(
+            $this->includeQuery(),
+            array_filter([
+                'filter[type]' => $this->type,
+                'filter[status]' => $this->status,
+                'filter[visibility]' => $this->visibility,
+            ]),
+        );
     }
 
     public function createDtoFromResponse(Response $response): mixed

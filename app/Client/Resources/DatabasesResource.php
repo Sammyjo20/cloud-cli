@@ -2,7 +2,6 @@
 
 namespace App\Client\Resources;
 
-use App\Client\Connector;
 use App\Client\Resources\Databases\CreateDatabaseRequest;
 use App\Client\Resources\Databases\DeleteDatabaseRequest;
 use App\Client\Resources\Databases\GetDatabaseRequest;
@@ -10,19 +9,13 @@ use App\Client\Resources\Databases\ListDatabasesRequest;
 use App\Dto\Database;
 use Saloon\PaginationPlugin\Paginator;
 
-class DatabasesResource
+class DatabasesResource extends Resource
 {
-    public function __construct(
-        protected Connector $connector,
-    ) {
-        //
-    }
-
     public function list(string $clusterId): Paginator
     {
         $request = new ListDatabasesRequest($clusterId);
 
-        return $this->connector->paginate($request);
+        return $this->paginate($request);
     }
 
     public function get(string $clusterId, string $databaseId): Database
@@ -31,8 +24,7 @@ class DatabasesResource
             clusterId: $clusterId,
             databaseId: $databaseId,
         );
-
-        $response = $this->connector->send($request);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }
@@ -44,14 +36,14 @@ class DatabasesResource
             name: $name,
         );
 
-        $response = $this->connector->send($request);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }
 
     public function delete(string $clusterId, string $databaseId): void
     {
-        $this->connector->send(new DeleteDatabaseRequest(
+        $this->send(new DeleteDatabaseRequest(
             clusterId: $clusterId,
             databaseId: $databaseId,
         ));

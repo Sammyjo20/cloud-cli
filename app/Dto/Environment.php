@@ -37,7 +37,7 @@ class Environment extends Data
         public readonly ?CarbonImmutable $createdAt = null,
         #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $updatedAt = null,
-        public readonly ?string $applicationId = null,
+        public readonly ?Application $application = null,
         public readonly ?string $branchId = null,
         public readonly array $deploymentIds = [],
         public readonly ?string $currentDeploymentId = null,
@@ -84,8 +84,9 @@ class Environment extends Data
             $transformed['instances'] = array_column($relationships['instances']['data'], 'id');
         }
 
-        if (isset($relationships['application']['data']['id'])) {
-            $transformed['applicationId'] = $relationships['application']['data']['id'];
+        if (isset($relationships['application']['data'])) {
+            $app = collect($included)->firstWhere('type', 'applications');
+            $transformed['application'] = Application::createFromResponse(['data' => $app, 'included' => $included]);
         }
 
         if (isset($relationships['branch']['data']['id'])) {

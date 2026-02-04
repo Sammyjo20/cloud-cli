@@ -2,8 +2,6 @@
 
 namespace App\Client\Resources;
 
-use App\Client\Connector;
-use App\Client\Resources\Concerns\HasIncludes;
 use App\Client\Resources\Environments\AddEnvironmentVariablesRequest;
 use App\Client\Resources\Environments\CreateEnvironmentRequest;
 use App\Client\Resources\Environments\DeleteEnvironmentRequest;
@@ -17,31 +15,19 @@ use App\Client\Resources\Environments\UpdateEnvironmentRequest;
 use App\Dto\Environment;
 use Saloon\PaginationPlugin\Paginator;
 
-class EnvironmentsResource
+class EnvironmentsResource extends Resource
 {
-    use HasIncludes;
-
-    public function __construct(
-        protected Connector $connector,
-    ) {
-        //
-    }
-
     public function list(string $applicationId): Paginator
     {
         $request = new ListEnvironmentsRequest($applicationId);
 
-        return $this->connector->paginate($request);
+        return $this->paginate($request);
     }
 
     public function get(string $environmentId): Environment
     {
-        $request = new GetEnvironmentRequest(
-            environmentId: $environmentId,
-            include: $this->getIncludesString(),
-        );
-
-        $response = $this->connector->send($request);
+        $request = new GetEnvironmentRequest($environmentId);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }
@@ -54,7 +40,7 @@ class EnvironmentsResource
             branch: $branch,
         );
 
-        $response = $this->connector->send($request);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }
@@ -66,14 +52,14 @@ class EnvironmentsResource
             data: $data,
         );
 
-        $response = $this->connector->send($request);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }
 
     public function delete(string $environmentId): void
     {
-        $this->connector->send(new DeleteEnvironmentRequest($environmentId));
+        $this->send(new DeleteEnvironmentRequest($environmentId));
     }
 
     public function logs(string $environmentId, string $from, string $to, ?string $cursor = null, ?string $type = null, ?string $query = null): array
@@ -87,14 +73,14 @@ class EnvironmentsResource
             queryString: $query,
         );
 
-        $response = $this->connector->send($request);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }
 
     public function addVariables(string $environmentId, array $variables): void
     {
-        $this->connector->send(new AddEnvironmentVariablesRequest(
+        $this->send(new AddEnvironmentVariablesRequest(
             environmentId: $environmentId,
             variables: $variables,
         ));
@@ -102,7 +88,7 @@ class EnvironmentsResource
 
     public function replaceVariables(string $environmentId, array $variables): void
     {
-        $this->connector->send(new ReplaceEnvironmentVariablesRequest(
+        $this->send(new ReplaceEnvironmentVariablesRequest(
             environmentId: $environmentId,
             variables: $variables,
         ));
@@ -110,11 +96,11 @@ class EnvironmentsResource
 
     public function start(string $environmentId): void
     {
-        $this->connector->send(new StartEnvironmentRequest($environmentId));
+        $this->send(new StartEnvironmentRequest($environmentId));
     }
 
     public function stop(string $environmentId): void
     {
-        $this->connector->send(new StopEnvironmentRequest($environmentId));
+        $this->send(new StopEnvironmentRequest($environmentId));
     }
 }

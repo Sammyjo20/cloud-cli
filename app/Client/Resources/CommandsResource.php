@@ -2,36 +2,25 @@
 
 namespace App\Client\Resources;
 
-use App\Client\Connector;
 use App\Client\Resources\Commands\GetCommandRequest;
 use App\Client\Resources\Commands\ListCommandsRequest;
 use App\Client\Resources\Commands\RunCommandRequest;
-use App\Client\Resources\Concerns\HasIncludes;
 use App\Dto\Command;
 use Saloon\PaginationPlugin\Paginator;
 
-class CommandsResource
+class CommandsResource extends Resource
 {
-    use HasIncludes;
-
-    public function __construct(
-        protected Connector $connector,
-    ) {
-        //
-    }
-
     public function list(string $environmentId): Paginator
     {
-        $request = new ListCommandsRequest($environmentId, $this->getIncludesString());
+        $request = new ListCommandsRequest($environmentId);
 
-        return $this->connector->paginate($request);
+        return $this->paginate($request);
     }
 
     public function get(string $commandId): Command
     {
-        $request = new GetCommandRequest($commandId, $this->getIncludesString());
-
-        $response = $this->connector->send($request);
+        $request = new GetCommandRequest($commandId);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }
@@ -43,7 +32,7 @@ class CommandsResource
             command: $command,
         );
 
-        $response = $this->connector->send($request);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }

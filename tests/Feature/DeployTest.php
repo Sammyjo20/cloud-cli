@@ -3,6 +3,7 @@
 use App\Client\Resources\Applications\ListApplicationsRequest;
 use App\Client\Resources\Deployments\GetDeploymentRequest;
 use App\Client\Resources\Deployments\InitiateDeploymentRequest;
+use App\Client\Resources\Environments\GetEnvironmentRequest;
 use App\Client\Resources\Environments\ListEnvironmentsRequest;
 use App\ConfigRepository;
 use App\Git;
@@ -123,6 +124,10 @@ function setupSuccessfulDeployMocks(): void
             'links' => ['next' => null],
         ], 200),
 
+        GetEnvironmentRequest::class => MockResponse::make([
+            'data' => createEnvironmentResponse(),
+        ], 200),
+
         InitiateDeploymentRequest::class => MockResponse::make(
             createDeploymentResponse('pending'),
             200,
@@ -234,6 +239,20 @@ it('selects application when given by name argument with multiple apps', functio
             'links' => ['next' => null],
         ], 200),
 
+        GetEnvironmentRequest::class => MockResponse::make([
+            'data' => [
+                'id' => 'env-2',
+                'type' => 'environments',
+                'attributes' => [
+                    'name' => 'staging',
+                    'slug' => 'staging',
+                    'vanity_domain' => 'my-app-staging.cloud.laravel.com',
+                    'status' => 'running',
+                    'php_major_version' => '8.3',
+                ],
+            ],
+        ], 200),
+
         InitiateDeploymentRequest::class => MockResponse::make(
             createDeploymentResponse('pending'),
             200,
@@ -311,6 +330,20 @@ it('selects environment by name when multiple environments exist', function () {
                 ],
             ],
             'links' => ['next' => null],
+        ], 200),
+
+        GetEnvironmentRequest::class => MockResponse::make([
+            'data' => [
+                'id' => 'env-2',
+                'type' => 'environments',
+                'attributes' => [
+                    'name' => 'staging',
+                    'slug' => 'staging',
+                    'vanity_domain' => 'my-app-staging.cloud.laravel.com',
+                    'status' => 'running',
+                    'php_major_version' => '8.3',
+                ],
+            ],
         ], 200),
 
         InitiateDeploymentRequest::class => MockResponse::make(

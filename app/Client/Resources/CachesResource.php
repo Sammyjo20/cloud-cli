@@ -2,45 +2,33 @@
 
 namespace App\Client\Resources;
 
-use App\Client\Connector;
 use App\Client\Resources\Caches\CreateCacheRequest;
 use App\Client\Resources\Caches\DeleteCacheRequest;
 use App\Client\Resources\Caches\GetCacheRequest;
 use App\Client\Resources\Caches\ListCachesRequest;
 use App\Client\Resources\Caches\ListCacheTypesRequest;
 use App\Client\Resources\Caches\UpdateCacheRequest;
-use App\Client\Resources\Concerns\HasIncludes;
 
-class CachesResource
+class CachesResource extends Resource
 {
-    use HasIncludes;
-
-    public function __construct(
-        protected Connector $connector,
-    ) {
-        //
-    }
-
     public function list(): array
     {
-        $response = $this->connector->send(new ListCachesRequest(include: $this->getIncludesString()));
+        $response = $this->send(new ListCachesRequest);
 
         return $response->json()['data'] ?? [];
     }
 
     public function get(string $cacheId): array
     {
-        $response = $this->connector->send(new GetCacheRequest(
-            cacheId: $cacheId,
-            include: $this->getIncludesString(),
-        ));
+        $request = new GetCacheRequest($cacheId);
+        $response = $this->send($request);
 
         return $response->json()['data'] ?? [];
     }
 
     public function create(string $type, string $name, string $region, array $config): array
     {
-        $response = $this->connector->send(new CreateCacheRequest(
+        $response = $this->send(new CreateCacheRequest(
             type: $type,
             name: $name,
             region: $region,
@@ -52,7 +40,7 @@ class CachesResource
 
     public function update(string $cacheId, array $data): array
     {
-        $response = $this->connector->send(new UpdateCacheRequest(
+        $response = $this->send(new UpdateCacheRequest(
             cacheId: $cacheId,
             data: $data,
         ));
@@ -62,12 +50,12 @@ class CachesResource
 
     public function delete(string $cacheId): void
     {
-        $this->connector->send(new DeleteCacheRequest($cacheId));
+        $this->send(new DeleteCacheRequest($cacheId));
     }
 
     public function types(): array
     {
-        $response = $this->connector->send(new ListCacheTypesRequest);
+        $response = $this->send(new ListCacheTypesRequest);
 
         return $response->json()['data'] ?? [];
     }

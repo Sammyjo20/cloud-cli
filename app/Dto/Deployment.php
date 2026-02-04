@@ -34,7 +34,7 @@ class Deployment extends Data
         public readonly ?string $nodeVersion = null,
         public readonly bool $usesOctane = false,
         public readonly bool $usesHibernation = false,
-        public readonly ?string $environmentId = null,
+        public readonly ?Environment $environment = null,
         public readonly ?string $initiatorId = null,
     ) {
         //
@@ -124,8 +124,9 @@ class Deployment extends Data
             'usesHibernation' => $attributes['uses_hibernation'] ?? false,
         ];
 
-        if (isset($relationships['environment']['data']['id'])) {
-            $transformed['environmentId'] = $relationships['environment']['data']['id'];
+        if (isset($relationships['environment']['data'])) {
+            $env = collect($response['included'] ?? [])->firstWhere('type', 'environments');
+            $transformed['environment'] = Environment::createFromResponse(['data' => $env, 'included' => $response['included'] ?? []]);
         }
 
         if (isset($relationships['initiator']['data']['id'])) {

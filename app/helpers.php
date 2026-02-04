@@ -2,10 +2,10 @@
 
 use App\Prompts\Answered;
 use App\Prompts\DataList;
+use App\Prompts\DataTable;
 use App\Prompts\DynamicSpinner;
 use App\Prompts\SelectWithContextPrompt;
 use App\Prompts\SlideIn;
-use Laravel\Prompts\DataTable;
 use Laravel\Prompts\Note;
 
 if (! function_exists('answered')) {

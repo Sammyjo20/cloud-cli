@@ -45,6 +45,11 @@ class Resolvers
         return $this->make(DatabaseClusterResolver::class);
     }
 
+    public function deployment(): DeploymentResolver
+    {
+        return $this->make(DeploymentResolver::class);
+    }
+
     protected function make(string $resolver): Resolver
     {
         return new $resolver($this->client, $this->localConfig, $this->isInteractive);

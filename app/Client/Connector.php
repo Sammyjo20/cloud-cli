@@ -26,6 +26,7 @@ use Saloon\CachePlugin\Contracts\Driver;
 use Saloon\CachePlugin\Drivers\LaravelCacheDriver;
 use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Connector as SaloonConnector;
+use Saloon\Http\PendingRequest;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
 use Saloon\PaginationPlugin\Contracts\HasPagination;
@@ -58,6 +59,17 @@ class Connector extends SaloonConnector implements HasPagination
     public static function unauthenticated(): self
     {
         return new self('');
+    }
+
+    public function boot(PendingRequest $pendingRequest): void
+    {
+        if (! method_exists($pendingRequest->getRequest(), 'getInclude')) {
+            return;
+        }
+
+        if ($include = $pendingRequest->getRequest()->getInclude()) {
+            $pendingRequest->query()->add('include', $include);
+        }
     }
 
     public function resolveBaseUrl(): string

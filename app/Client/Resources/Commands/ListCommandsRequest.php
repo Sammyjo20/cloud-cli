@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\Commands;
 
+use App\Client\Resources\Concerns\AcceptsInclude;
 use App\Dto\Command;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -10,11 +11,12 @@ use Saloon\PaginationPlugin\Contracts\Paginatable;
 
 class ListCommandsRequest extends Request implements Paginatable
 {
+    use AcceptsInclude;
+
     protected Method $method = Method::GET;
 
     public function __construct(
         protected string $environmentId,
-        protected ?string $includes = null,
     ) {
         //
     }
@@ -22,13 +24,6 @@ class ListCommandsRequest extends Request implements Paginatable
     public function resolveEndpoint(): string
     {
         return "/environments/{$this->environmentId}/commands";
-    }
-
-    protected function defaultQuery(): array
-    {
-        return array_filter([
-            'include' => $this->includes,
-        ]);
     }
 
     public function createDtoFromResponse(Response $response): mixed

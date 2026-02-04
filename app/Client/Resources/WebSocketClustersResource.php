@@ -2,7 +2,6 @@
 
 namespace App\Client\Resources;
 
-use App\Client\Connector;
 use App\Client\Resources\WebSocketClusters\CreateWebSocketClusterRequest;
 use App\Client\Resources\WebSocketClusters\DeleteWebSocketClusterRequest;
 use App\Client\Resources\WebSocketClusters\GetWebSocketClusterRequest;
@@ -15,17 +14,11 @@ use App\Enums\WebsocketServerStatus;
 use App\Enums\WebsocketServerType;
 use Carbon\CarbonImmutable;
 
-class WebSocketClustersResource
+class WebSocketClustersResource extends Resource
 {
-    public function __construct(
-        protected Connector $connector,
-    ) {
-        //
-    }
-
     public function list(): array
     {
-        $response = $this->connector->send(new ListWebSocketClustersRequest);
+        $response = $this->send(new ListWebSocketClustersRequest);
 
         $responseData = $response->json();
 
@@ -45,7 +38,8 @@ class WebSocketClustersResource
 
     public function get(string $clusterId): WebsocketCluster
     {
-        $response = $this->connector->send(new GetWebSocketClusterRequest($clusterId));
+        $request = new GetWebSocketClusterRequest($clusterId);
+        $response = $this->send($request);
 
         $data = $response->json()['data'];
 
@@ -65,7 +59,7 @@ class WebSocketClustersResource
 
     public function create(string $name, string $region, array $config): WebsocketCluster
     {
-        $response = $this->connector->send(new CreateWebSocketClusterRequest(
+        $response = $this->send(new CreateWebSocketClusterRequest(
             name: $name,
             region: $region,
             config: $config,
@@ -89,7 +83,7 @@ class WebSocketClustersResource
 
     public function update(string $clusterId, array $data): WebsocketCluster
     {
-        $response = $this->connector->send(new UpdateWebSocketClusterRequest(
+        $response = $this->send(new UpdateWebSocketClusterRequest(
             clusterId: $clusterId,
             data: $data,
         ));
@@ -112,6 +106,6 @@ class WebSocketClustersResource
 
     public function delete(string $clusterId): void
     {
-        $this->connector->send(new DeleteWebSocketClusterRequest($clusterId));
+        $this->send(new DeleteWebSocketClusterRequest($clusterId));
     }
 }

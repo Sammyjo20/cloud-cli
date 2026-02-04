@@ -2,8 +2,6 @@
 
 namespace App\Client\Resources;
 
-use App\Client\Connector;
-use App\Client\Resources\Concerns\HasIncludes;
 use App\Client\Resources\DatabaseClusters\CreateDatabaseClusterRequest;
 use App\Client\Resources\DatabaseClusters\DeleteDatabaseClusterRequest;
 use App\Client\Resources\DatabaseClusters\GetDatabaseClusterRequest;
@@ -13,31 +11,19 @@ use App\Client\Resources\DatabaseClusters\UpdateDatabaseClusterRequest;
 use App\Dto\DatabaseCluster;
 use Saloon\PaginationPlugin\Paginator;
 
-class DatabaseClustersResource
+class DatabaseClustersResource extends Resource
 {
-    use HasIncludes;
-
-    public function __construct(
-        protected Connector $connector,
-    ) {
-        //
-    }
-
     public function list(): Paginator
     {
-        $request = new ListDatabaseClustersRequest(include: $this->getIncludesString());
+        $request = new ListDatabaseClustersRequest;
 
-        return $this->connector->paginate($request);
+        return $this->paginate($request);
     }
 
     public function get(string $clusterId): DatabaseCluster
     {
-        $request = new GetDatabaseClusterRequest(
-            clusterId: $clusterId,
-            include: $this->getIncludesString(),
-        );
-
-        $response = $this->connector->send($request);
+        $request = new GetDatabaseClusterRequest($clusterId);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }
@@ -52,7 +38,7 @@ class DatabaseClustersResource
             clusterId: $clusterId,
         );
 
-        $response = $this->connector->send($request);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }
@@ -64,20 +50,20 @@ class DatabaseClustersResource
             data: $data,
         );
 
-        $response = $this->connector->send($request);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }
 
     public function delete(string $clusterId): void
     {
-        $this->connector->send(new DeleteDatabaseClusterRequest($clusterId));
+        $this->send(new DeleteDatabaseClusterRequest($clusterId));
     }
 
     public function types(): array
     {
         $request = new ListDatabaseTypesRequest;
-        $response = $this->connector->send($request);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }

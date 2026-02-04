@@ -2,7 +2,6 @@
 
 namespace App\Client\Resources;
 
-use App\Client\Connector;
 use App\Client\Resources\Domains\CreateDomainRequest;
 use App\Client\Resources\Domains\DeleteDomainRequest;
 use App\Client\Resources\Domains\GetDomainRequest;
@@ -12,26 +11,19 @@ use App\Client\Resources\Domains\VerifyDomainRequest;
 use App\Dto\Domain;
 use Saloon\PaginationPlugin\Paginator;
 
-class DomainsResource
+class DomainsResource extends Resource
 {
-    public function __construct(
-        protected Connector $connector,
-    ) {
-        //
-    }
-
     public function list(string $environmentId): Paginator
     {
         $request = new ListDomainsRequest($environmentId);
 
-        return $this->connector->paginate($request);
+        return $this->paginate($request);
     }
 
     public function get(string $domainId): Domain
     {
         $request = new GetDomainRequest($domainId);
-
-        $response = $this->connector->send($request);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }
@@ -43,7 +35,7 @@ class DomainsResource
             domain: $domain,
         );
 
-        $response = $this->connector->send($request);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }
@@ -55,18 +47,18 @@ class DomainsResource
             data: $data,
         );
 
-        $response = $this->connector->send($request);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }
 
     public function delete(string $domainId): void
     {
-        $this->connector->send(new DeleteDomainRequest($domainId));
+        $this->send(new DeleteDomainRequest($domainId));
     }
 
     public function verify(string $domainId): void
     {
-        $this->connector->send(new VerifyDomainRequest($domainId));
+        $this->send(new VerifyDomainRequest($domainId));
     }
 }

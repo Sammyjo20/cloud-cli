@@ -2,18 +2,11 @@
 
 namespace App\Client\Resources;
 
-use App\Client\Connector;
 use App\Client\Resources\DatabaseRestores\CreateDatabaseRestoreRequest;
 use App\Dto\DatabaseCluster;
 
-class DatabaseRestoresResource
+class DatabaseRestoresResource extends Resource
 {
-    public function __construct(
-        protected Connector $connector,
-    ) {
-        //
-    }
-
     public function create(string $clusterId, ?string $snapshotId = null, ?string $pointInTime = null): DatabaseCluster
     {
         $request = new CreateDatabaseRestoreRequest(
@@ -22,7 +15,7 @@ class DatabaseRestoresResource
             pointInTime: $pointInTime,
         );
 
-        $response = $this->connector->send($request);
+        $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
     }
