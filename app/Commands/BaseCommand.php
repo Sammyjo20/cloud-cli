@@ -10,6 +10,8 @@ use Illuminate\Contracts\Support\Jsonable;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 use RuntimeException;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 use function Laravel\Prompts\error;
 
@@ -44,9 +46,36 @@ abstract class BaseCommand extends Command
 
     protected function failAndExit(string $message): void
     {
-        error($message);
+        $this->outputError($message);
 
         exit(self::FAILURE);
+    }
+
+    /**
+     * Output an error in the correct format (JSON when wantsJson(), else stderr).
+     */
+    protected function outputError(string $message): void
+    {
+        if ($this->wantsJson()) {
+            $this->line(json_encode(['message' => $message]));
+        } else {
+            error($message);
+        }
+    }
+
+    public function run(InputInterface $input, OutputInterface $output): int
+    {
+        try {
+            return parent::run($input, $output);
+        } catch (RuntimeException $e) {
+            if ($this->wantsJson()) {
+                $this->outputError($e->getMessage());
+
+                return self::FAILURE;
+            }
+
+            throw $e;
+        }
     }
 
     protected function getParam(string $name, mixed $default = null): ?string

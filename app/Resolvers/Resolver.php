@@ -47,6 +47,12 @@ abstract class Resolver
 
     protected function failAndExit(string $message): void
     {
+        if (! $this->isInteractive) {
+            echo json_encode(['message' => $message]).PHP_EOL;
+
+            exit(Command::FAILURE);
+        }
+
         error($message);
 
         exit(Command::FAILURE);
