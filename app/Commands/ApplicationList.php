@@ -5,9 +5,9 @@ namespace App\Commands;
 use App\Dto\Application;
 use Laravel\Prompts\Key;
 
-use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
+use function Laravel\Prompts\warning;
 
 class ApplicationList extends BaseCommand
 {
@@ -31,9 +31,9 @@ class ApplicationList extends BaseCommand
         $this->outputJsonIfWanted($applications);
 
         if ($applications->isEmpty()) {
-            info('No applications found.');
+            warning('No applications found.');
 
-            return;
+            return self::FAILURE;
         }
 
         dataTable(
