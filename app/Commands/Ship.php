@@ -31,6 +31,7 @@ use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
+use function Laravel\Prompts\warning;
 
 class Ship extends BaseCommand
 {
@@ -339,7 +340,7 @@ class Ship extends BaseCommand
         $databases = $databasesPaginator->collect();
 
         if ($databases->isEmpty()) {
-            info('No databases found!');
+            warning('No databases found.');
 
             $createDatabase = confirm('Do you want to create a new database?');
 

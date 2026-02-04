@@ -4,9 +4,9 @@ namespace App\Commands;
 
 use Laravel\Prompts\Key;
 
-use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
+use function Laravel\Prompts\warning;
 
 class DatabaseClusterList extends BaseCommand
 {
@@ -30,9 +30,9 @@ class DatabaseClusterList extends BaseCommand
         $this->outputJsonIfWanted($items);
 
         if ($items->isEmpty()) {
-            info('No databases found.');
+            warning('No databases found.');
 
-            return;
+            return self::FAILURE;
         }
 
         dataTable(

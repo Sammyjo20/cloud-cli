@@ -39,7 +39,7 @@ class IpAddresses extends BaseCommand
             if ($addresses->isEmpty()) {
                 warning('No IP addresses found for region: '.$this->option('region'));
 
-                return;
+                return self::FAILURE;
             }
         }
 

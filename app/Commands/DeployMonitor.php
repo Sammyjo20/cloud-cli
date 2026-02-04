@@ -50,7 +50,7 @@ class DeployMonitor extends BaseCommand
 
             error('Monitoring cancelled.');
 
-            exit(1);
+            return self::FAILURE;
         }
 
         $environment = $this->resolvers()->environment()->withApplication($app)->from($this->argument('environment'));

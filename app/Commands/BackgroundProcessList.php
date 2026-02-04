@@ -4,9 +4,9 @@ namespace App\Commands;
 
 use Laravel\Prompts\Key;
 
-use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
+use function Laravel\Prompts\warning;
 
 class BackgroundProcessList extends BaseCommand
 {
@@ -32,9 +32,9 @@ class BackgroundProcessList extends BaseCommand
         $this->outputJsonIfWanted($items);
 
         if ($items->isEmpty()) {
-            info('No background processes found.');
+            warning('No background processes found.');
 
-            return;
+            return self::FAILURE;
         }
 
         dataTable(

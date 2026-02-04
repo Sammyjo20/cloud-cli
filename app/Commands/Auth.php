@@ -15,6 +15,7 @@ use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
+use function Laravel\Prompts\warning;
 
 class Auth extends BaseCommand implements NoAuthRequired
 {
@@ -125,9 +126,9 @@ class Auth extends BaseCommand implements NoAuthRequired
         );
 
         if ($orgs->isEmpty()) {
-            info('No API tokens found!');
+            warning('No API tokens found.');
 
-            return;
+            return self::FAILURE;
         }
 
         table(

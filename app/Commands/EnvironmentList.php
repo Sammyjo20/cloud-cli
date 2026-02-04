@@ -4,9 +4,9 @@ namespace App\Commands;
 
 use Laravel\Prompts\Key;
 
-use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
+use function Laravel\Prompts\warning;
 
 class EnvironmentList extends BaseCommand
 {
@@ -36,9 +36,9 @@ class EnvironmentList extends BaseCommand
         $this->outputJsonIfWanted($envItems);
 
         if ($envItems->isEmpty()) {
-            info('No environments found.');
+            warning('No environments found.');
 
-            return;
+            return self::FAILURE;
         }
 
         dataTable(

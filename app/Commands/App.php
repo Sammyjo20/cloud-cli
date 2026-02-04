@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Process;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
+use function Laravel\Prompts\warning;
 
 class App extends BaseCommand
 {
@@ -28,12 +29,14 @@ class App extends BaseCommand
         $app = $this->resolvers()->application()->from($this->argument('application'));
         $environment = $this->resolvers()->environment()->withApplication($app)->from($this->argument('environment'));
 
-        if ($environment->url) {
-            Process::run('open '.$environment->url);
+        if (! $environment->url) {
+            warning('No site found for this environment.');
 
-            outro($environment->url);
-        } else {
-            outro('No site found for this environment.');
+            return self::FAILURE;
         }
+
+        Process::run('open '.$environment->url);
+
+        outro($environment->url);
     }
 }

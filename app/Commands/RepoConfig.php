@@ -50,11 +50,13 @@ class RepoConfig extends BaseCommand
 
         $application = $this->selectApplication($localConfig->get('application_id'));
 
+        if ($application === null) {
+            return self::FAILURE;
+        }
+
         $newValues = ['organization_id' => $organization->id];
 
-        if ($application) {
-            $newValues['application_id'] = $application->id;
-        }
+        $newValues['application_id'] = $application->id;
 
         $localConfig->setMany($newValues);
 

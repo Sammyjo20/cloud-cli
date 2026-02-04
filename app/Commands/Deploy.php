@@ -55,7 +55,7 @@ class Deploy extends BaseCommand
 
             error('Deployment cancelled.');
 
-            exit(1);
+            return self::FAILURE;
         }
 
         $environment = $this->resolvers()->environment()->withApplication($app)->from($this->argument('environment'));

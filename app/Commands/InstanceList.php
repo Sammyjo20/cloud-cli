@@ -4,9 +4,9 @@ namespace App\Commands;
 
 use Laravel\Prompts\Key;
 
-use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
+use function Laravel\Prompts\warning;
 
 class InstanceList extends BaseCommand
 {
@@ -30,9 +30,9 @@ class InstanceList extends BaseCommand
         $this->outputJsonIfWanted($items);
 
         if ($items->isEmpty()) {
-            info('No instances found.');
+            warning('No instances found.');
 
-            return;
+            return self::FAILURE;
         }
 
         dataTable(

@@ -52,7 +52,7 @@ class EnvironmentLogs extends BaseCommand
         if (empty($logs)) {
             warning('No logs found.');
 
-            return;
+            return self::FAILURE;
         }
 
         $tail = $this->option('tail');

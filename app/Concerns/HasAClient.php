@@ -72,7 +72,7 @@ trait HasAClient
             return $apiToken;
         }
 
-        info('No API tokens found!');
+        info('No API tokens found.');
         info('Learn how to create an API token: https://cloud.laravel.com/docs/api/authentication#create-an-api-token');
 
         $apiToken = password(
