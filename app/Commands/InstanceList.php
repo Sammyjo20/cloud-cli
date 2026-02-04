@@ -2,10 +2,11 @@
 
 namespace App\Commands;
 
+use Laravel\Prompts\Key;
+
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\table;
 
 class InstanceList extends BaseCommand
 {
@@ -34,15 +35,21 @@ class InstanceList extends BaseCommand
             return;
         }
 
-        table(
-            ['ID', 'Name', 'Type', 'Size', 'Replicas'],
-            $items->map(fn ($instance) => [
+        dataTable(
+            headers: ['ID', 'Name', 'Type', 'Size', 'Replicas'],
+            rows: $items->map(fn ($instance) => [
                 $instance->id,
                 $instance->name,
                 $instance->type,
                 $instance->size,
                 "{$instance->minReplicas}-{$instance->maxReplicas}",
             ])->toArray(),
+            actions: [
+                Key::ENTER => [
+                    fn ($row) => $this->call('instance:get', ['instance' => $row[0]]),
+                    'View',
+                ],
+            ],
         );
     }
 }

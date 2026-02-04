@@ -2,14 +2,15 @@
 
 namespace App\Commands;
 
+use Laravel\Prompts\Key;
+
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\table;
 
 class DomainList extends BaseCommand
 {
-    protected $signature = 'domain:list {environment : The environment ID} {--json : Output as JSON}';
+    protected $signature = 'domain:list {environment? : The environment ID} {--json : Output as JSON}';
 
     protected $description = 'List all domains for an environment';
 
@@ -19,8 +20,10 @@ class DomainList extends BaseCommand
 
         intro('Domains');
 
+        $environment = $this->resolvers()->environment()->from($this->argument('environment'));
+
         $domains = spin(
-            fn () => $this->client->domains()->list($this->argument('environment')),
+            fn () => $this->client->domains()->list($environment->id),
             'Fetching domains...',
         );
 
@@ -34,14 +37,20 @@ class DomainList extends BaseCommand
             return;
         }
 
-        table(
-            ['ID', 'Domain', 'Status', 'Primary'],
-            $items->map(fn ($domain) => [
+        dataTable(
+            headers: ['ID', 'Domain', 'Status', 'Primary'],
+            rows: $items->map(fn ($domain) => [
                 $domain->id,
                 $domain->domain,
                 $domain->status,
                 $domain->isPrimary ? 'Yes' : 'No',
             ])->toArray(),
+            actions: [
+                Key::ENTER => [
+                    fn ($row) => $this->call('domain:get', ['domain' => $row[0]]),
+                    'View',
+                ],
+            ],
         );
     }
 }

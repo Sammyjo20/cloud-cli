@@ -2,10 +2,11 @@
 
 namespace App\Commands;
 
+use Laravel\Prompts\Key;
+
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\table;
 
 class DatabaseClusterList extends BaseCommand
 {
@@ -34,9 +35,9 @@ class DatabaseClusterList extends BaseCommand
             return;
         }
 
-        table(
-            ['ID', 'Name', 'Type', 'Status', 'Region', 'Schemas'],
-            $items->map(fn ($db) => [
+        dataTable(
+            headers: ['ID', 'Name', 'Type', 'Status', 'Region', 'Schemas'],
+            rows: $items->map(fn ($db) => [
                 $db->id,
                 $db->name,
                 $db->type,
@@ -44,6 +45,12 @@ class DatabaseClusterList extends BaseCommand
                 $db->region,
                 collect($db->schemas)->pluck('name')->implode(PHP_EOL),
             ])->toArray(),
+            actions: [
+                Key::ENTER => [
+                    fn ($row) => $this->call('database-cluster:get', ['database' => $row[0]]),
+                    'View',
+                ],
+            ],
         );
     }
 }

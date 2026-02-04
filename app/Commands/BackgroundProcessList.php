@@ -38,8 +38,8 @@ class BackgroundProcessList extends BaseCommand
         }
 
         dataTable(
-            ['ID', 'Command', 'Type', 'Instances'],
-            $items->map(fn ($process) => [
+            headers: ['ID', 'Command', 'Type', 'Instances'],
+            rows: $items->map(fn ($process) => [
                 $process->id,
                 str($process->command)->limit(25)->toString(),
                 $process->type,

@@ -2,10 +2,11 @@
 
 namespace App\Commands;
 
+use Laravel\Prompts\Key;
+
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\table;
 
 class DatabaseList extends BaseCommand
 {
@@ -36,13 +37,22 @@ class DatabaseList extends BaseCommand
             return;
         }
 
-        table(
-            ['ID', 'Name', 'Created At'],
-            $databases->map(fn ($database) => [
+        dataTable(
+            headers: ['ID', 'Name', 'Created At'],
+            rows: $databases->map(fn ($database) => [
                 $database->id,
                 $database->name,
                 $database->createdAt?->toIso8601String() ?? '-',
             ])->toArray(),
+            actions: [
+                Key::ENTER => [
+                    fn ($row) => $this->call('database:get', [
+                        'database-cluster' => $cluster->id,
+                        'database' => $row[0],
+                    ]),
+                    'View',
+                ],
+            ],
         );
     }
 }

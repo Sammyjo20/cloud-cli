@@ -2,10 +2,11 @@
 
 namespace App\Commands;
 
+use Laravel\Prompts\Key;
+
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\table;
 
 class EnvironmentList extends BaseCommand
 {
@@ -40,15 +41,21 @@ class EnvironmentList extends BaseCommand
             return;
         }
 
-        table(
-            ['ID', 'Name', 'Branch', 'Status', 'URL'],
-            $envItems->map(fn ($env) => [
+        dataTable(
+            headers: ['ID', 'Name', 'Branch', 'Status', 'URL'],
+            rows: $envItems->map(fn ($env) => [
                 $env->id,
                 $env->name,
                 $env->branch ?? 'N/A',
                 $env->status ?? 'N/A',
                 $env->url ?: 'N/A',
             ])->toArray(),
+            actions: [
+                Key::ENTER => [
+                    fn ($row) => $this->call('environment:get', ['environment' => $row[0]]),
+                    'View',
+                ],
+            ],
         );
     }
 }

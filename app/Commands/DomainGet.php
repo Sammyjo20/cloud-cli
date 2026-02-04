@@ -23,19 +23,7 @@ class DomainGet extends BaseCommand
             'Fetching domain...',
         );
 
-        if ($this->option('json')) {
-            $this->line(json_encode([
-                'id' => $domain->id,
-                'domain' => $domain->domain,
-                'status' => $domain->status,
-                'is_primary' => $domain->isPrimary,
-                'verification_status' => $domain->verificationStatus,
-                'created_at' => $domain->createdAt?->toIso8601String(),
-                'updated_at' => $domain->updatedAt?->toIso8601String(),
-            ], JSON_PRETTY_PRINT));
-
-            return;
-        }
+        $this->outputJsonIfWanted($domain);
 
         info("Domain: {$domain->domain}");
         $this->line("ID: {$domain->id}");
