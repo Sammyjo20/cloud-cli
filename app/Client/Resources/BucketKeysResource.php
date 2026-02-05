@@ -8,18 +8,15 @@ use App\Client\Resources\BucketKeys\GetBucketKeyRequest;
 use App\Client\Resources\BucketKeys\ListBucketKeysRequest;
 use App\Client\Resources\BucketKeys\UpdateBucketKeyRequest;
 use App\Dto\BucketKey;
+use Saloon\PaginationPlugin\Paginator;
 
 class BucketKeysResource extends Resource
 {
-    /**
-     * @return array<int, BucketKey>
-     */
-    public function list(string $bucketId): array
+    public function list(string $bucketId): Paginator
     {
-        $response = $this->send(new ListBucketKeysRequest($bucketId));
-        $data = $response->json()['data'] ?? [];
+        $request = new ListBucketKeysRequest($bucketId);
 
-        return collect($data)->map(fn (array $item) => BucketKey::createFromResponse(['data' => $item]))->all();
+        return $this->paginate($request);
     }
 
     public function get(string $bucketId, string $keyId): BucketKey
@@ -35,26 +32,26 @@ class BucketKeysResource extends Resource
 
     public function create(string $bucketId, string $name, string $permission): BucketKey
     {
-        $response = $this->send(new CreateBucketKeyRequest(
+        $request = new CreateBucketKeyRequest(
             bucketId: $bucketId,
             name: $name,
             permission: $permission,
-        ));
-        $data = $response->json()['data'] ?? [];
+        );
+        $response = $this->send($request);
 
-        return BucketKey::createFromResponse(['data' => $data]);
+        return $request->createDtoFromResponse($response);
     }
 
     public function update(string $bucketId, string $keyId, array $data): BucketKey
     {
-        $response = $this->send(new UpdateBucketKeyRequest(
+        $request = new UpdateBucketKeyRequest(
             bucketId: $bucketId,
             keyId: $keyId,
             data: $data,
-        ));
-        $responseData = $response->json()['data'] ?? [];
+        );
+        $response = $this->send($request);
 
-        return BucketKey::createFromResponse(['data' => $responseData]);
+        return $request->createDtoFromResponse($response);
     }
 
     public function delete(string $bucketId, string $keyId): void

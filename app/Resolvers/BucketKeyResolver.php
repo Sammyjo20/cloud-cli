@@ -58,10 +58,10 @@ class BucketKeyResolver extends Resolver
 
     protected function fetchAll(ObjectStorageBucket $bucket): Collection
     {
-        return collect(spin(
-            fn () => $this->client->bucketKeys()->list($bucket->id),
+        return spin(
+            fn () => $this->client->bucketKeys()->list($bucket->id)->collect(),
             'Fetching keys...',
-        ));
+        );
     }
 
     protected function idPrefix(): string

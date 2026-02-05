@@ -9,18 +9,15 @@ use App\Client\Resources\Caches\ListCachesRequest;
 use App\Client\Resources\Caches\ListCacheTypesRequest;
 use App\Client\Resources\Caches\UpdateCacheRequest;
 use App\Dto\Cache;
+use Saloon\PaginationPlugin\Paginator;
 
 class CachesResource extends Resource
 {
-    /**
-     * @return array<int, Cache>
-     */
-    public function list(): array
+    public function list(): Paginator
     {
-        $response = $this->send(new ListCachesRequest);
-        $data = $response->json()['data'] ?? [];
+        $request = new ListCachesRequest;
 
-        return collect($data)->map(fn (array $item) => Cache::createFromResponse(['data' => $item]))->all();
+        return $this->paginate($request);
     }
 
     public function get(string $cacheId): Cache
@@ -33,28 +30,26 @@ class CachesResource extends Resource
 
     public function create(string $type, string $name, string $region, array $config): Cache
     {
-        $response = $this->send(new CreateCacheRequest(
+        $request = new CreateCacheRequest(
             type: $type,
             name: $name,
             region: $region,
-            config: $config,
-        ));
+            configData: $config,
+        );
+        $response = $this->send($request);
 
-        $data = $response->json()['data'] ?? [];
-
-        return Cache::createFromResponse(['data' => $data]);
+        return $request->createDtoFromResponse($response);
     }
 
     public function update(string $cacheId, array $data): Cache
     {
-        $response = $this->send(new UpdateCacheRequest(
+        $request = new UpdateCacheRequest(
             cacheId: $cacheId,
             data: $data,
-        ));
+        );
+        $response = $this->send($request);
 
-        $responseData = $response->json()['data'] ?? [];
-
-        return Cache::createFromResponse(['data' => $responseData]);
+        return $request->createDtoFromResponse($response);
     }
 
     public function delete(string $cacheId): void

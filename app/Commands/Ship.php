@@ -2,6 +2,9 @@
 
 namespace App\Commands;
 
+use App\Actions\CreateDatabase;
+use App\Actions\CreateDatabaseCluster;
+use App\Actions\CreateWebSocketCluster;
 use App\Concerns\HandlesAvatars;
 use App\Concerns\RequiresRemoteGitRepo;
 use App\Concerns\UpdatesBuildDeployCommands;
@@ -9,10 +12,10 @@ use App\Concerns\Validates;
 use App\Dto\Application;
 use App\Dto\Database;
 use App\Dto\DatabaseCluster;
-use App\Dto\DatabaseType;
 use App\Dto\Environment;
 use App\Dto\Region;
 use App\Dto\ValidationErrors;
+use App\Dto\WebsocketCluster;
 use App\Git;
 use Carbon\CarbonInterval;
 use Dotenv\Dotenv;
@@ -106,6 +109,8 @@ class Ship extends BaseCommand
         success('Application created!');
 
         $application = $this->client->applications()->withDefaultIncludes()->get($application->id);
+        $this->appName = $application->name;
+        $this->region = $application->region;
         $environment = $this->client->environments()->include('instances')->get($application->defaultEnvironmentId ?? '');
 
         $this->loopUntilValid(
@@ -144,6 +149,8 @@ class Ship extends BaseCommand
     {
         $avatars = $this->getAvatarCandidatesFromRepo();
 
+        dump(['avatars' => $avatars->toArray()]);
+
         if ($avatars->isEmpty()) {
             return;
         }
@@ -173,7 +180,7 @@ class Ship extends BaseCommand
             'name',
             fn ($resolver) => $resolver->fromInput(fn ($value) => text(
                 label: 'Application name',
-                default: $value ?? $this->git->currentDirectoryName(),
+                default: $value ?? str($this->git->remoteRepo())->afterLast('/')->toString(),
                 required: true,
             )),
         );
@@ -214,13 +221,13 @@ class Ship extends BaseCommand
         $enableOptions = [
             'scheduler' => 'Laravel Scheduler',
             'hibernation' => 'Hibernation',
-            'database' => 'Database Cluster',
+            'database_cluster' => 'Database Cluster',
         ];
 
         $packages = [
             'inertiajs/inertia-laravel' => ['inertia_ssr' => 'Inertia SSR'],
             'laravel/octane' => ['octane' => 'Laravel Octane'],
-            'laravel/reverb' => ['reverb' => 'Laravel Reverb'],
+            'laravel/reverb' => ['websocket_cluster' => 'Websocket Cluster'],
         ];
 
         foreach ($packages as $package => $options) {
@@ -271,13 +278,22 @@ class Ship extends BaseCommand
             $instanceParams['sleep_timeout'] = $hibernateFor;
         }
 
-        if (in_array('database', $selectedOptions)) {
+        if (in_array('database_cluster', $selectedOptions)) {
             $cluster = $this->getDatabaseCluster();
 
             if ($cluster) {
                 $cluster = $this->client->databaseClusters()->include('schemas')->get($cluster->id);
                 $database = $this->getDatabase($cluster);
                 $environmentParams['database_schema_id'] = $database->id;
+            }
+        }
+
+        if (in_array('websocket_cluster', $selectedOptions)) {
+            $cluster = $this->getWebsocketCluster();
+
+            if ($cluster) {
+                $cluster = $this->client->websocketClusters()->get($cluster->id);
+                $environmentParams['websocket_cluster_id'] = $cluster->id;
             }
         }
 
@@ -304,6 +320,52 @@ class Ship extends BaseCommand
         }
     }
 
+    protected function getWebsocketCluster(): ?WebsocketCluster
+    {
+        $clustersPaginator = $this->client->websocketClusters()->list();
+        $clusters = $clustersPaginator->collect();
+
+        if ($clusters->isEmpty()) {
+            warning('No websocket clusters found.');
+
+            $createWebsocketCluster = confirm('Do you want to create a new websocket cluster?');
+
+            if ($createWebsocketCluster) {
+                return $this->loopUntilValid(
+                    fn () => app(CreateWebSocketCluster::class)->run($this->client, $this->websocketClusterDefaults()),
+                );
+            }
+
+            return null;
+        }
+
+        $options = $clusters->collect()->mapWithKeys(fn (WebsocketCluster $cluster) => [$cluster->id => $cluster->name]);
+        $options->prepend('Create new websocket cluster', 'new');
+
+        $cluster = select(
+            label: 'Websocket cluster',
+            options: $options->toArray(),
+            default: $clusters->first()?->id ?? null,
+            required: true,
+        );
+
+        if ($cluster !== 'new') {
+            return $clusters->firstWhere('id', $cluster);
+        }
+
+        return $this->loopUntilValid(
+            fn () => app(CreateWebSocketCluster::class)->run($this->client, $this->getWebSocketClusterDefaults()),
+        );
+    }
+
+    protected function getWebSocketClusterDefaults(): array
+    {
+        return array_filter([
+            'name' => $this->appName ? str($this->appName)->snake()->replace('-', '_')->toString() : null,
+            'region' => $this->region,
+        ]);
+    }
+
     protected function getDatabase(DatabaseCluster $database): ?Database
     {
         $options = collect($database->schemas)->mapWithKeys(fn (Database $schema) => [$schema->id => $schema->name]);
@@ -320,18 +382,9 @@ class Ship extends BaseCommand
             return collect($database->schemas)->firstWhere('id', $schema);
         }
 
-        $name = text(
-            label: 'Database name',
-            required: true,
-            validate: fn ($value) => match (true) {
-                ! preg_match('/^[a-z0-9_-]+$/', $value) => 'Must contain only lowercase letters, numbers, and underscores',
-                strlen($value) < 3 => 'Must be at least 3 characters',
-                strlen($value) > 40 => 'Must be less than 40 characters',
-                default => null,
-            },
+        return $this->loopUntilValid(
+            fn () => app(CreateDatabase::class)->run($this->client, $database, []),
         );
-
-        return $this->client->databases()->create($database->id, $name);
     }
 
     protected function getDatabaseCluster(): ?DatabaseCluster
@@ -345,18 +398,20 @@ class Ship extends BaseCommand
             $createDatabase = confirm('Do you want to create a new database?');
 
             if ($createDatabase) {
-                return $this->createDatabase();
+                return $this->loopUntilValid(
+                    fn () => app(CreateDatabaseCluster::class)->run($this->client, $this->databaseClusterDefaults()),
+                );
             }
 
             return null;
         }
 
-        $options = $databases->mapWithKeys(fn (DatabaseCluster $database) => [$database->id => $database->name]);
+        $options = $databases->collect()->mapWithKeys(fn (DatabaseCluster $database) => [$database->id => $database->name]);
         $options->prepend('Create new database cluster', 'new');
 
         $database = select(
             label: 'Database cluster',
-            options: $options,
+            options: $options->toArray(),
             default: $databases->first()?->id ?? null,
             required: true,
         );
@@ -365,46 +420,17 @@ class Ship extends BaseCommand
             return $databases->firstWhere('id', $database);
         }
 
-        return $this->createDatabase();
+        return $this->loopUntilValid(
+            fn () => app(CreateDatabaseCluster::class)->run($this->client, $this->databaseClusterDefaults()),
+        );
     }
 
-    protected function createDatabase(): ?DatabaseCluster
+    protected function databaseClusterDefaults(): array
     {
-        $name = text(
-            label: 'Database cluster name',
-            required: true,
-            default: str($this->appName)->snake()->replace('-', '_')->toString(),
-            validate: fn ($value) => match (true) {
-                ! preg_match('/^[a-zA-Z0-9_]+$/', $value) => 'Must contain only letters, numbers and underscores',
-                default => null,
-            },
-        );
-
-        info('More information about Cloud Database Clusters: https://cloud.laravel.com/docs/resources/databases');
-
-        $types = $this->client->databaseClusters()->types();
-
-        $selectedType = select(
-            label: 'Database cluster type',
-            options: collect($types)->mapWithKeys(fn (DatabaseType $type) => [$type->type => $type->label]),
-            required: true,
-        );
-
-        $type = collect($types)->firstWhere('type', $selectedType);
-
-        $regions = spin(
-            fn () => $this->client->meta()->regions(),
-            'Fetching regions...',
-        );
-
-        $region = select(
-            label: 'Database cluster region',
-            options: $regions,
-            required: true,
-            default: in_array($this->region, $type->regions) ? $this->region : null,
-        );
-
-        dd($name, $type, $region);
+        return array_filter([
+            'name' => $this->appName ? str($this->appName)->snake()->replace('-', '_')->toString() : null,
+            'region' => $this->region,
+        ]);
     }
 
     protected function pushCustomEnvironmentVariables(Application $application): void

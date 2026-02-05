@@ -26,7 +26,7 @@ class WebsocketApplicationList extends BaseCommand
         $cluster = $this->resolvers()->websocketCluster()->from($this->argument('cluster'));
 
         $apps = spin(
-            fn () => $this->client->websocketApplications()->list($cluster->id),
+            fn () => $this->client->websocketApplications()->list($cluster->id)->collect(),
             'Fetching WebSocket applications...',
         );
 

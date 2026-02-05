@@ -58,10 +58,10 @@ class DatabaseSnapshotResolver extends Resolver
 
     protected function fetchAll(DatabaseCluster $cluster): Collection
     {
-        return collect(spin(
-            fn () => $this->client->databaseSnapshots()->list($cluster->id),
+        return spin(
+            fn () => $this->client->databaseSnapshots()->list($cluster->id)->collect(),
             'Fetching snapshots...',
-        ));
+        );
     }
 
     protected function idPrefix(): string

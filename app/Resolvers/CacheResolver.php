@@ -77,10 +77,10 @@ class CacheResolver extends Resolver
 
     protected function fetchAll(): Collection
     {
-        return collect(spin(
-            fn () => $this->client->caches()->list(),
+        return spin(
+            fn () => $this->client->caches()->list()->collect(),
             'Fetching caches...',
-        ));
+        );
     }
 
     protected function idPrefix(): string

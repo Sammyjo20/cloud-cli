@@ -31,11 +31,11 @@ class DatabaseRestoreCreate extends BaseCommand
 
         if (! $snapshotId && ! $pointInTime && $this->isInteractive()) {
             $snapshots = spin(
-                fn () => $this->client->databaseSnapshots()->list($cluster->id),
+                fn () => $this->client->databaseSnapshots()->list($cluster->id)->collect(),
                 'Fetching snapshots...',
             );
 
-            if (count($snapshots) > 0) {
+            if ($snapshots->isNotEmpty()) {
                 $choice = select(
                     label: 'Restore from',
                     options: [
@@ -45,7 +45,7 @@ class DatabaseRestoreCreate extends BaseCommand
                 );
 
                 if ($choice === 'snapshot') {
-                    $snapshotOptions = collect($snapshots)->mapWithKeys(fn ($s) => [$s->id => $s->name])->toArray();
+                    $snapshotOptions = $snapshots->mapWithKeys(fn ($s) => [$s->id => $s->name])->toArray();
                     $snapshotId = select(
                         label: 'Snapshot',
                         options: $snapshotOptions,

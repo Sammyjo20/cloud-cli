@@ -26,7 +26,7 @@ class BucketKeyList extends BaseCommand
         $bucket = $this->resolvers()->objectStorageBucket()->from($this->argument('bucket'));
 
         $keys = spin(
-            fn () => $this->client->bucketKeys()->list($bucket->id),
+            fn () => $this->client->bucketKeys()->list($bucket->id)->collect(),
             'Fetching keys...',
         );
 

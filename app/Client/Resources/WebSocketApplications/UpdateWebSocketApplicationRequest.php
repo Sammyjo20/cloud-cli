@@ -2,9 +2,11 @@
 
 namespace App\Client\Resources\WebSocketApplications;
 
+use App\Dto\WebsocketApplication;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
 class UpdateWebSocketApplicationRequest extends Request implements HasBody
@@ -23,11 +25,16 @@ class UpdateWebSocketApplicationRequest extends Request implements HasBody
 
     public function resolveEndpoint(): string
     {
-        return "/websocket-clusters/{$this->clusterId}/applications/{$this->applicationId}";
+        return "/websocket-servers/{$this->clusterId}/applications/{$this->applicationId}";
     }
 
     protected function defaultBody(): array
     {
         return $this->data;
+    }
+
+    public function createDtoFromResponse(Response $response): WebsocketApplication
+    {
+        return WebsocketApplication::createFromResponse($response->json());
     }
 }

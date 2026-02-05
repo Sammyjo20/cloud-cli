@@ -18,6 +18,6 @@ class DeleteWebSocketApplicationRequest extends Request
 
     public function resolveEndpoint(): string
     {
-        return "/websocket-clusters/{$this->clusterId}/applications/{$this->applicationId}";
+        return "/websocket-servers/{$this->clusterId}/applications/{$this->applicationId}";
     }
 }

@@ -2,9 +2,11 @@
 
 namespace App\Client\Resources\Caches;
 
+use App\Dto\Cache;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
 class CreateCacheRequest extends Request implements HasBody
@@ -17,7 +19,7 @@ class CreateCacheRequest extends Request implements HasBody
         protected string $type,
         protected string $name,
         protected string $region,
-        protected array $config,
+        protected array $configData,
     ) {
         //
     }
@@ -33,7 +35,12 @@ class CreateCacheRequest extends Request implements HasBody
             'type' => $this->type,
             'name' => $this->name,
             'region' => $this->region,
-            'config' => $this->config,
+            'config' => $this->configData,
         ];
+    }
+
+    public function createDtoFromResponse(Response $response): Cache
+    {
+        return Cache::createFromResponse($response->json());
     }
 }

@@ -58,10 +58,10 @@ class WebSocketApplicationResolver extends Resolver
 
     protected function fetchAll(WebsocketCluster $cluster): Collection
     {
-        return collect(spin(
-            fn () => $this->client->websocketApplications()->list($cluster->id),
+        return spin(
+            fn () => $this->client->websocketApplications()->list($cluster->id)->collect(),
             'Fetching WebSocket applications...',
-        ));
+        );
     }
 
     protected function idPrefix(): string

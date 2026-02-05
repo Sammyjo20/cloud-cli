@@ -6,6 +6,7 @@ use App\Client\Connector;
 use App\Dto\Region;
 use App\Dto\WebsocketCluster;
 
+use function Laravel\Prompts\number;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
@@ -21,19 +22,25 @@ class CreateWebSocketCluster
         );
 
         $regions = spin(
-            fn () => $client->meta()->regions(),
+            fn() => $client->meta()->regions(),
             'Fetching regions...',
         );
 
         $region = select(
             label: 'Region',
-            options: collect($regions)->mapWithKeys(fn (Region $r) => [$r->value => $r->label])->toArray(),
+            options: collect($regions)->mapWithKeys(fn(Region $r) => [$r->value => $r->label])->toArray(),
             default: $defaults['region'] ?? null,
             required: true,
         );
 
+        $maxConnections = number(
+            label: 'Max connections',
+            default: $defaults['max_connections'] ?? 100,
+            required: true,
+        );
+
         return spin(
-            fn () => $client->websocketClusters()->create($name, $region, []),
+            fn() => $client->websocketClusters()->create($name, $region, $maxConnections),
             'Creating WebSocket cluster...',
         );
     }

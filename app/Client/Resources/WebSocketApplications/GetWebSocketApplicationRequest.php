@@ -3,8 +3,10 @@
 namespace App\Client\Resources\WebSocketApplications;
 
 use App\Client\Resources\Concerns\AcceptsInclude;
+use App\Dto\WebsocketApplication;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 
 class GetWebSocketApplicationRequest extends Request
 {
@@ -21,6 +23,11 @@ class GetWebSocketApplicationRequest extends Request
 
     public function resolveEndpoint(): string
     {
-        return "/websocket-clusters/{$this->clusterId}/applications/{$this->applicationId}";
+        return "/websocket-servers/{$this->clusterId}/applications/{$this->applicationId}";
+    }
+
+    public function createDtoFromResponse(Response $response): WebsocketApplication
+    {
+        return WebsocketApplication::createFromResponse($response->json());
     }
 }

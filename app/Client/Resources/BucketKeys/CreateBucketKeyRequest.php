@@ -2,9 +2,11 @@
 
 namespace App\Client\Resources\BucketKeys;
 
+use App\Dto\BucketKey;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
 class CreateBucketKeyRequest extends Request implements HasBody
@@ -32,5 +34,10 @@ class CreateBucketKeyRequest extends Request implements HasBody
             'name' => $this->name,
             'permission' => $this->permission,
         ];
+    }
+
+    public function createDtoFromResponse(Response $response): BucketKey
+    {
+        return BucketKey::createFromResponse($response->json());
     }
 }

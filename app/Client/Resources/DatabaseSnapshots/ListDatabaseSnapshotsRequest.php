@@ -2,8 +2,10 @@
 
 namespace App\Client\Resources\DatabaseSnapshots;
 
+use App\Dto\DatabaseSnapshot;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 
 class ListDatabaseSnapshotsRequest extends Request
 {
@@ -18,5 +20,12 @@ class ListDatabaseSnapshotsRequest extends Request
     public function resolveEndpoint(): string
     {
         return "/databases/clusters/{$this->clusterId}/snapshots";
+    }
+
+    public function createDtoFromResponse(Response $response): array
+    {
+        $data = $response->json('data') ?? [];
+
+        return array_map(fn (array $item) => DatabaseSnapshot::createFromResponse(['data' => $item]), $data);
     }
 }

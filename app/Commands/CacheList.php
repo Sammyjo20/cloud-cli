@@ -24,7 +24,7 @@ class CacheList extends BaseCommand
         answered('Organization', $this->client->meta()->organization()->name);
 
         $caches = spin(
-            fn () => $this->client->caches()->list(),
+            fn () => $this->client->caches()->list()->collect(),
             'Fetching caches...',
         );
 

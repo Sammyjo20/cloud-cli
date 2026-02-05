@@ -2,9 +2,11 @@
 
 namespace App\Client\Resources\BucketKeys;
 
+use App\Dto\BucketKey;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
 class UpdateBucketKeyRequest extends Request implements HasBody
@@ -29,5 +31,10 @@ class UpdateBucketKeyRequest extends Request implements HasBody
     protected function defaultBody(): array
     {
         return $this->data;
+    }
+
+    public function createDtoFromResponse(Response $response): BucketKey
+    {
+        return BucketKey::createFromResponse($response->json());
     }
 }

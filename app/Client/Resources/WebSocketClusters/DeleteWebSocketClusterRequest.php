@@ -17,6 +17,6 @@ class DeleteWebSocketClusterRequest extends Request
 
     public function resolveEndpoint(): string
     {
-        return "/websocket-clusters/{$this->clusterId}";
+        return "/websocket-servers/{$this->clusterId}";
     }
 }

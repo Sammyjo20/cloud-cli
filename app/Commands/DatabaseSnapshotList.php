@@ -26,7 +26,7 @@ class DatabaseSnapshotList extends BaseCommand
         $cluster = $this->resolvers()->databaseCluster()->from($this->argument('database-cluster'));
 
         $snapshots = spin(
-            fn () => $this->client->databaseSnapshots()->list($cluster->id),
+            fn () => $this->client->databaseSnapshots()->list($cluster->id)->collect(),
             'Fetching snapshots...',
         );
 
