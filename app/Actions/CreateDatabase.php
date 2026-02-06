@@ -15,7 +15,6 @@ class CreateDatabase
     {
         $name = text(
             label: 'Database name',
-            placeholder: 'my_database',
             default: $defaults['name'] ?? '',
             required: true,
             validate: fn (string $value) => match (true) {
