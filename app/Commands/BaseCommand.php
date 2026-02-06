@@ -10,6 +10,7 @@ use Illuminate\Contracts\Support\Jsonable;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 use RuntimeException;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -42,6 +43,11 @@ abstract class BaseCommand extends Command
     protected function resolvers(): Resolvers
     {
         return $this->resolvers ??= app(Resolvers::class, ['client' => $this->client, 'isInteractive' => $this->isInteractive()]);
+    }
+
+    protected function runningAsSubcommand(): bool
+    {
+        return $this->input instanceof ArrayInput;
     }
 
     protected function failAndExit(string $message): void
