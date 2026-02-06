@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\Environments;
 
+use App\Client\Requests\UpdateEnvironmentRequestData;
 use App\Dto\Environment;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -16,20 +17,19 @@ class UpdateEnvironmentRequest extends Request implements HasBody
     protected Method $method = Method::PATCH;
 
     public function __construct(
-        protected string $environmentId,
-        protected array $data,
+        protected UpdateEnvironmentRequestData $data,
     ) {
         //
     }
 
     public function resolveEndpoint(): string
     {
-        return "/environments/{$this->environmentId}";
+        return "/environments/{$this->data->environmentId}";
     }
 
     protected function defaultBody(): array
     {
-        return $this->data;
+        return $this->data->toRequestData();
     }
 
     public function createDtoFromResponse(Response $response): mixed

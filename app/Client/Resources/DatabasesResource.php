@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources;
 
+use App\Client\Requests\CreateDatabaseRequestData;
 use App\Client\Resources\Databases\CreateDatabaseRequest;
 use App\Client\Resources\Databases\DeleteDatabaseRequest;
 use App\Client\Resources\Databases\GetDatabaseRequest;
@@ -31,10 +32,10 @@ class DatabasesResource extends Resource
 
     public function create(string $clusterId, string $name): Database
     {
-        $request = new CreateDatabaseRequest(
+        $request = new CreateDatabaseRequest(new CreateDatabaseRequestData(
             clusterId: $clusterId,
             name: $name,
-        );
+        ));
 
         $response = $this->send($request);
 

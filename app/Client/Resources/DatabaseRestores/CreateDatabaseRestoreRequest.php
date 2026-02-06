@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\DatabaseRestores;
 
+use App\Client\Requests\CreateDatabaseRestoreRequestData;
 use App\Dto\DatabaseCluster;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -16,24 +17,19 @@ class CreateDatabaseRestoreRequest extends Request implements HasBody
     protected Method $method = Method::POST;
 
     public function __construct(
-        protected string $clusterId,
-        protected ?string $snapshotId = null,
-        protected ?string $pointInTime = null,
+        protected CreateDatabaseRestoreRequestData $data,
     ) {
         //
     }
 
     public function resolveEndpoint(): string
     {
-        return "/databases/clusters/{$this->clusterId}/restores";
+        return "/databases/clusters/{$this->data->clusterId}/restores";
     }
 
     protected function defaultBody(): array
     {
-        return array_filter([
-            'snapshot_id' => $this->snapshotId,
-            'point_in_time' => $this->pointInTime,
-        ]);
+        return $this->data->toRequestData();
     }
 
     public function createDtoFromResponse(Response $response): mixed

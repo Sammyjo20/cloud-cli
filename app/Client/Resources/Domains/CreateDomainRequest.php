@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\Domains;
 
+use App\Client\Requests\CreateDomainRequestData;
 use App\Dto\Domain;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -16,24 +17,19 @@ class CreateDomainRequest extends Request implements HasBody
     protected Method $method = Method::POST;
 
     public function __construct(
-        protected string $environmentId,
-        protected string $name,
-        protected array $data,
+        protected CreateDomainRequestData $data,
     ) {
         //
     }
 
     public function resolveEndpoint(): string
     {
-        return "/environments/{$this->environmentId}/domains";
+        return "/environments/{$this->data->environmentId}/domains";
     }
 
     protected function defaultBody(): array
     {
-        return [
-            'name' => $this->name,
-            ...$this->data,
-        ];
+        return $this->data->toRequestData();
     }
 
     public function createDtoFromResponse(Response $response): mixed

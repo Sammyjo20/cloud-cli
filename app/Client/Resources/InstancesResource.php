@@ -2,6 +2,8 @@
 
 namespace App\Client\Resources;
 
+use App\Client\Requests\CreateInstanceRequestData;
+use App\Client\Requests\UpdateInstanceRequestData;
 use App\Client\Resources\Instances\CreateInstanceRequest;
 use App\Client\Resources\Instances\DeleteInstanceRequest;
 use App\Client\Resources\Instances\GetInstanceRequest;
@@ -30,10 +32,10 @@ class InstancesResource extends Resource
 
     public function create(string $environmentId, array $data): EnvironmentInstance
     {
-        $request = new CreateInstanceRequest(
+        $request = new CreateInstanceRequest(new CreateInstanceRequestData(
             environmentId: $environmentId,
             data: $data,
-        );
+        ));
 
         $response = $this->send($request);
 
@@ -42,10 +44,10 @@ class InstancesResource extends Resource
 
     public function update(string $instanceId, array $data): EnvironmentInstance
     {
-        $request = new UpdateInstanceRequest(
+        $request = new UpdateInstanceRequest(new UpdateInstanceRequestData(
             instanceId: $instanceId,
             data: $data,
-        );
+        ));
 
         $response = $this->send($request);
 

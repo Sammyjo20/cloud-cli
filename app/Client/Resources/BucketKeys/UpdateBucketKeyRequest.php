@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\BucketKeys;
 
+use App\Client\Requests\UpdateBucketKeyRequestData;
 use App\Dto\BucketKey;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -16,21 +17,19 @@ class UpdateBucketKeyRequest extends Request implements HasBody
     protected Method $method = Method::PATCH;
 
     public function __construct(
-        protected string $bucketId,
-        protected string $keyId,
-        protected array $data,
+        protected UpdateBucketKeyRequestData $data,
     ) {
         //
     }
 
     public function resolveEndpoint(): string
     {
-        return "/buckets/{$this->bucketId}/keys/{$this->keyId}";
+        return "/buckets/{$this->data->bucketId}/keys/{$this->data->keyId}";
     }
 
     protected function defaultBody(): array
     {
-        return $this->data;
+        return $this->data->toRequestData();
     }
 
     public function createDtoFromResponse(Response $response): BucketKey

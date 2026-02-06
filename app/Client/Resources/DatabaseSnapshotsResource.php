@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources;
 
+use App\Client\Requests\CreateDatabaseSnapshotRequestData;
 use App\Client\Resources\DatabaseSnapshots\CreateDatabaseSnapshotRequest;
 use App\Client\Resources\DatabaseSnapshots\DeleteDatabaseSnapshotRequest;
 use App\Client\Resources\DatabaseSnapshots\GetDatabaseSnapshotRequest;
@@ -31,7 +32,7 @@ class DatabaseSnapshotsResource extends Resource
 
     public function create(string $clusterId): DatabaseSnapshot
     {
-        $request = new CreateDatabaseSnapshotRequest($clusterId);
+        $request = new CreateDatabaseSnapshotRequest(new CreateDatabaseSnapshotRequestData($clusterId));
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);

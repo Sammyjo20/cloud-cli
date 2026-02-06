@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\Applications;
 
+use App\Client\Requests\UpdateApplicationRequestData;
 use App\Dto\Application;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Data\MultipartValue;
@@ -17,35 +18,19 @@ class UpdateApplicationRequest extends Request implements HasBody
     protected Method $method = Method::PATCH;
 
     public function __construct(
-        protected string $applicationId,
-        protected ?string $name = null,
-        protected ?string $slug = null,
-        protected ?string $defaultEnvironmentId = null,
-        protected ?string $repository = null,
-        protected ?string $slackChannel = null,
-        protected ?MultipartValue $avatar = null,
+        protected UpdateApplicationRequestData $data,
     ) {
         //
     }
 
     public function resolveEndpoint(): string
     {
-        return "/applications/{$this->applicationId}";
+        return "/applications/{$this->data->applicationId}";
     }
 
     protected function defaultBody(): array
     {
-        $body = array_filter([
-            'name' => $this->name,
-            'slug' => $this->slug,
-            'default_environment_id' => $this->defaultEnvironmentId,
-            'repository' => $this->repository,
-            'slack_channel' => $this->slackChannel,
-        ]);
-
-        if ($this->avatar !== null) {
-            $body['avatar'] = $this->avatar;
-        }
+        $body = $this->data->toRequestData();
 
         foreach ($body as $key => $value) {
             if (! $value instanceof MultipartValue) {

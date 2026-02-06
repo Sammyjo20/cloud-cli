@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\CliAuth;
 
+use App\Client\Requests\CreateAuthSessionRequestData;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -15,7 +16,7 @@ class CreateAuthSessionRequest extends Request implements HasBody
     protected Method $method = Method::POST;
 
     public function __construct(
-        protected int $port,
+        protected CreateAuthSessionRequestData $data,
     ) {
         //
     }
@@ -27,9 +28,7 @@ class CreateAuthSessionRequest extends Request implements HasBody
 
     protected function defaultBody(): array
     {
-        return [
-            'port' => $this->port,
-        ];
+        return $this->data->toRequestData();
     }
 
     public function hasAuthenticator(): bool

@@ -2,6 +2,8 @@
 
 namespace App\Client\Resources;
 
+use App\Client\Requests\CreateWebSocketApplicationRequestData;
+use App\Client\Requests\UpdateWebSocketApplicationRequestData;
 use App\Client\Resources\WebSocketApplications\CreateWebSocketApplicationRequest;
 use App\Client\Resources\WebSocketApplications\DeleteWebSocketApplicationRequest;
 use App\Client\Resources\WebSocketApplications\GetWebSocketApplicationRequest;
@@ -32,10 +34,10 @@ class WebSocketApplicationsResource extends Resource
 
     public function create(string $clusterId, array $data): WebsocketApplication
     {
-        $request = new CreateWebSocketApplicationRequest(
+        $request = new CreateWebSocketApplicationRequest(new CreateWebSocketApplicationRequestData(
             clusterId: $clusterId,
             data: $data,
-        );
+        ));
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
@@ -43,11 +45,11 @@ class WebSocketApplicationsResource extends Resource
 
     public function update(string $clusterId, string $applicationId, array $data): WebsocketApplication
     {
-        $request = new UpdateWebSocketApplicationRequest(
+        $request = new UpdateWebSocketApplicationRequest(new UpdateWebSocketApplicationRequestData(
             clusterId: $clusterId,
             applicationId: $applicationId,
             data: $data,
-        );
+        ));
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);

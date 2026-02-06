@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\Domains;
 
+use App\Client\Requests\VerifyDomainRequestData;
 use App\Dto\Domain;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -12,14 +13,14 @@ class VerifyDomainRequest extends Request
     protected Method $method = Method::POST;
 
     public function __construct(
-        protected string $domainId,
+        protected VerifyDomainRequestData $data,
     ) {
         //
     }
 
     public function resolveEndpoint(): string
     {
-        return "/domains/{$this->domainId}/verify";
+        return "/domains/{$this->data->domainId}/verify";
     }
 
     public function createDtoFromResponse(Response $response): mixed

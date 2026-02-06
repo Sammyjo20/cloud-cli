@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\Databases;
 
+use App\Client\Requests\CreateDatabaseRequestData;
 use App\Dto\Database;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -16,22 +17,19 @@ class CreateDatabaseRequest extends Request implements HasBody
     protected Method $method = Method::POST;
 
     public function __construct(
-        protected string $clusterId,
-        protected string $name,
+        protected CreateDatabaseRequestData $data,
     ) {
         //
     }
 
     public function resolveEndpoint(): string
     {
-        return "/databases/clusters/{$this->clusterId}/databases";
+        return "/databases/clusters/{$this->data->clusterId}/databases";
     }
 
     protected function defaultBody(): array
     {
-        return [
-            'name' => $this->name,
-        ];
+        return $this->data->toRequestData();
     }
 
     public function createDtoFromResponse(Response $response): mixed

@@ -2,6 +2,8 @@
 
 namespace App\Client\Resources;
 
+use App\Client\Requests\CreateObjectStorageBucketRequestData;
+use App\Client\Requests\UpdateObjectStorageBucketRequestData;
 use App\Client\Resources\ObjectStorageBuckets\CreateObjectStorageBucketRequest;
 use App\Client\Resources\ObjectStorageBuckets\DeleteObjectStorageBucketRequest;
 use App\Client\Resources\ObjectStorageBuckets\GetObjectStorageBucketRequest;
@@ -33,7 +35,7 @@ class ObjectStorageBucketsResource extends Resource
 
     public function create(string $name, string $region, string $visibility, ?string $jurisdiction = null, ?array $allowedOrigins = null, ?string $keyName = null, ?string $keyPermission = null): ObjectStorageBucket
     {
-        $request = new CreateObjectStorageBucketRequest(
+        $request = new CreateObjectStorageBucketRequest(new CreateObjectStorageBucketRequestData(
             name: $name,
             region: $region,
             visibility: $visibility,
@@ -41,7 +43,7 @@ class ObjectStorageBucketsResource extends Resource
             allowedOrigins: $allowedOrigins,
             keyName: $keyName,
             keyPermission: $keyPermission,
-        );
+        ));
 
         $response = $this->send($request);
 
@@ -50,10 +52,10 @@ class ObjectStorageBucketsResource extends Resource
 
     public function update(string $bucketId, array $data): ObjectStorageBucket
     {
-        $request = new UpdateObjectStorageBucketRequest(
+        $request = new UpdateObjectStorageBucketRequest(new UpdateObjectStorageBucketRequestData(
             bucketId: $bucketId,
             data: $data,
-        );
+        ));
 
         $response = $this->send($request);
 

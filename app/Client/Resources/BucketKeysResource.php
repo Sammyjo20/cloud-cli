@@ -2,6 +2,8 @@
 
 namespace App\Client\Resources;
 
+use App\Client\Requests\CreateBucketKeyRequestData;
+use App\Client\Requests\UpdateBucketKeyRequestData;
 use App\Client\Resources\BucketKeys\CreateBucketKeyRequest;
 use App\Client\Resources\BucketKeys\DeleteBucketKeyRequest;
 use App\Client\Resources\BucketKeys\GetBucketKeyRequest;
@@ -32,11 +34,11 @@ class BucketKeysResource extends Resource
 
     public function create(string $bucketId, string $name, string $permission): BucketKey
     {
-        $request = new CreateBucketKeyRequest(
+        $request = new CreateBucketKeyRequest(new CreateBucketKeyRequestData(
             bucketId: $bucketId,
             name: $name,
             permission: $permission,
-        );
+        ));
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
@@ -44,11 +46,11 @@ class BucketKeysResource extends Resource
 
     public function update(string $bucketId, string $keyId, array $data): BucketKey
     {
-        $request = new UpdateBucketKeyRequest(
+        $request = new UpdateBucketKeyRequest(new UpdateBucketKeyRequestData(
             bucketId: $bucketId,
             keyId: $keyId,
             data: $data,
-        );
+        ));
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);

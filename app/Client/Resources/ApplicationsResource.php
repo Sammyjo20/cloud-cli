@@ -2,6 +2,8 @@
 
 namespace App\Client\Resources;
 
+use App\Client\Requests\CreateApplicationRequestData;
+use App\Client\Requests\UpdateApplicationRequestData;
 use App\Client\Resources\Applications\CreateApplicationRequest;
 use App\Client\Resources\Applications\GetApplicationRequest;
 use App\Client\Resources\Applications\ListApplicationsRequest;
@@ -33,11 +35,11 @@ class ApplicationsResource extends Resource
 
     public function create(string $repository, string $name, string $region): Application
     {
-        $request = new CreateApplicationRequest(
+        $request = new CreateApplicationRequest(new CreateApplicationRequestData(
             repository: $repository,
             name: $name,
             region: $region,
-        );
+        ));
 
         $response = $this->send($request);
 
@@ -60,7 +62,7 @@ class ApplicationsResource extends Resource
             unset($data['avatar']);
         }
 
-        $request = new UpdateApplicationRequest(
+        $request = new UpdateApplicationRequest(new UpdateApplicationRequestData(
             applicationId: $applicationId,
             name: $data['name'] ?? null,
             slug: $data['slug'] ?? null,
@@ -68,7 +70,7 @@ class ApplicationsResource extends Resource
             repository: $data['repository'] ?? null,
             slackChannel: $data['slack_channel'] ?? null,
             avatar: $avatar,
-        );
+        ));
 
         $response = $this->send($request);
 

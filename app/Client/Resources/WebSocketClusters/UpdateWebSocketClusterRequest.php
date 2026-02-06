@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\WebSocketClusters;
 
+use App\Client\Requests\UpdateWebSocketClusterRequestData;
 use App\Dto\WebsocketCluster;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -16,20 +17,19 @@ class UpdateWebSocketClusterRequest extends Request implements HasBody
     protected Method $method = Method::PATCH;
 
     public function __construct(
-        protected string $clusterId,
-        protected array $data,
+        protected UpdateWebSocketClusterRequestData $data,
     ) {
         //
     }
 
     public function resolveEndpoint(): string
     {
-        return "/websocket-servers/{$this->clusterId}";
+        return "/websocket-servers/{$this->data->clusterId}";
     }
 
     protected function defaultBody(): array
     {
-        return $this->data;
+        return $this->data->toRequestData();
     }
 
     public function createDtoFromResponse(Response $response): WebsocketCluster

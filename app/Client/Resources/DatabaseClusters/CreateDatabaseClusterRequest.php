@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\DatabaseClusters;
 
+use App\Client\Requests\CreateDatabaseClusterRequestData;
 use App\Dto\DatabaseCluster;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -16,11 +17,7 @@ class CreateDatabaseClusterRequest extends Request implements HasBody
     protected Method $method = Method::POST;
 
     public function __construct(
-        protected string $type,
-        protected string $name,
-        protected string $region,
-        protected array $clusterConfig,
-        protected ?int $clusterId = null,
+        protected CreateDatabaseClusterRequestData $data,
     ) {
         //
     }
@@ -32,13 +29,7 @@ class CreateDatabaseClusterRequest extends Request implements HasBody
 
     protected function defaultBody(): array
     {
-        return array_filter([
-            'type' => $this->type,
-            'name' => $this->name,
-            'region' => $this->region,
-            'config' => $this->clusterConfig,
-            'cluster_id' => $this->clusterId,
-        ]);
+        return $this->data->toRequestData();
     }
 
     public function createDtoFromResponse(Response $response): mixed

@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\CliAuth;
 
+use App\Client\Requests\ExchangeCodeRequestData;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -15,7 +16,7 @@ class ExchangeCodeRequest extends Request implements HasBody
     protected Method $method = Method::POST;
 
     public function __construct(
-        protected string $exchangeCode,
+        protected ExchangeCodeRequestData $data,
     ) {
         //
     }
@@ -27,9 +28,7 @@ class ExchangeCodeRequest extends Request implements HasBody
 
     protected function defaultBody(): array
     {
-        return [
-            'exchange_code' => $this->exchangeCode,
-        ];
+        return $this->data->toRequestData();
     }
 
     public function hasAuthenticator(): bool

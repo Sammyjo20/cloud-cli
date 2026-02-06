@@ -2,6 +2,9 @@
 
 namespace App\Client\Resources;
 
+use App\Client\Requests\CreateDomainRequestData;
+use App\Client\Requests\UpdateDomainRequestData;
+use App\Client\Requests\VerifyDomainRequestData;
 use App\Client\Resources\Domains\CreateDomainRequest;
 use App\Client\Resources\Domains\DeleteDomainRequest;
 use App\Client\Resources\Domains\GetDomainRequest;
@@ -30,11 +33,11 @@ class DomainsResource extends Resource
 
     public function create(string $environmentId, string $name, array $data): Domain
     {
-        $request = new CreateDomainRequest(
+        $request = new CreateDomainRequest(new CreateDomainRequestData(
             environmentId: $environmentId,
             name: $name,
             data: $data,
-        );
+        ));
 
         $response = $this->send($request);
 
@@ -43,10 +46,10 @@ class DomainsResource extends Resource
 
     public function update(string $domainId, array $data): Domain
     {
-        $request = new UpdateDomainRequest(
+        $request = new UpdateDomainRequest(new UpdateDomainRequestData(
             domainId: $domainId,
             data: $data,
-        );
+        ));
 
         $response = $this->send($request);
 
@@ -60,7 +63,7 @@ class DomainsResource extends Resource
 
     public function verify(string $domainId): Domain
     {
-        $request = new VerifyDomainRequest($domainId);
+        $request = new VerifyDomainRequest(new VerifyDomainRequestData($domainId));
 
         $response = $this->send($request);
 

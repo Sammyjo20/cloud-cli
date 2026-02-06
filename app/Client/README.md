@@ -164,14 +164,15 @@ $applications = $response->json()['data'];
 
 ```php
 use App\Client\Connector;
+use App\Client\Requests\CreateApplicationRequestData;
 use App\Client\Resources\Applications\CreateApplicationRequest;
 
 $connector = new Connector('your-api-token');
-$response = $connector->send(new CreateApplicationRequest(
+$response = $connector->send(new CreateApplicationRequest(new CreateApplicationRequestData(
     repository: 'username/repo',
     name: 'My App',
     region: 'us-east-1'
-));
+)));
 
 $application = $response->json()['data'];
 ```
@@ -180,14 +181,15 @@ $application = $response->json()['data'];
 
 ```php
 use App\Client\Connector;
+use App\Client\Requests\CreateEnvironmentRequestData;
 use App\Client\Resources\Environments\CreateEnvironmentRequest;
 
 $connector = new Connector('your-api-token');
-$response = $connector->send(new CreateEnvironmentRequest(
+$response = $connector->send(new CreateEnvironmentRequest(new CreateEnvironmentRequestData(
     applicationId: 'app-123',
     name: 'production',
     branch: 'main'
-));
+)));
 
 $environment = $response->json()['data'];
 ```
@@ -196,13 +198,14 @@ $environment = $response->json()['data'];
 
 ```php
 use App\Client\Connector;
+use App\Client\Requests\RunCommandRequestData;
 use App\Client\Resources\Commands\RunCommandRequest;
 
 $connector = new Connector('your-api-token');
-$response = $connector->send(new RunCommandRequest(
+$response = $connector->send(new RunCommandRequest(new RunCommandRequestData(
     environmentId: 'env-123',
     command: 'php artisan migrate'
-));
+)));
 
 $command = $response->json()['data'];
 ```
@@ -211,14 +214,15 @@ $command = $response->json()['data'];
 
 ```php
 use App\Client\Connector;
+use App\Client\Requests\CreateDatabaseClusterRequestData;
 use App\Client\Resources\DatabaseClusters\CreateDatabaseClusterRequest;
 
 $connector = new Connector('your-api-token');
-$response = $connector->send(new CreateDatabaseClusterRequest(
+$response = $connector->send(new CreateDatabaseClusterRequest(new CreateDatabaseClusterRequestData(
     type: 'neon_serverless_postgres_18',
     name: 'my-database',
     region: 'us-east-1',
-    config: [
+    clusterConfig: [
         'cu_min' => 0.25,
         'cu_max' => 2,
         'suspend_seconds' => 300,

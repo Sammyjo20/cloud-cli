@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\Instances;
 
+use App\Client\Requests\CreateInstanceRequestData;
 use App\Dto\EnvironmentInstance;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -16,20 +17,19 @@ class CreateInstanceRequest extends Request implements HasBody
     protected Method $method = Method::POST;
 
     public function __construct(
-        protected string $environmentId,
-        protected array $data,
+        protected CreateInstanceRequestData $data,
     ) {
         //
     }
 
     public function resolveEndpoint(): string
     {
-        return "/environments/{$this->environmentId}/instances";
+        return "/environments/{$this->data->environmentId}/instances";
     }
 
     protected function defaultBody(): array
     {
-        return $this->data;
+        return $this->data->toRequestData();
     }
 
     public function createDtoFromResponse(Response $response): mixed

@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\WebSocketClusters;
 
+use App\Client\Requests\CreateWebSocketClusterRequestData;
 use App\Dto\WebsocketCluster;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -16,9 +17,7 @@ class CreateWebSocketClusterRequest extends Request implements HasBody
     protected Method $method = Method::POST;
 
     public function __construct(
-        protected string $name,
-        protected string $region,
-        protected int $maxConnections,
+        protected CreateWebSocketClusterRequestData $data,
     ) {
         //
     }
@@ -30,12 +29,7 @@ class CreateWebSocketClusterRequest extends Request implements HasBody
 
     protected function defaultBody(): array
     {
-        return [
-            'name' => $this->name,
-            'type' => 'reverb',
-            'region' => $this->region,
-            'max_connections' => $this->maxConnections,
-        ];
+        return $this->data->toRequestData();
     }
 
     public function createDtoFromResponse(Response $response): WebsocketCluster

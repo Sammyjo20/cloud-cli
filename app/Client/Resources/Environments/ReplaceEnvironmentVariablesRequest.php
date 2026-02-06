@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\Environments;
 
+use App\Client\Requests\ReplaceEnvironmentVariablesRequestData;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -14,33 +15,18 @@ class ReplaceEnvironmentVariablesRequest extends Request implements HasBody
     protected Method $method = Method::PUT;
 
     public function __construct(
-        protected string $environmentId,
-        protected ?string $content = null,
-        protected array $variables = [],
+        protected ReplaceEnvironmentVariablesRequestData $data,
     ) {
         //
     }
 
     public function resolveEndpoint(): string
     {
-        return "/environments/{$this->environmentId}/variables";
+        return "/environments/{$this->data->environmentId}/variables";
     }
 
     protected function defaultBody(): array
     {
-        $body = [];
-
-        if ($this->content !== null) {
-            $body['content'] = $this->content;
-        }
-
-        if ($this->variables !== []) {
-            $body['variables'] = collect($this->variables)->map(fn ($value, $key) => [
-                'key' => $key,
-                'value' => $value,
-            ])->values()->toArray();
-        }
-
-        return $body;
+        return $this->data->toRequestData();
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\WebSocketApplications;
 
+use App\Client\Requests\UpdateWebSocketApplicationRequestData;
 use App\Dto\WebsocketApplication;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -16,21 +17,19 @@ class UpdateWebSocketApplicationRequest extends Request implements HasBody
     protected Method $method = Method::PATCH;
 
     public function __construct(
-        protected string $clusterId,
-        protected string $applicationId,
-        protected array $data,
+        protected UpdateWebSocketApplicationRequestData $data,
     ) {
         //
     }
 
     public function resolveEndpoint(): string
     {
-        return "/websocket-servers/{$this->clusterId}/applications/{$this->applicationId}";
+        return "/websocket-servers/{$this->data->clusterId}/applications/{$this->data->applicationId}";
     }
 
     protected function defaultBody(): array
     {
-        return $this->data;
+        return $this->data->toRequestData();
     }
 
     public function createDtoFromResponse(Response $response): WebsocketApplication

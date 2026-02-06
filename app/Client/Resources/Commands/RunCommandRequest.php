@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\Commands;
 
+use App\Client\Requests\RunCommandRequestData;
 use App\Dto\Command;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -16,22 +17,19 @@ class RunCommandRequest extends Request implements HasBody
     protected Method $method = Method::POST;
 
     public function __construct(
-        protected string $environmentId,
-        protected string $command,
+        protected RunCommandRequestData $data,
     ) {
         //
     }
 
     public function resolveEndpoint(): string
     {
-        return "/environments/{$this->environmentId}/commands";
+        return "/environments/{$this->data->environmentId}/commands";
     }
 
     protected function defaultBody(): array
     {
-        return [
-            'command' => $this->command,
-        ];
+        return $this->data->toRequestData();
     }
 
     public function createDtoFromResponse(Response $response): mixed

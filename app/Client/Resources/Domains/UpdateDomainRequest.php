@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\Domains;
 
+use App\Client\Requests\UpdateDomainRequestData;
 use App\Dto\Domain;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -16,20 +17,19 @@ class UpdateDomainRequest extends Request implements HasBody
     protected Method $method = Method::PATCH;
 
     public function __construct(
-        protected string $domainId,
-        protected array $data,
+        protected UpdateDomainRequestData $data,
     ) {
         //
     }
 
     public function resolveEndpoint(): string
     {
-        return "/domains/{$this->domainId}";
+        return "/domains/{$this->data->domainId}";
     }
 
     protected function defaultBody(): array
     {
-        return $this->data;
+        return $this->data->toRequestData();
     }
 
     public function createDtoFromResponse(Response $response): mixed

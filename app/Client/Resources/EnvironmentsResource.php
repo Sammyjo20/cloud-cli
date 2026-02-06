@@ -2,6 +2,12 @@
 
 namespace App\Client\Resources;
 
+use App\Client\Requests\AddEnvironmentVariablesRequestData;
+use App\Client\Requests\CreateEnvironmentRequestData;
+use App\Client\Requests\ReplaceEnvironmentVariablesRequestData;
+use App\Client\Requests\StartEnvironmentRequestData;
+use App\Client\Requests\StopEnvironmentRequestData;
+use App\Client\Requests\UpdateEnvironmentRequestData;
 use App\Client\Resources\Environments\AddEnvironmentVariablesRequest;
 use App\Client\Resources\Environments\CreateEnvironmentRequest;
 use App\Client\Resources\Environments\DeleteEnvironmentRequest;
@@ -34,11 +40,11 @@ class EnvironmentsResource extends Resource
 
     public function create(string $applicationId, string $name, ?string $branch = null): Environment
     {
-        $request = new CreateEnvironmentRequest(
+        $request = new CreateEnvironmentRequest(new CreateEnvironmentRequestData(
             applicationId: $applicationId,
             name: $name,
             branch: $branch,
-        );
+        ));
 
         $response = $this->send($request);
 
@@ -47,10 +53,10 @@ class EnvironmentsResource extends Resource
 
     public function update(string $environmentId, array $data): Environment
     {
-        $request = new UpdateEnvironmentRequest(
+        $request = new UpdateEnvironmentRequest(new UpdateEnvironmentRequestData(
             environmentId: $environmentId,
             data: $data,
-        );
+        ));
 
         $response = $this->send($request);
 
@@ -83,29 +89,29 @@ class EnvironmentsResource extends Resource
      */
     public function addVariables(string $environmentId, array $variables, string $method = 'append'): void
     {
-        $this->send(new AddEnvironmentVariablesRequest(
+        $this->send(new AddEnvironmentVariablesRequest(new AddEnvironmentVariablesRequestData(
             environmentId: $environmentId,
             variables: $variables,
             action: $method,
-        ));
+        )));
     }
 
     public function replaceVariables(string $environmentId, array $variables = [], ?string $content = null): void
     {
-        $this->send(new ReplaceEnvironmentVariablesRequest(
+        $this->send(new ReplaceEnvironmentVariablesRequest(new ReplaceEnvironmentVariablesRequestData(
             environmentId: $environmentId,
             content: $content,
             variables: $variables,
-        ));
+        )));
     }
 
     public function start(string $environmentId): void
     {
-        $this->send(new StartEnvironmentRequest($environmentId));
+        $this->send(new StartEnvironmentRequest(new StartEnvironmentRequestData($environmentId)));
     }
 
     public function stop(string $environmentId): void
     {
-        $this->send(new StopEnvironmentRequest($environmentId));
+        $this->send(new StopEnvironmentRequest(new StopEnvironmentRequestData($environmentId)));
     }
 }

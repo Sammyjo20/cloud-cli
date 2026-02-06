@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\BucketKeys;
 
+use App\Client\Requests\CreateBucketKeyRequestData;
 use App\Dto\BucketKey;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -16,24 +17,19 @@ class CreateBucketKeyRequest extends Request implements HasBody
     protected Method $method = Method::POST;
 
     public function __construct(
-        protected string $bucketId,
-        protected string $name,
-        protected string $permission,
+        protected CreateBucketKeyRequestData $data,
     ) {
         //
     }
 
     public function resolveEndpoint(): string
     {
-        return "/buckets/{$this->bucketId}/keys";
+        return "/buckets/{$this->data->bucketId}/keys";
     }
 
     protected function defaultBody(): array
     {
-        return [
-            'name' => $this->name,
-            'permission' => $this->permission,
-        ];
+        return $this->data->toRequestData();
     }
 
     public function createDtoFromResponse(Response $response): BucketKey

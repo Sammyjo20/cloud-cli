@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\Deployments;
 
+use App\Client\Requests\InitiateDeploymentRequestData;
 use App\Dto\Deployment;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -12,14 +13,14 @@ class InitiateDeploymentRequest extends Request
     protected Method $method = Method::POST;
 
     public function __construct(
-        protected string $environmentId,
+        protected InitiateDeploymentRequestData $data,
     ) {
         //
     }
 
     public function resolveEndpoint(): string
     {
-        return "/environments/{$this->environmentId}/deployments";
+        return "/environments/{$this->data->environmentId}/deployments";
     }
 
     public function createDtoFromResponse(Response $response): mixed

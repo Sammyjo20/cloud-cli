@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\Environments;
 
+use App\Client\Requests\AddEnvironmentVariablesRequestData;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -13,30 +14,19 @@ class AddEnvironmentVariablesRequest extends Request implements HasBody
 
     protected Method $method = Method::POST;
 
-    /**
-     * @param  'append'|'set'  $method
-     */
     public function __construct(
-        protected string $environmentId,
-        protected array $variables,
-        protected string $action = 'append',
+        protected AddEnvironmentVariablesRequestData $data,
     ) {
         //
     }
 
     public function resolveEndpoint(): string
     {
-        return "/environments/{$this->environmentId}/variables";
+        return "/environments/{$this->data->environmentId}/variables";
     }
 
     protected function defaultBody(): array
     {
-        return [
-            'method' => $this->action,
-            'variables' => collect($this->variables)->map(fn ($value, $key) => [
-                'key' => $key,
-                'value' => $value,
-            ])->values()->toArray(),
-        ];
+        return $this->data->toRequestData();
     }
 }

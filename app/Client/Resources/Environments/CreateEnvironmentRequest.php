@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\Environments;
 
+use App\Client\Requests\CreateEnvironmentRequestData;
 use App\Dto\Environment;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -16,24 +17,19 @@ class CreateEnvironmentRequest extends Request implements HasBody
     protected Method $method = Method::POST;
 
     public function __construct(
-        protected string $applicationId,
-        protected string $name,
-        protected ?string $branch = null,
+        protected CreateEnvironmentRequestData $data,
     ) {
         //
     }
 
     public function resolveEndpoint(): string
     {
-        return "/applications/{$this->applicationId}/environments";
+        return "/applications/{$this->data->applicationId}/environments";
     }
 
     protected function defaultBody(): array
     {
-        return array_filter([
-            'name' => $this->name,
-            'branch' => $this->branch,
-        ]);
+        return $this->data->toRequestData();
     }
 
     public function createDtoFromResponse(Response $response): mixed

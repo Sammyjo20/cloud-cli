@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\ObjectStorageBuckets;
 
+use App\Client\Requests\CreateObjectStorageBucketRequestData;
 use App\Dto\ObjectStorageBucket;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -16,13 +17,7 @@ class CreateObjectStorageBucketRequest extends Request implements HasBody
     protected Method $method = Method::POST;
 
     public function __construct(
-        protected string $name,
-        protected string $region,
-        protected string $visibility,
-        protected ?string $jurisdiction = null,
-        protected ?array $allowedOrigins = null,
-        protected ?string $keyName = null,
-        protected ?string $keyPermission = null,
+        protected CreateObjectStorageBucketRequestData $data,
     ) {
         //
     }
@@ -34,15 +29,7 @@ class CreateObjectStorageBucketRequest extends Request implements HasBody
 
     protected function defaultBody(): array
     {
-        return array_filter([
-            'name' => $this->name,
-            'region' => $this->region,
-            'visibility' => $this->visibility,
-            'jurisdiction' => $this->jurisdiction,
-            'allowed_origins' => $this->allowedOrigins,
-            'key_name' => $this->keyName,
-            'key_permission' => $this->keyPermission,
-        ]);
+        return $this->data->toRequestData();
     }
 
     public function createDtoFromResponse(Response $response): mixed

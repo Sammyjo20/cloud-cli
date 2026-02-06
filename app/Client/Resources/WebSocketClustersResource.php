@@ -2,6 +2,8 @@
 
 namespace App\Client\Resources;
 
+use App\Client\Requests\CreateWebSocketClusterRequestData;
+use App\Client\Requests\UpdateWebSocketClusterRequestData;
 use App\Client\Resources\WebSocketClusters\CreateWebSocketClusterRequest;
 use App\Client\Resources\WebSocketClusters\DeleteWebSocketClusterRequest;
 use App\Client\Resources\WebSocketClusters\GetWebSocketClusterRequest;
@@ -29,11 +31,11 @@ class WebSocketClustersResource extends Resource
 
     public function create(string $name, string $region, int $maxConnections): WebsocketCluster
     {
-        $request = new CreateWebSocketClusterRequest(
+        $request = new CreateWebSocketClusterRequest(new CreateWebSocketClusterRequestData(
             name: $name,
             region: $region,
             maxConnections: $maxConnections,
-        );
+        ));
         $response = $this->send($request);
 
         $dto = $request->createDtoFromResponse($response);
@@ -43,10 +45,10 @@ class WebSocketClustersResource extends Resource
 
     public function update(string $clusterId, array $data): WebsocketCluster
     {
-        $request = new UpdateWebSocketClusterRequest(
+        $request = new UpdateWebSocketClusterRequest(new UpdateWebSocketClusterRequestData(
             clusterId: $clusterId,
             data: $data,
-        );
+        ));
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);

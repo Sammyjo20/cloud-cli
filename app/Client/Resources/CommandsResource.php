@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources;
 
+use App\Client\Requests\RunCommandRequestData;
 use App\Client\Resources\Commands\GetCommandRequest;
 use App\Client\Resources\Commands\ListCommandsRequest;
 use App\Client\Resources\Commands\RunCommandRequest;
@@ -27,10 +28,10 @@ class CommandsResource extends Resource
 
     public function run(string $environmentId, string $command): Command
     {
-        $request = new RunCommandRequest(
+        $request = new RunCommandRequest(new RunCommandRequestData(
             environmentId: $environmentId,
             command: $command,
-        );
+        ));
 
         $response = $this->send($request);
 

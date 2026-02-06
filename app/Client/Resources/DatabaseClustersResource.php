@@ -2,6 +2,8 @@
 
 namespace App\Client\Resources;
 
+use App\Client\Requests\CreateDatabaseClusterRequestData;
+use App\Client\Requests\UpdateDatabaseClusterRequestData;
 use App\Client\Resources\DatabaseClusters\CreateDatabaseClusterRequest;
 use App\Client\Resources\DatabaseClusters\DeleteDatabaseClusterRequest;
 use App\Client\Resources\DatabaseClusters\GetDatabaseClusterRequest;
@@ -30,13 +32,13 @@ class DatabaseClustersResource extends Resource
 
     public function create(string $type, string $name, string $region, array $clusterConfig, ?int $clusterId = null): DatabaseCluster
     {
-        $request = new CreateDatabaseClusterRequest(
+        $request = new CreateDatabaseClusterRequest(new CreateDatabaseClusterRequestData(
             type: $type,
             name: $name,
             region: $region,
             clusterConfig: $clusterConfig,
             clusterId: $clusterId,
-        );
+        ));
 
         $response = $this->send($request);
 
@@ -45,10 +47,10 @@ class DatabaseClustersResource extends Resource
 
     public function update(string $clusterId, array $data): DatabaseCluster
     {
-        $request = new UpdateDatabaseClusterRequest(
+        $request = new UpdateDatabaseClusterRequest(new UpdateDatabaseClusterRequestData(
             clusterId: $clusterId,
             data: $data,
-        );
+        ));
 
         $response = $this->send($request);
 

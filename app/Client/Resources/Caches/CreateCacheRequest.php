@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\Caches;
 
+use App\Client\Requests\CreateCacheRequestData;
 use App\Dto\Cache;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -16,10 +17,7 @@ class CreateCacheRequest extends Request implements HasBody
     protected Method $method = Method::POST;
 
     public function __construct(
-        protected string $type,
-        protected string $name,
-        protected string $region,
-        protected array $configData,
+        protected CreateCacheRequestData $data,
     ) {
         //
     }
@@ -31,12 +29,7 @@ class CreateCacheRequest extends Request implements HasBody
 
     protected function defaultBody(): array
     {
-        return [
-            'type' => $this->type,
-            'name' => $this->name,
-            'region' => $this->region,
-            'config' => $this->configData,
-        ];
+        return $this->data->toRequestData();
     }
 
     public function createDtoFromResponse(Response $response): Cache

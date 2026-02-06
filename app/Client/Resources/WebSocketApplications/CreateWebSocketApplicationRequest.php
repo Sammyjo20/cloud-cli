@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\WebSocketApplications;
 
+use App\Client\Requests\CreateWebSocketApplicationRequestData;
 use App\Dto\WebsocketApplication;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -16,20 +17,19 @@ class CreateWebSocketApplicationRequest extends Request implements HasBody
     protected Method $method = Method::POST;
 
     public function __construct(
-        protected string $clusterId,
-        protected array $data,
+        protected CreateWebSocketApplicationRequestData $data,
     ) {
         //
     }
 
     public function resolveEndpoint(): string
     {
-        return "/websocket-servers/{$this->clusterId}/applications";
+        return "/websocket-servers/{$this->data->clusterId}/applications";
     }
 
     protected function defaultBody(): array
     {
-        return $this->data;
+        return $this->data->toRequestData();
     }
 
     public function createDtoFromResponse(Response $response): WebsocketApplication

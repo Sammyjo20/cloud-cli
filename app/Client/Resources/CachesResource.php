@@ -2,6 +2,8 @@
 
 namespace App\Client\Resources;
 
+use App\Client\Requests\CreateCacheRequestData;
+use App\Client\Requests\UpdateCacheRequestData;
 use App\Client\Resources\Caches\CreateCacheRequest;
 use App\Client\Resources\Caches\DeleteCacheRequest;
 use App\Client\Resources\Caches\GetCacheRequest;
@@ -30,12 +32,12 @@ class CachesResource extends Resource
 
     public function create(string $type, string $name, string $region, array $config): Cache
     {
-        $request = new CreateCacheRequest(
+        $request = new CreateCacheRequest(new CreateCacheRequestData(
             type: $type,
             name: $name,
             region: $region,
             configData: $config,
-        );
+        ));
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
@@ -43,10 +45,10 @@ class CachesResource extends Resource
 
     public function update(string $cacheId, array $data): Cache
     {
-        $request = new UpdateCacheRequest(
+        $request = new UpdateCacheRequest(new UpdateCacheRequestData(
             cacheId: $cacheId,
             data: $data,
-        );
+        ));
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);

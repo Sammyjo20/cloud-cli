@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources;
 
+use App\Client\Requests\InitiateDeploymentRequestData;
 use App\Client\Resources\Deployments\GetDeploymentRequest;
 use App\Client\Resources\Deployments\InitiateDeploymentRequest;
 use App\Client\Resources\Deployments\ListDeploymentsRequest;
@@ -27,7 +28,7 @@ class DeploymentsResource extends Resource
 
     public function initiate(string $environmentId): Deployment
     {
-        $request = new InitiateDeploymentRequest($environmentId);
+        $request = new InitiateDeploymentRequest(new InitiateDeploymentRequestData($environmentId));
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);

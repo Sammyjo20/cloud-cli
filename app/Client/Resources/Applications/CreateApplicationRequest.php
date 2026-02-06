@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\Applications;
 
+use App\Client\Requests\CreateApplicationRequestData;
 use App\Dto\Application;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -16,9 +17,7 @@ class CreateApplicationRequest extends Request implements HasBody
     protected Method $method = Method::POST;
 
     public function __construct(
-        protected string $repository,
-        protected string $name,
-        protected string $region,
+        protected CreateApplicationRequestData $data,
     ) {
         //
     }
@@ -30,11 +29,7 @@ class CreateApplicationRequest extends Request implements HasBody
 
     protected function defaultBody(): array
     {
-        return [
-            'repository' => $this->repository,
-            'name' => $this->name,
-            'region' => $this->region,
-        ];
+        return $this->data->toRequestData();
     }
 
     public function createDtoFromResponse(Response $response): mixed

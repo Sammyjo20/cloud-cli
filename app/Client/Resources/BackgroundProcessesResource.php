@@ -2,6 +2,8 @@
 
 namespace App\Client\Resources;
 
+use App\Client\Requests\CreateBackgroundProcessRequestData;
+use App\Client\Requests\UpdateBackgroundProcessRequestData;
 use App\Client\Resources\BackgroundProcesses\CreateBackgroundProcessRequest;
 use App\Client\Resources\BackgroundProcesses\DeleteBackgroundProcessRequest;
 use App\Client\Resources\BackgroundProcesses\GetBackgroundProcessRequest;
@@ -29,10 +31,10 @@ class BackgroundProcessesResource extends Resource
 
     public function create(string $instanceId, array $data): BackgroundProcess
     {
-        $request = new CreateBackgroundProcessRequest(
+        $request = new CreateBackgroundProcessRequest(new CreateBackgroundProcessRequestData(
             instanceId: $instanceId,
             data: $data,
-        );
+        ));
 
         $response = $this->send($request);
 
@@ -41,10 +43,10 @@ class BackgroundProcessesResource extends Resource
 
     public function update(string $backgroundProcessId, array $data): BackgroundProcess
     {
-        $request = new UpdateBackgroundProcessRequest(
+        $request = new UpdateBackgroundProcessRequest(new UpdateBackgroundProcessRequestData(
             backgroundProcessId: $backgroundProcessId,
             data: $data,
-        );
+        ));
 
         $response = $this->send($request);
 
