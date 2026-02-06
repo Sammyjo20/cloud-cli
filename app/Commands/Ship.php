@@ -15,7 +15,6 @@ use App\Dto\Database;
 use App\Dto\DatabaseCluster;
 use App\Dto\Environment;
 use App\Dto\Region;
-use App\Dto\ValidationErrors;
 use App\Dto\WebsocketApplication;
 use App\Dto\WebsocketCluster;
 use App\Git;
@@ -102,7 +101,7 @@ class Ship extends BaseCommand
         $defaultRegion = $mostUsedRegion ?? 'us-east-2';
 
         $application = $this->loopUntilValid(
-            fn ($errors) => $this->createApplication($errors, $defaultRegion, $repository),
+            fn ($errors) => $this->createApplication($defaultRegion, $repository),
         );
 
         $this->tryToSetAvatar($application);
@@ -190,7 +189,7 @@ class Ship extends BaseCommand
         return $response->successful();
     }
 
-    protected function createApplication(ValidationErrors $errors, string $defaultRegion, string $repository): ?Application
+    protected function createApplication(string $defaultRegion, string $repository): ?Application
     {
         $this->addParam(
             'name',
