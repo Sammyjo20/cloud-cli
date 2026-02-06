@@ -15,7 +15,7 @@ class KeyPressListener
 
     protected $afterEveryKey = null;
 
-    public function __construct(protected Prompt $prompt)
+    final public function __construct(protected Prompt $prompt)
     {
         //
     }
@@ -178,21 +178,6 @@ class KeyPressListener
         return $this->on([Key::LEFT, Key::LEFT_ARROW], $callback);
     }
 
-    public function onMouseMove(callable $callback): static
-    {
-        return $this->on(Mouse::MOVE, $callback);
-    }
-
-    public function onMouseClick(callable $callback): static
-    {
-        return $this->on(Mouse::CLICK, $callback);
-    }
-
-    public function onMouseDrag(callable $callback): static
-    {
-        return $this->on(Mouse::DRAG, $callback);
-    }
-
     public function listen()
     {
         $this->prompt->on('key', fn ($key) => $this->handleKey($key));
@@ -207,16 +192,6 @@ class KeyPressListener
                 $y = ord(array_pop($parts)) - 32;
                 $x = ord(array_pop($parts)) - 32;
                 $button = array_pop($parts);
-
-                $action = match ($button) {
-                    '@' => Mouse::CLICK,
-                    '#' => Mouse::DRAG,
-                    default => Mouse::MOVE,
-                };
-
-                if (isset($this->regular[$action])) {
-                    $this->regular[$action]($x, $y);
-                }
             }
 
             foreach ($this->escape as $escape => $callback) {

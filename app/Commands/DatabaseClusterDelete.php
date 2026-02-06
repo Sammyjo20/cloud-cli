@@ -59,7 +59,7 @@ class DatabaseClusterDelete extends BaseCommand
                             Sleep::for(CarbonInterval::seconds(5));
                         }
 
-                        return spin(
+                        spin(
                             fn () => $this->client->databases()->delete($database->id, $schema->id),
                             'Deleting schema '.$schema->name.'...',
                         );
@@ -74,7 +74,7 @@ class DatabaseClusterDelete extends BaseCommand
                         Sleep::for(CarbonInterval::seconds(5));
                     }
 
-                    return spin(
+                    spin(
                         fn () => $this->client->databaseClusters()->delete($database->id),
                         'Deleting database cluster...',
                     );

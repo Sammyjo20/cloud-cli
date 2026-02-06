@@ -37,7 +37,7 @@ class DatabaseClusterOpen extends BaseCommand
         );
 
         $database = $this->resolveDatabase(
-            $databases->collect(),
+            $databases->items(),
             $environment,
         );
 
@@ -151,7 +151,7 @@ class DatabaseClusterOpen extends BaseCommand
         $connection = $database->connection ?? [];
         $protocol = $connection['protocol'] ?? null;
         $host = $connection['hostname'] ?? 'localhost';
-        $port = $connection['port'] ?? $this->getDefaultPort($type);
+        $port = $connection['port'] ?? $this->getDefaultPort($database->type);
         $user = $connection['username'] ?? $connection['user'] ?? 'root';
         $password = $connection['password'] ?? '';
         $databaseName = count($database->schemas) === 1 ? $database->schemas[0]->name : select(

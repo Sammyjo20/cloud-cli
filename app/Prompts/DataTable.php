@@ -152,16 +152,13 @@ class DataTable extends Prompt
         $this->listener
             ->clearExisting()
             ->listenForQuit()
-            ->on(
-                [Key::UP, Key::UP_ARROW],
+            ->onUp(
                 fn () => $this->index = max(0, $this->index - 1),
             )
-            ->on(
-                [Key::DOWN, Key::DOWN_ARROW],
+            ->onDown(
                 fn () => $this->index = min($this->perPage - 1, count($this->visible()) - 1, $this->index + 1),
             )
-            ->on(
-                [Key::RIGHT, Key::RIGHT_ARROW],
+            ->onRight(
                 function () {
                     $prevPage = $this->page;
                     $this->page = min($this->totalPages, $this->page + 1);
@@ -171,8 +168,7 @@ class DataTable extends Prompt
                     }
                 },
             )
-            ->on(
-                [Key::LEFT, Key::LEFT_ARROW],
+            ->onLeft(
                 function () {
                     $prevPage = $this->page;
                     $this->page = max(1, $this->page - 1);

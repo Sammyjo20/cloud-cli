@@ -16,7 +16,7 @@ class Animatable
 
     protected bool $firstLoop = true;
 
-    public function __construct(
+    final public function __construct(
         protected int|float $value,
         protected int|float|null $lowerLimit = null,
         protected int|float|null $upperLimit = null,

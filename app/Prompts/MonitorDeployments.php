@@ -83,12 +83,7 @@ class MonitorDeployments extends Prompt
     }
 
     /**
-     * Render the spinner and execute the callback.
-     *
-     * @template TReturn of mixed
-     *
-     * @param  Closure(callable(string): void): TReturn  $callback
-     * @return TReturn
+     * Render the deployment monitor loop.
      */
     public function display(): void
     {

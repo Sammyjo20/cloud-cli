@@ -98,7 +98,7 @@ class DynamicSpinner extends Prompt
                 fclose($this->sockets[0]);
                 stream_set_blocking($this->sockets[1], false);
 
-                while (true) { // @phpstan-ignore-line
+                while (true) {
                     $this->checkForMessageUpdate();
                     $this->render();
 
