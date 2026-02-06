@@ -82,7 +82,7 @@ class InstanceCreate extends BaseCommand
         );
 
         $this->addParam(
-            'scaling-type',
+            'scaling_type',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => select(
                     label: 'Scaling type',
@@ -94,13 +94,13 @@ class InstanceCreate extends BaseCommand
                     default: $value ?? 'none',
                     required: true,
                 ),
-            )->paramKey('scaling_type'),
+            ),
         );
 
-        $isCustom = $this->getParam('scaling-type') === 'custom';
+        $isCustom = $this->getParam('scaling_type') === 'custom';
 
         $this->addParam(
-            'min-replicas',
+            'min_replicas',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => $isCustom ? number(
                     label: 'Minimum replicas',
@@ -108,11 +108,11 @@ class InstanceCreate extends BaseCommand
                     min: 1,
                     max: 10,
                 ) : 1,
-            )->paramKey('min_replicas'),
+            ),
         );
 
         $this->addParam(
-            'max-replicas',
+            'max_replicas',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => $isCustom ? number(
                     label: 'Maximum replicas',
@@ -120,26 +120,26 @@ class InstanceCreate extends BaseCommand
                     min: $this->getParam('min-replicas'),
                     max: 10,
                 ) : $this->getParam('min-replicas'),
-            )->paramKey('max_replicas'),
+            ),
         );
 
         if ($isCustom) {
             $this->addParam(
-                'scaling-cpu-threshold-percentage',
+                'scaling_cpu_threshold_percentage',
                 fn ($resolver) => $resolver->fromInput(fn ($value) => number(
                     label: 'Scaling CPU threshold percentage',
                     default: $value ?? '50',
                     min: 50,
                     max: 95,
-                ))->paramKey('scaling_cpu_threshold_percentage'),
+                )),
             );
 
             $this->addParam(
-                'scaling-memory-threshold-percentage',
+                'scaling_memory_threshold_percentage',
                 fn ($resolver) => $resolver->fromInput(fn ($value) => number(
                     label: 'Scaling memory threshold percentage',
                     default: $value ?? '50',
-                ))->paramKey('scaling_memory_threshold_percentage'),
+                )),
             );
         }
 
@@ -149,13 +149,13 @@ class InstanceCreate extends BaseCommand
         );
 
         $this->addParam(
-            'uses-scheduler',
+            'uses_scheduler',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => confirm(
                     label: 'Use scheduler?',
                     default: false,
                 ),
-            )->paramKey('uses_scheduler'),
+            ),
         );
 
         return spin(

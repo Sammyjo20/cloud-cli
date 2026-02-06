@@ -2,7 +2,7 @@
 
 namespace App\Commands;
 
-use App\Actions\CreateDatabase;
+use App\Concerns\CreatesDatabase;
 use App\Concerns\Validates;
 
 use function Laravel\Prompts\intro;
@@ -10,6 +10,7 @@ use function Laravel\Prompts\outro;
 
 class DatabaseCreate extends BaseCommand
 {
+    use CreatesDatabase;
     use Validates;
 
     protected $signature = 'database:create
@@ -27,21 +28,17 @@ class DatabaseCreate extends BaseCommand
 
         $cluster = $this->resolvers()->databaseCluster()->from($this->argument('database-cluster'));
 
-        $defaults = array_filter([
-            'name' => $this->option('name'),
-        ]);
+        if ($this->option('name') && ! $this->isInteractive()) {
+            $database = $this->loopUntilValid(
+                fn () => $this->createDatabaseWithName($cluster, $this->option('name')),
+            );
+        } else {
+            if (! $this->isInteractive()) {
+                $this->failAndExit('Provide --name when non-interactive.');
+            }
 
-        if (empty($defaults['name']) && ! $this->isInteractive()) {
-            $this->failAndExit('Provide --name when non-interactive.');
+            $database = $this->loopUntilValid(fn () => $this->createDatabase($cluster));
         }
-
-        $creator = app(CreateDatabase::class);
-
-        $database = $this->loopUntilValid(
-            fn () => $this->option('name') && ! $this->isInteractive()
-                ? $creator->runWithParams($this->client, $cluster, $this->option('name'))
-                : $creator->run($this->client, $cluster, $defaults),
-        );
 
         $this->outputJsonIfWanted($database);
 

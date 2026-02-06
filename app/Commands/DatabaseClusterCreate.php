@@ -2,7 +2,7 @@
 
 namespace App\Commands;
 
-use App\Actions\CreateDatabaseCluster;
+use App\Concerns\CreatesDatabaseCluster;
 use App\Concerns\DeterminesDefaultRegion;
 use App\Concerns\Validates;
 
@@ -11,6 +11,7 @@ use function Laravel\Prompts\outro;
 
 class DatabaseClusterCreate extends BaseCommand
 {
+    use CreatesDatabaseCluster;
     use DeterminesDefaultRegion;
     use Validates;
 
@@ -35,7 +36,7 @@ class DatabaseClusterCreate extends BaseCommand
         ]);
 
         $database = $this->loopUntilValid(
-            fn () => app(CreateDatabaseCluster::class)->run($this->client, $defaults),
+            fn () => $this->createDatabaseCluster($defaults),
         );
 
         $this->outputJsonIfWanted($database);

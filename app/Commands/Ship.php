@@ -2,10 +2,10 @@
 
 namespace App\Commands;
 
-use App\Actions\CreateDatabase;
-use App\Actions\CreateDatabaseCluster;
-use App\Actions\CreateWebSocketApplication;
-use App\Actions\CreateWebSocketCluster;
+use App\Concerns\CreatesDatabase;
+use App\Concerns\CreatesDatabaseCluster;
+use App\Concerns\CreatesWebSocketApplication;
+use App\Concerns\CreatesWebSocketCluster;
 use App\Concerns\HandlesAvatars;
 use App\Concerns\RequiresRemoteGitRepo;
 use App\Concerns\UpdatesBuildDeployCommands;
@@ -38,6 +38,10 @@ use function Laravel\Prompts\warning;
 
 class Ship extends BaseCommand
 {
+    use CreatesDatabase;
+    use CreatesDatabaseCluster;
+    use CreatesWebSocketApplication;
+    use CreatesWebSocketCluster;
     use HandlesAvatars;
     use RequiresRemoteGitRepo;
     use UpdatesBuildDeployCommands;
@@ -361,7 +365,7 @@ class Ship extends BaseCommand
         }
 
         return $this->loopUntilValid(
-            fn () => app(CreateWebSocketApplication::class)->run($this->client, $cluster, []),
+            fn () => $this->createWebSocketApplication($cluster, []),
         );
     }
 
@@ -377,7 +381,7 @@ class Ship extends BaseCommand
 
             if ($createWebsocketCluster) {
                 return $this->loopUntilValid(
-                    fn () => app(CreateWebSocketCluster::class)->run($this->client, $this->websocketClusterDefaults()),
+                    fn () => $this->createWebSocketCluster($this->websocketClusterDefaults()),
                 );
             }
 
@@ -399,7 +403,7 @@ class Ship extends BaseCommand
         }
 
         return $this->loopUntilValid(
-            fn () => app(CreateWebSocketCluster::class)->run($this->client, $this->getWebSocketClusterDefaults()),
+            fn () => $this->createWebSocketCluster($this->getWebSocketClusterDefaults()),
         );
     }
 
@@ -428,7 +432,7 @@ class Ship extends BaseCommand
         }
 
         return $this->loopUntilValid(
-            fn () => app(CreateDatabase::class)->run($this->client, $database, []),
+            fn () => $this->createDatabase($database),
         );
     }
 
@@ -444,7 +448,7 @@ class Ship extends BaseCommand
 
             if ($createDatabase) {
                 return $this->loopUntilValid(
-                    fn () => app(CreateDatabaseCluster::class)->run($this->client, $this->databaseClusterDefaults()),
+                    fn () => $this->createDatabaseCluster($this->databaseClusterDefaults()),
                 );
             }
 
@@ -466,7 +470,7 @@ class Ship extends BaseCommand
         }
 
         return $this->loopUntilValid(
-            fn () => app(CreateDatabaseCluster::class)->run($this->client, $this->databaseClusterDefaults()),
+            fn () => $this->createDatabaseCluster($this->databaseClusterDefaults()),
         );
     }
 

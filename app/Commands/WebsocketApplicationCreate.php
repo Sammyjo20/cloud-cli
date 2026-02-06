@@ -2,13 +2,17 @@
 
 namespace App\Commands;
 
-use App\Actions\CreateWebSocketApplication;
+use App\Concerns\CreatesWebSocketApplication;
+use App\Concerns\Validates;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
 
 class WebsocketApplicationCreate extends BaseCommand
 {
+    use CreatesWebSocketApplication;
+    use Validates;
+
     protected $signature = 'websocket-application:create
                             {cluster? : The WebSocket cluster ID or name}
                             {--name= : Application name}
@@ -28,7 +32,9 @@ class WebsocketApplicationCreate extends BaseCommand
             'name' => $this->option('name'),
         ]);
 
-        $app = app(CreateWebSocketApplication::class)->run($this->client, $cluster, $defaults);
+        $app = $this->loopUntilValid(
+            fn () => $this->createWebSocketApplication($cluster, $defaults),
+        );
 
         $this->outputJsonIfWanted($app);
 

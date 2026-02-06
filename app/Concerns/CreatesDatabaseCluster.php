@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Actions;
+namespace App\Concerns;
 
-use App\Client\Connector;
 use App\Dto\DatabaseCluster;
 use App\Dto\DatabaseType;
 use App\Dto\Region;
@@ -14,40 +13,50 @@ use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
-class CreateDatabaseCluster
+trait CreatesDatabaseCluster
 {
-    public function run(Connector $client, array $defaults = []): DatabaseCluster
+    protected function createDatabaseCluster(array $defaults = []): DatabaseCluster
     {
-        $name = text(
-            label: 'Database cluster name',
-            default: $defaults['name'] ?? '',
-            required: true,
-            validate: fn ($value) => match (true) {
-                ! preg_match('/^[a-z0-9_-]+$/', $value) => 'Must contain only lowercase letters, numbers, hyphens and underscores',
-                strlen($value) < 3 => 'Must be at least 3 characters',
-                strlen($value) > 40 => 'Must be less than 40 characters',
-                default => null,
-            },
+        $this->addParam(
+            'name',
+            fn ($resolver) => $resolver->fromInput(
+                fn (?string $value) => text(
+                    label: 'Database cluster name',
+                    default: $value ?? $defaults['name'] ?? '',
+                    required: true,
+                    validate: fn ($v) => match (true) {
+                        ! preg_match('/^[a-z0-9_-]+$/', $v) => 'Must contain only lowercase letters, numbers, hyphens and underscores',
+                        strlen($v) < 3 => 'Must be at least 3 characters',
+                        strlen($v) > 40 => 'Must be less than 40 characters',
+                        default => null,
+                    },
+                ),
+            ),
         );
 
         $types = spin(
-            fn () => $client->databaseClusters()->types(),
+            fn () => $this->client->databaseClusters()->types(),
             'Fetching database types...',
         );
 
         $types = collect($types)->filter(fn (DatabaseType $type) => DatabaseClusterPreset::tryFrom($type->type) !== null)->values();
 
-        $selectedTypeValue = select(
-            label: 'Database type',
-            options: $types->mapWithKeys(fn (DatabaseType $type) => [$type->type => $type->label])->toArray(),
-            default: $defaults['type'] ?? null,
-            required: true,
+        $this->addParam(
+            'type',
+            fn ($resolver) => $resolver->fromInput(
+                fn (?string $value) => select(
+                    label: 'Database type',
+                    options: $types->mapWithKeys(fn (DatabaseType $type) => [$type->type => $type->label])->toArray(),
+                    default: $value ?? $defaults['type'] ?? null,
+                    required: true,
+                ),
+            ),
         );
 
-        $selectedType = collect($types)->firstWhere('type', $selectedTypeValue);
+        $selectedType = $types->firstWhere('type', $this->getParam('type'));
 
         $regions = spin(
-            fn () => $client->meta()->regions(),
+            fn () => $this->client->meta()->regions(),
             'Fetching regions...',
         );
 
@@ -61,29 +70,34 @@ class CreateDatabaseCluster
             $defaultRegion = null;
         }
 
-        $region = select(
-            label: 'Region',
-            options: $regionOptions->mapWithKeys(fn (Region $region) => [
-                $region->value => $region->label,
-            ])->toArray(),
-            default: $defaultRegion ?? $regionOptions->first()?->value,
-            required: true,
+        $this->addParam(
+            'region',
+            fn ($resolver) => $resolver->fromInput(
+                fn (?string $value) => select(
+                    label: 'Region',
+                    options: $regionOptions->mapWithKeys(fn (Region $region) => [
+                        $region->value => $region->label,
+                    ])->toArray(),
+                    default: $value ?? $defaultRegion ?? $regionOptions->first()?->value,
+                    required: true,
+                ),
+            ),
         );
 
-        $config = $this->fromConfigPreset($selectedType) ?? $this->promptForConfig($selectedType);
+        $config = $this->databaseClusterConfigFromPreset($selectedType) ?? $this->promptForDatabaseClusterConfig($selectedType);
 
         return spin(
-            fn () => $client->databaseClusters()->create(
-                $selectedTypeValue,
-                $name,
-                $region,
+            fn () => $this->client->databaseClusters()->create(
+                $this->getParam('type'),
+                $this->getParam('name'),
+                $this->getParam('region'),
                 $config,
             ),
             'Creating database cluster...',
         );
     }
 
-    protected function fromConfigPreset(DatabaseType $type): ?array
+    protected function databaseClusterConfigFromPreset(DatabaseType $type): ?array
     {
         $clusterPreset = DatabaseClusterPreset::from($type->type);
         $presets = $clusterPreset->presets();
@@ -108,7 +122,7 @@ class CreateDatabaseCluster
         return null;
     }
 
-    protected function promptForConfig(DatabaseType $type): array
+    protected function promptForDatabaseClusterConfig(DatabaseType $type): array
     {
         $config = [];
 

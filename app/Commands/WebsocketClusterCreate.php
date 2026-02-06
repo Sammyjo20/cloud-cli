@@ -2,7 +2,7 @@
 
 namespace App\Commands;
 
-use App\Actions\CreateWebSocketCluster;
+use App\Concerns\CreatesWebSocketCluster;
 use App\Concerns\DeterminesDefaultRegion;
 use App\Concerns\Validates;
 
@@ -11,6 +11,7 @@ use function Laravel\Prompts\outro;
 
 class WebsocketClusterCreate extends BaseCommand
 {
+    use CreatesWebSocketCluster;
     use DeterminesDefaultRegion;
     use Validates;
 
@@ -33,7 +34,7 @@ class WebsocketClusterCreate extends BaseCommand
         ]);
 
         $cluster = $this->loopUntilValid(
-            fn () => app(CreateWebSocketCluster::class)->run($this->client, $defaults),
+            fn () => $this->createWebSocketCluster($defaults),
         );
 
         $this->outputJsonIfWanted($cluster);
