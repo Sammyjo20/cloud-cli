@@ -9,11 +9,11 @@ use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\warning;
 
-class App extends BaseCommand
+class Browser extends BaseCommand
 {
     use RequiresRemoteGitRepo;
 
-    protected $signature = 'app
+    protected $signature = 'browser
                             {application? : The application ID or name}
                             {environment? : The name of the environment to deploy} ';
 
