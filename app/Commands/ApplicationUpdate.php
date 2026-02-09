@@ -126,12 +126,12 @@ class ApplicationUpdate extends BaseCommand
     {
         $fields = new UpdateFields;
 
-        $fields->add('name', fn ($value) => $this->getNewName($value))->currentValue($application->name);
-        $fields->add('slug', fn ($value) => $this->getNewSlug($value))->currentValue($application->slug);
-        $fields->add('repository', fn ($value) => $this->getNewRepository($value))->currentValue($application->repositoryFullName ?? '');
-        $fields->add('avatar', fn ($value) => $this->getNewAvatar());
+        $fields->add('name', $this->getNewName(...))->currentValue($application->name);
+        $fields->add('slug', $this->getNewSlug(...))->currentValue($application->slug);
+        $fields->add('repository', $this->getNewRepository(...))->currentValue($application->repositoryFullName ?? '');
+        $fields->add('avatar', $this->getNewAvatar(...));
         $fields->add('default-environment', fn ($value) => $this->getNewDefaultEnvironmentId($application))->currentValue($application->defaultEnvironmentId)->dataKey('default_environment_id');
-        $fields->add('slack-channel', fn ($value) => $this->getNewSlackChannel($value))->currentValue($application->slackChannel)->dataKey('slack_channel');
+        $fields->add('slack-channel', $this->getNewSlackChannel(...))->currentValue($application->slackChannel)->dataKey('slack_channel');
 
         return $fields->get();
     }

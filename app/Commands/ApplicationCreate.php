@@ -52,7 +52,7 @@ class ApplicationCreate extends BaseCommand
             'name',
             fn ($resolver) => $resolver->fromInput(
                 fn ($currentValue) => text(
-                    label: 'Application name',
+                    label: 'Name',
                     default: $currentValue ?? basename(getcwd()),
                     required: true,
                 ),
