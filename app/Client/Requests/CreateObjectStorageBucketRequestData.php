@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class CreateObjectStorageBucketRequestData implements RequestDataInterface
+class CreateObjectStorageBucketRequestData extends RequestData
 {
     public function __construct(
         public readonly string $name,
@@ -18,7 +18,7 @@ class CreateObjectStorageBucketRequestData implements RequestDataInterface
 
     public function toRequestData(): array
     {
-        return array_filter([
+        return $this->filter([
             'name' => $this->name,
             'region' => $this->region,
             'visibility' => $this->visibility,

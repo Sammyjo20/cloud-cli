@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class UpdateObjectStorageBucketRequestData implements RequestDataInterface
+class UpdateObjectStorageBucketRequestData extends RequestData
 {
     public function __construct(
         public readonly string $bucketId,
@@ -14,9 +14,9 @@ class UpdateObjectStorageBucketRequestData implements RequestDataInterface
 
     public function toRequestData(): array
     {
-        return array_filter([
+        return $this->filter([
             'name' => $this->name,
             'visibility' => $this->visibility,
-        ], fn ($value) => $value !== null);
+        ]);
     }
 }

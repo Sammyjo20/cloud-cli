@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class UpdateInstanceRequestData implements RequestDataInterface
+class UpdateInstanceRequestData extends RequestData
 {
     public function __construct(
         public readonly string $instanceId,
@@ -25,7 +25,7 @@ class UpdateInstanceRequestData implements RequestDataInterface
 
     public function toRequestData(): array
     {
-        return array_filter([
+        return $this->filter([
             'name' => $this->name,
             'type' => $this->type,
             'size' => $this->size,
@@ -39,6 +39,6 @@ class UpdateInstanceRequestData implements RequestDataInterface
             'sleep_timeout' => $this->sleepTimeout,
             'scaling_cpu_threshold_percentage' => $this->scalingCpuThresholdPercentage,
             'scaling_memory_threshold_percentage' => $this->scalingMemoryThresholdPercentage,
-        ], fn ($value) => $value !== null);
+        ]);
     }
 }

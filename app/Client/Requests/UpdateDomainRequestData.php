@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class UpdateDomainRequestData implements RequestDataInterface
+class UpdateDomainRequestData extends RequestData
 {
     public function __construct(
         public readonly string $domainId,
@@ -14,9 +14,9 @@ class UpdateDomainRequestData implements RequestDataInterface
 
     public function toRequestData(): array
     {
-        return array_filter([
+        return $this->filter([
             'verification_method' => $this->verificationMethod,
             'is_primary' => $this->isPrimary,
-        ], fn ($value) => $value !== null);
+        ]);
     }
 }

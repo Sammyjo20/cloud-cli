@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class CreateWebSocketClusterRequestData implements RequestDataInterface
+class CreateWebSocketClusterRequestData extends RequestData
 {
     public function __construct(
         public readonly string $name,

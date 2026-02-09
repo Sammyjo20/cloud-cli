@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class UpdateBucketKeyRequestData implements RequestDataInterface
+class UpdateBucketKeyRequestData extends RequestData
 {
     public function __construct(
         public readonly string $bucketId,
@@ -15,9 +15,9 @@ class UpdateBucketKeyRequestData implements RequestDataInterface
 
     public function toRequestData(): array
     {
-        return array_filter([
+        return $this->filter([
             'name' => $this->name,
             'permission' => $this->permission,
-        ], fn ($value) => $value !== null);
+        ]);
     }
 }

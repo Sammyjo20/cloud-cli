@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class UpdateBackgroundProcessRequestData implements RequestDataInterface
+class UpdateBackgroundProcessRequestData extends RequestData
 {
     public function __construct(
         public readonly string $backgroundProcessId,
@@ -14,9 +14,9 @@ class UpdateBackgroundProcessRequestData implements RequestDataInterface
 
     public function toRequestData(): array
     {
-        return array_filter([
+        return $this->filter([
             'command' => $this->command,
             'instances' => $this->instances,
-        ], fn ($value) => $value !== null);
+        ]);
     }
 }

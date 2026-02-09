@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class CreateDatabaseClusterRequestData implements RequestDataInterface
+class CreateDatabaseClusterRequestData extends RequestData
 {
     public function __construct(
         public readonly string $type,
@@ -16,7 +16,7 @@ class CreateDatabaseClusterRequestData implements RequestDataInterface
 
     public function toRequestData(): array
     {
-        return array_filter([
+        return $this->filter([
             'type' => $this->type,
             'name' => $this->name,
             'region' => $this->region,

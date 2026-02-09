@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class RunCommandRequestData implements RequestDataInterface
+class RunCommandRequestData extends RequestData
 {
     public function __construct(
         public readonly string $environmentId,

@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class CreateDatabaseRestoreRequestData implements RequestDataInterface
+class CreateDatabaseRestoreRequestData extends RequestData
 {
     public function __construct(
         public readonly string $clusterId,
@@ -14,7 +14,7 @@ class CreateDatabaseRestoreRequestData implements RequestDataInterface
 
     public function toRequestData(): array
     {
-        return array_filter([
+        return $this->filter([
             'snapshot_id' => $this->snapshotId,
             'point_in_time' => $this->pointInTime,
         ]);

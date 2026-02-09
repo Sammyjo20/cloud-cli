@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class InitiateDeploymentRequestData implements RequestDataInterface
+class InitiateDeploymentRequestData extends RequestData
 {
     public function __construct(
         public readonly string $environmentId,

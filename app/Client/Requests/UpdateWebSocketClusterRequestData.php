@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class UpdateWebSocketClusterRequestData implements RequestDataInterface
+class UpdateWebSocketClusterRequestData extends RequestData
 {
     public function __construct(
         public readonly string $clusterId,
@@ -13,8 +13,8 @@ class UpdateWebSocketClusterRequestData implements RequestDataInterface
 
     public function toRequestData(): array
     {
-        return array_filter([
+        return $this->filter([
             'name' => $this->name,
-        ], fn ($value) => $value !== null);
+        ]);
     }
 }

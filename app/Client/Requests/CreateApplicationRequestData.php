@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class CreateApplicationRequestData implements RequestDataInterface
+class CreateApplicationRequestData extends RequestData
 {
     public function __construct(
         public readonly string $repository,

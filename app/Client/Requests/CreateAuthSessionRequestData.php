@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class CreateAuthSessionRequestData implements RequestDataInterface
+class CreateAuthSessionRequestData extends RequestData
 {
     public function __construct(
         public readonly int $port,

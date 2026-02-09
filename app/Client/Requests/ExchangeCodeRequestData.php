@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class ExchangeCodeRequestData implements RequestDataInterface
+class ExchangeCodeRequestData extends RequestData
 {
     public function __construct(
         public readonly string $exchangeCode,

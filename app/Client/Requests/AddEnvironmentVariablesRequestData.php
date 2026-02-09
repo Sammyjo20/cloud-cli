@@ -5,7 +5,7 @@ namespace App\Client\Requests;
 /**
  * @param  'append'|'set'  $action
  */
-class AddEnvironmentVariablesRequestData implements RequestDataInterface
+class AddEnvironmentVariablesRequestData extends RequestData
 {
     public function __construct(
         public readonly string $environmentId,

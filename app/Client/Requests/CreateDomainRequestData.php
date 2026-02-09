@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class CreateDomainRequestData implements RequestDataInterface
+class CreateDomainRequestData extends RequestData
 {
     public function __construct(
         public readonly string $environmentId,
@@ -16,11 +16,11 @@ class CreateDomainRequestData implements RequestDataInterface
 
     public function toRequestData(): array
     {
-        return array_filter([
+        return $this->filter([
             'name' => $this->name,
             'www_redirect' => $this->wwwRedirect,
             'wildcard_enabled' => $this->wildcardEnabled,
             'verification_method' => $this->verificationMethod,
-        ], fn ($value) => $value !== null);
+        ]);
     }
 }

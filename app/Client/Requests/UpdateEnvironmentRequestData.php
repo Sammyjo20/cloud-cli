@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class UpdateEnvironmentRequestData implements RequestDataInterface
+class UpdateEnvironmentRequestData extends RequestData
 {
     public function __construct(
         public readonly string $environmentId,
@@ -42,7 +42,7 @@ class UpdateEnvironmentRequestData implements RequestDataInterface
 
     public function toRequestData(): array
     {
-        return array_filter([
+        return $this->filter([
             'name' => $this->name,
             'slug' => $this->slug,
             'color' => $this->color,
@@ -71,6 +71,6 @@ class UpdateEnvironmentRequestData implements RequestDataInterface
             'filesystem_keys' => $this->filesystemKeys,
             'firewall_rate_limit_level' => $this->firewallRateLimitLevel,
             'firewall_under_attack_mode' => $this->firewallUnderAttackMode,
-        ], fn ($value) => $value !== null);
+        ]);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class UpdateCacheRequestData implements RequestDataInterface
+class UpdateCacheRequestData extends RequestData
 {
     public function __construct(
         public readonly string $cacheId,
@@ -16,11 +16,11 @@ class UpdateCacheRequestData implements RequestDataInterface
 
     public function toRequestData(): array
     {
-        return array_filter([
+        return $this->filter([
             'name' => $this->name,
             'size' => $this->size,
             'auto_upgrade_enabled' => $this->autoUpgradeEnabled,
             'is_public' => $this->isPublic,
-        ], fn ($value) => $value !== null);
+        ]);
     }
 }

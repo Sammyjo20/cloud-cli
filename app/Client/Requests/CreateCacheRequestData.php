@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class CreateCacheRequestData implements RequestDataInterface
+class CreateCacheRequestData extends RequestData
 {
     public function __construct(
         public readonly string $type,

@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class VerifyDomainRequestData implements RequestDataInterface
+class VerifyDomainRequestData extends RequestData
 {
     public function __construct(
         public readonly string $domainId,

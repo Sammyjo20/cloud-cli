@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class CreateBackgroundProcessRequestData implements RequestDataInterface
+class CreateBackgroundProcessRequestData extends RequestData
 {
     /**
      * @param  array{queue: string, connection: string, tries: int, backoff: int, sleep: int, rest: int, timeout: int, force: bool}  $config
@@ -19,11 +19,11 @@ class CreateBackgroundProcessRequestData implements RequestDataInterface
 
     public function toRequestData(): array
     {
-        return array_filter([
+        return $this->filter([
             'type' => $this->type,
             'processes' => $this->processes,
             'command' => $this->command,
             'config' => $this->config,
-        ], fn ($value) => $value !== null);
+        ]);
     }
 }

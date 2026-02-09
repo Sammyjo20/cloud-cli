@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class CreateDatabaseRequestData implements RequestDataInterface
+class CreateDatabaseRequestData extends RequestData
 {
     public function __construct(
         public readonly string $clusterId,

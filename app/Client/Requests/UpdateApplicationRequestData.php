@@ -4,7 +4,7 @@ namespace App\Client\Requests;
 
 use Saloon\Data\MultipartValue;
 
-class UpdateApplicationRequestData implements RequestDataInterface
+class UpdateApplicationRequestData extends RequestData
 {
     public function __construct(
         public readonly string $applicationId,
@@ -20,7 +20,7 @@ class UpdateApplicationRequestData implements RequestDataInterface
 
     public function toRequestData(): array
     {
-        $body = array_filter([
+        $body = $this->filter([
             'name' => $this->name,
             'slug' => $this->slug,
             'default_environment_id' => $this->defaultEnvironmentId,

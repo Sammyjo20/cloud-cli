@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class StopEnvironmentRequestData implements RequestDataInterface
+class StopEnvironmentRequestData extends RequestData
 {
     public function __construct(
         public readonly string $environmentId,

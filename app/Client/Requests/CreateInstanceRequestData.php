@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class CreateInstanceRequestData implements RequestDataInterface
+class CreateInstanceRequestData extends RequestData
 {
     public function __construct(
         public readonly string $environmentId,
@@ -21,7 +21,7 @@ class CreateInstanceRequestData implements RequestDataInterface
 
     public function toRequestData(): array
     {
-        return array_filter([
+        return $this->filter([
             'name' => $this->name,
             'type' => $this->type,
             'size' => $this->size,
@@ -31,6 +31,6 @@ class CreateInstanceRequestData implements RequestDataInterface
             'uses_scheduler' => $this->usesScheduler,
             'scaling_cpu_threshold_percentage' => $this->scalingCpuThresholdPercentage,
             'scaling_memory_threshold_percentage' => $this->scalingMemoryThresholdPercentage,
-        ], fn ($value) => $value !== null);
+        ]);
     }
 }

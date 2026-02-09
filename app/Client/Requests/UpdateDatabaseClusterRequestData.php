@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class UpdateDatabaseClusterRequestData implements RequestDataInterface
+class UpdateDatabaseClusterRequestData extends RequestData
 {
     /**
      * @param  array<string, mixed>|null  $config
@@ -16,8 +16,8 @@ class UpdateDatabaseClusterRequestData implements RequestDataInterface
 
     public function toRequestData(): array
     {
-        return array_filter([
+        return $this->filter([
             'config' => $this->config,
-        ], fn ($value) => $value !== null);
+        ]);
     }
 }

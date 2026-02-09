@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class CreateEnvironmentRequestData implements RequestDataInterface
+class CreateEnvironmentRequestData extends RequestData
 {
     public function __construct(
         public readonly string $applicationId,
@@ -14,7 +14,7 @@ class CreateEnvironmentRequestData implements RequestDataInterface
 
     public function toRequestData(): array
     {
-        return array_filter([
+        return $this->filter([
             'name' => $this->name,
             'branch' => $this->branch,
         ]);

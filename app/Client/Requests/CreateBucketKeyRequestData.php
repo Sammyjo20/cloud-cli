@@ -2,7 +2,7 @@
 
 namespace App\Client\Requests;
 
-class CreateBucketKeyRequestData implements RequestDataInterface
+class CreateBucketKeyRequestData extends RequestData
 {
     public function __construct(
         public readonly string $bucketId,
