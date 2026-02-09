@@ -88,6 +88,15 @@ it('returns non-zero exit and error when list API returns 500 in non-interactive
     $result->assertFailed();
 });
 
+it('returns failure when list API returns 500 in interactive mode', function () {
+    Prompt::fake();
+
+    setupApplicationListMocks([], 500);
+
+    $this->artisan('application:list')
+        ->assertFailed();
+});
+
 // ---- application:get ----
 
 it('gets application by ID successfully in interactive mode', function () {
@@ -186,6 +195,43 @@ it('returns failure with JSON error when application argument missing in non-int
     expect($decoded)->toBeArray()->toHaveKey('message');
 });
 
+it('returns failure when get by ID returns 404 and list has no matching app', function () {
+    MockClient::global([
+        GetOrganizationRequest::class => MockResponse::make(organizationResponse(), 200),
+        GetApplicationRequest::class => MockResponse::make(['message' => 'Not found'], 404),
+        ListApplicationsRequest::class => MockResponse::make([
+            'data' => [],
+            'included' => [],
+            'links' => ['next' => null],
+        ], 200),
+    ]);
+
+    $result = $this->artisan('application:get', ['application' => 'app-123', '--no-interaction' => true]);
+
+    $result->assertFailed();
+    $decoded = json_decode($result->output(), true);
+    expect($decoded)->toBeArray()->toHaveKey('message');
+});
+
+it('gets application interactively when no argument given but only one app exists', function () {
+    Prompt::fake();
+
+    MockClient::global([
+        GetOrganizationRequest::class => MockResponse::make(organizationResponse(), 200),
+        ListApplicationsRequest::class => MockResponse::make([
+            'data' => [createApplicationResponse()],
+            'included' => [
+                ['id' => 'org-1', 'type' => 'organizations', 'attributes' => ['name' => 'My Org', 'slug' => 'my-org']],
+                ['id' => 'env-1', 'type' => 'environments', 'attributes' => ['name' => 'production', 'slug' => 'production', 'vanity_domain' => 'my-app.cloud.laravel.com', 'status' => 'running', 'php_major_version' => '8.3']],
+            ],
+            'links' => ['next' => null],
+        ], 200),
+    ]);
+
+    $this->artisan('application:get')
+        ->assertSuccessful();
+});
+
 // ---- application:create ----
 
 it('creates application successfully in non-interactive mode with all options', function () {
@@ -272,6 +318,23 @@ it('returns failure with JSON validation errors when API returns 422 on create',
     expect($output)->not->toBeEmpty();
     $decoded = json_decode($output, true);
     expect($decoded)->toBeArray();
+});
+
+it('returns failure when create API returns 500', function () {
+    MockClient::global([
+        GetOrganizationRequest::class => MockResponse::make(organizationResponse(), 200),
+        ListRegionsRequest::class => MockResponse::make(regionsResponse(), 200),
+        CreateApplicationRequest::class => MockResponse::make(['message' => 'Server error'], 500),
+    ]);
+
+    $result = $this->artisan('application:create', [
+        '--name' => 'My App',
+        '--repository' => 'user/my-app',
+        '--region' => 'us-east-1',
+        '--no-interaction' => true,
+    ]);
+
+    $result->assertFailed();
 });
 
 // ---- application:update ----
@@ -397,4 +460,147 @@ it('returns failure when user cancels confirm in interactive update', function (
         'application' => 'app-123',
         '--name' => 'New Name',
     ])->assertFailed();
+});
+
+it('updates application by name in non-interactive mode', function () {
+    MockClient::global([
+        GetOrganizationRequest::class => MockResponse::make(organizationResponse(), 200),
+        ListApplicationsRequest::class => MockResponse::make([
+            'data' => [createApplicationResponse()],
+            'included' => [
+                ['id' => 'org-1', 'type' => 'organizations', 'attributes' => ['name' => 'My Org', 'slug' => 'my-org']],
+                ['id' => 'env-1', 'type' => 'environments', 'attributes' => ['name' => 'production', 'slug' => 'production', 'vanity_domain' => 'my-app.cloud.laravel.com', 'status' => 'running', 'php_major_version' => '8.3']],
+            ],
+            'links' => ['next' => null],
+        ], 200),
+        GetApplicationRequest::class => MockResponse::make([
+            'data' => createApplicationResponse(),
+            'included' => [
+                ['id' => 'org-1', 'type' => 'organizations', 'attributes' => ['name' => 'My Org', 'slug' => 'my-org']],
+                ['id' => 'env-1', 'type' => 'environments', 'attributes' => ['name' => 'production', 'slug' => 'production', 'vanity_domain' => 'my-app.cloud.laravel.com', 'status' => 'running', 'php_major_version' => '8.3']],
+            ],
+        ], 200),
+        UpdateApplicationRequest::class => MockResponse::make([
+            'data' => createApplicationResponse(['attributes' => ['name' => 'New Name', 'slug' => 'my-app', 'region' => 'us-east-1']]),
+            'included' => [
+                ['id' => 'org-1', 'type' => 'organizations', 'attributes' => ['name' => 'My Org', 'slug' => 'my-org']],
+                ['id' => 'env-1', 'type' => 'environments', 'attributes' => ['name' => 'production', 'slug' => 'production', 'vanity_domain' => 'my-app.cloud.laravel.com', 'status' => 'running', 'php_major_version' => '8.3']],
+            ],
+        ], 200),
+    ]);
+
+    $result = $this->artisan('application:update', [
+        'application' => 'My App',
+        '--name' => 'New Name',
+        '--force' => true,
+        '--no-interaction' => true,
+    ]);
+
+    $result->assertSuccessful();
+});
+
+it('returns failure when update API returns 422', function () {
+    MockClient::global([
+        GetOrganizationRequest::class => MockResponse::make(organizationResponse(), 200),
+        GetApplicationRequest::class => MockResponse::make([
+            'data' => createApplicationResponse(),
+            'included' => [
+                ['id' => 'org-1', 'type' => 'organizations', 'attributes' => ['name' => 'My Org', 'slug' => 'my-org']],
+                ['id' => 'env-1', 'type' => 'environments', 'attributes' => ['name' => 'production', 'slug' => 'production', 'vanity_domain' => 'my-app.cloud.laravel.com', 'status' => 'running', 'php_major_version' => '8.3']],
+            ],
+        ], 200),
+        UpdateApplicationRequest::class => MockResponse::make([
+            'message' => 'Validation failed',
+            'errors' => ['name' => ['Name has already been taken.']],
+        ], 422),
+    ]);
+
+    $result = $this->artisan('application:update', [
+        'application' => 'app-123',
+        '--name' => 'Taken',
+        '--force' => true,
+        '--no-interaction' => true,
+    ]);
+
+    $result->assertFailed();
+});
+
+it('returns failure when update API returns 500', function () {
+    MockClient::global([
+        GetOrganizationRequest::class => MockResponse::make(organizationResponse(), 200),
+        GetApplicationRequest::class => MockResponse::make([
+            'data' => createApplicationResponse(),
+            'included' => [
+                ['id' => 'org-1', 'type' => 'organizations', 'attributes' => ['name' => 'My Org', 'slug' => 'my-org']],
+                ['id' => 'env-1', 'type' => 'environments', 'attributes' => ['name' => 'production', 'slug' => 'production', 'vanity_domain' => 'my-app.cloud.laravel.com', 'status' => 'running', 'php_major_version' => '8.3']],
+            ],
+        ], 200),
+        UpdateApplicationRequest::class => MockResponse::make(['message' => 'Server error'], 500),
+    ]);
+
+    $result = $this->artisan('application:update', [
+        'application' => 'app-123',
+        '--name' => 'New Name',
+        '--force' => true,
+        '--no-interaction' => true,
+    ]);
+
+    $result->assertFailed();
+});
+
+it('updates application with --slug and --repository options', function () {
+    MockClient::global([
+        GetOrganizationRequest::class => MockResponse::make(organizationResponse(), 200),
+        GetApplicationRequest::class => MockResponse::make([
+            'data' => createApplicationResponse(),
+            'included' => [
+                ['id' => 'org-1', 'type' => 'organizations', 'attributes' => ['name' => 'My Org', 'slug' => 'my-org']],
+                ['id' => 'env-1', 'type' => 'environments', 'attributes' => ['name' => 'production', 'slug' => 'production', 'vanity_domain' => 'my-app.cloud.laravel.com', 'status' => 'running', 'php_major_version' => '8.3']],
+            ],
+        ], 200),
+        UpdateApplicationRequest::class => MockResponse::make([
+            'data' => createApplicationResponse(['attributes' => ['name' => 'My App', 'slug' => 'new-slug', 'region' => 'us-east-1']]),
+            'included' => [
+                ['id' => 'org-1', 'type' => 'organizations', 'attributes' => ['name' => 'My Org', 'slug' => 'my-org']],
+                ['id' => 'env-1', 'type' => 'environments', 'attributes' => ['name' => 'production', 'slug' => 'production', 'vanity_domain' => 'my-app.cloud.laravel.com', 'status' => 'running', 'php_major_version' => '8.3']],
+            ],
+        ], 200),
+    ]);
+
+    $result = $this->artisan('application:update', [
+        'application' => 'app-123',
+        '--slug' => 'new-slug',
+        '--repository' => 'user/other-repo',
+        '--force' => true,
+        '--no-interaction' => true,
+    ]);
+
+    $result->assertSuccessful();
+});
+
+it('updates application successfully in interactive mode when user confirms', function () {
+    Prompt::fake(['Update the application?' => true]);
+
+    MockClient::global([
+        GetOrganizationRequest::class => MockResponse::make(organizationResponse(), 200),
+        GetApplicationRequest::class => MockResponse::make([
+            'data' => createApplicationResponse(),
+            'included' => [
+                ['id' => 'org-1', 'type' => 'organizations', 'attributes' => ['name' => 'My Org', 'slug' => 'my-org']],
+                ['id' => 'env-1', 'type' => 'environments', 'attributes' => ['name' => 'production', 'slug' => 'production', 'vanity_domain' => 'my-app.cloud.laravel.com', 'status' => 'running', 'php_major_version' => '8.3']],
+            ],
+        ], 200),
+        UpdateApplicationRequest::class => MockResponse::make([
+            'data' => createApplicationResponse(['attributes' => ['name' => 'New Name', 'slug' => 'my-app', 'region' => 'us-east-1']]),
+            'included' => [
+                ['id' => 'org-1', 'type' => 'organizations', 'attributes' => ['name' => 'My Org', 'slug' => 'my-org']],
+                ['id' => 'env-1', 'type' => 'environments', 'attributes' => ['name' => 'production', 'slug' => 'production', 'vanity_domain' => 'my-app.cloud.laravel.com', 'status' => 'running', 'php_major_version' => '8.3']],
+            ],
+        ], 200),
+    ]);
+
+    $this->artisan('application:update', [
+        'application' => 'app-123',
+        '--name' => 'New Name',
+    ])->assertSuccessful();
 });
