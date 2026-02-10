@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use App\Concerns\HasAClient;
 use App\Concerns\Validates;
+use App\Exceptions\CommandExitException;
 use App\Resolvers\Resolvers;
 use App\Support\CreateFields;
 use App\Support\ValueResolver;
@@ -49,7 +50,7 @@ abstract class BaseCommand extends Command
     {
         $this->outputError($message);
 
-        exit(self::FAILURE);
+        throw new CommandExitException(self::FAILURE);
     }
 
     /**
@@ -68,6 +69,8 @@ abstract class BaseCommand extends Command
     {
         try {
             return parent::run($input, $output);
+        } catch (CommandExitException $e) {
+            return $e->getExitCode();
         } catch (RuntimeException $e) {
             if ($this->wantsJson()) {
                 $this->outputError($e->getMessage());
@@ -170,7 +173,7 @@ abstract class BaseCommand extends Command
                 $this->line(json_encode($data));
             }
 
-            exit(self::SUCCESS);
+            throw new CommandExitException(self::SUCCESS);
         }
     }
 
