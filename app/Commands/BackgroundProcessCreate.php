@@ -3,9 +3,11 @@
 namespace App\Commands;
 
 use App\Client\Requests\CreateBackgroundProcessRequestData;
+use App\Dto\EnvironmentInstance;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
+use function Laravel\Prompts\number;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
@@ -36,17 +38,17 @@ class BackgroundProcessCreate extends BaseCommand
 
         intro('Creating Background Process');
 
-        $process = $this->loopUntilValid($this->createBackgroundProcess(...));
+        $instance = $this->resolvers()->instance()->from($this->argument('instance'));
+
+        $process = $this->loopUntilValid(fn () => $this->createBackgroundProcess($instance));
 
         $this->outputJsonIfWanted($process);
 
         outro("Background process created: {$process->id}");
     }
 
-    protected function createBackgroundProcess()
+    protected function createBackgroundProcess(EnvironmentInstance $instance)
     {
-        $instanceId = $this->resolvers()->instance()->from($this->argument('instance'))->id;
-
         $this->form()->prompt(
             'type',
             fn ($resolver) => $resolver
@@ -79,18 +81,14 @@ class BackgroundProcessCreate extends BaseCommand
         $this->form()->prompt(
             'processes',
             fn ($resolver) => $resolver
-                ->fromInput(fn (?string $value) => text(
+                ->fromInput(fn (?string $value) => number(
                     label: 'Number of processes',
                     default: $value ?? '1',
                     required: true,
-                    validate: fn ($value) => match (true) {
-                        ! is_numeric($value) => 'The number of processes must be a number.',
-                        $value < 1 => 'The number of processes must be at least 1.',
-                        $value > 10 => 'The number of processes must be less than or equal to 10.',
-                        default => null,
-                    },
+                    min: 1,
+                    max: 10,
                 ))
-                ->nonInteractively(fn () => '1'),
+                ->nonInteractively(fn () => 1),
         );
 
         $type = $this->form()->get('type');
@@ -116,7 +114,7 @@ class BackgroundProcessCreate extends BaseCommand
         return spin(
             fn () => $this->client->backgroundProcesses()->create(
                 new CreateBackgroundProcessRequestData(
-                    instanceId: $instanceId,
+                    instanceId: $instance->id,
                     type: $type,
                     processes: $processes,
                     command: $command ?? null,
@@ -157,13 +155,9 @@ class BackgroundProcessCreate extends BaseCommand
         $this->form()->prompt(
             'tries',
             fn ($resolver) => $resolver
-                ->fromInput(fn (?string $value) => text(
+                ->fromInput(fn (?string $value) => number(
                     label: 'Tries',
                     default: $value ?? $this->getWorkerDefult('tries'),
-                    validate: fn ($value) => match (true) {
-                        ! is_numeric($value) => 'The number of tries must be a number.',
-                        default => null,
-                    },
                     required: true,
                     hint: 'Number of times a job should be attempted',
                 ))
@@ -174,13 +168,9 @@ class BackgroundProcessCreate extends BaseCommand
         $this->form()->prompt(
             'backoff',
             fn ($resolver) => $resolver
-                ->fromInput(fn (?string $value) => text(
+                ->fromInput(fn (?string $value) => number(
                     label: 'Backoff',
                     default: $value ?? $this->getWorkerDefult('backoff'),
-                    validate: fn ($value) => match (true) {
-                        ! is_numeric($value) => 'The backoff time must be a number.',
-                        default => null,
-                    },
                     required: true,
                     hint: 'Number of seconds to wait before retrying a failed job.',
                 ))
@@ -191,13 +181,9 @@ class BackgroundProcessCreate extends BaseCommand
         $this->form()->prompt(
             'sleep',
             fn ($resolver) => $resolver
-                ->fromInput(fn (?string $value) => text(
+                ->fromInput(fn (?string $value) => number(
                     label: 'Sleep',
                     default: $value ?? $this->getWorkerDefult('sleep'),
-                    validate: fn ($value) => match (true) {
-                        ! is_numeric($value) => 'The sleep time must be a number.',
-                        default => null,
-                    },
                     required: true,
                     hint: 'Number of seconds to sleep when no jobs are available',
                 ))
@@ -208,13 +194,9 @@ class BackgroundProcessCreate extends BaseCommand
         $this->form()->prompt(
             'rest',
             fn ($resolver) => $resolver
-                ->fromInput(fn (?string $value) => text(
+                ->fromInput(fn (?string $value) => number(
                     label: 'Rest',
                     default: $value ?? $this->getWorkerDefult('rest'),
-                    validate: fn ($value) => match (true) {
-                        ! is_numeric($value) => 'The rest time must be a number.',
-                        default => null,
-                    },
                     required: true,
                     hint: 'Number of seconds to rest between jobs',
                 ))
@@ -225,13 +207,9 @@ class BackgroundProcessCreate extends BaseCommand
         $this->form()->prompt(
             'timeout',
             fn ($resolver) => $resolver
-                ->fromInput(fn (?string $value) => text(
+                ->fromInput(fn (?string $value) => number(
                     label: 'Timeout',
                     default: $value ?? $this->getWorkerDefult('timeout'),
-                    validate: fn ($value) => match (true) {
-                        ! is_numeric($value) => 'The timeout time must be a number.',
-                        default => null,
-                    },
                     required: true,
                     hint: 'Number of seconds a job can run before timing out',
                 ))
