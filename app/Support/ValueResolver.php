@@ -69,6 +69,13 @@ class ValueResolver
         return $this->value = $this->retrieveValue();
     }
 
+    public function defaultValue(mixed $value): self
+    {
+        $this->value = $value;
+
+        return $this;
+    }
+
     protected function retrieveValue(): mixed
     {
         $this->errors ??= new ValidationErrors;
