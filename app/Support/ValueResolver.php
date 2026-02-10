@@ -15,27 +15,30 @@ class ValueResolver
 
     protected $shouldPromptOnce = false;
 
-    protected ?string $key = null;
+    protected ?string $label = null;
+
+    protected ?string $previousValue = null;
 
     public function __construct(
-        protected string $argumentName,
-        protected bool $isInteractive,
+        public readonly string $key,
+        public readonly string $argumentName,
+        public readonly bool $isInteractive,
         protected mixed $value = null,
-        protected string $resolveFromType = 'argument',
+        public readonly string $resolveFromType = 'argument',
     ) {
-        //
+        $this->label = str($argumentName)->replace('-', ' ')->ucfirst()->toString();
     }
 
-    public function paramKey(string $key): self
+    public function setPreviousValue(mixed $value): self
     {
-        $this->key = $key;
+        $this->previousValue = $value;
 
         return $this;
     }
 
-    public function key(): string
+    public function previousValue(): mixed
     {
-        return $this->key ?? $this->argumentName;
+        return $this->previousValue;
     }
 
     public function fromInput(callable $input): self
@@ -59,6 +62,18 @@ class ValueResolver
         return $this;
     }
 
+    public function setLabel(string $label): self
+    {
+        $this->label = $label;
+
+        return $this;
+    }
+
+    public function label(): string
+    {
+        return $this->label;
+    }
+
     public function value(): mixed
     {
         return $this->value;
@@ -67,13 +82,6 @@ class ValueResolver
     public function retrieve(): mixed
     {
         return $this->value = $this->retrieveValue();
-    }
-
-    public function defaultValue(mixed $value): self
-    {
-        $this->value = $value;
-
-        return $this;
     }
 
     protected function retrieveValue(): mixed
@@ -86,11 +94,11 @@ class ValueResolver
             return ($this->fromInputCallback)($this->value);
         }
 
-        if ($this->value !== null && ! $this->errors->has($this->key())) {
+        if ($this->value !== null && ! $this->errors->has($this->key)) {
             return $this->value;
         }
 
-        if ($this->isInteractive && $this->fromInputCallback && ($this->value === null || $this->errors->has($this->key()))) {
+        if ($this->isInteractive && $this->fromInputCallback && ($this->value === null || $this->errors->has($this->key))) {
             return ($this->fromInputCallback)($this->value);
         }
 

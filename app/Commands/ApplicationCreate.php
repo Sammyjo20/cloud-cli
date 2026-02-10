@@ -48,7 +48,7 @@ class ApplicationCreate extends BaseCommand
     {
         $git = app(Git::class);
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'name',
             fn ($resolver) => $resolver->fromInput(
                 fn ($currentValue) => text(
@@ -59,7 +59,7 @@ class ApplicationCreate extends BaseCommand
             ),
         );
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'repository',
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => text(
@@ -75,7 +75,7 @@ class ApplicationCreate extends BaseCommand
             'Fetching regions...',
         );
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'region',
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => select(
@@ -91,9 +91,9 @@ class ApplicationCreate extends BaseCommand
 
         return spin(
             fn () => $this->client->applications()->create(new CreateApplicationRequestData(
-                repository: $this->fields()->get('repository'),
-                name: $this->fields()->get('name'),
-                region: $this->fields()->get('region'),
+                repository: $this->form()->get('repository'),
+                name: $this->form()->get('name'),
+                region: $this->form()->get('region'),
             )),
             'Creating application...',
         );

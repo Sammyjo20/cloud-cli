@@ -166,12 +166,12 @@ class CacheUpdate extends BaseCommand
         foreach ($selection as $optionName) {
             $field = $fields[$optionName];
 
-            $this->fields()->add($field['key'], fn ($resolver) => $resolver->fromInput(
+            $this->form()->prompt($field['key'], fn ($resolver) => $resolver->fromInput(
                 fn ($value) => ($field['prompt'])($value ?? $field['current']),
             ));
         }
 
-        return $this->updateCache($cache, $this->fields()->all());
+        return $this->updateCache($cache, $this->form()->all());
     }
 
     protected function coerceValue(string $key, mixed $value): mixed

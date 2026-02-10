@@ -39,7 +39,7 @@ class DomainCreate extends BaseCommand
 
     protected function createDomain(string $environmentId)
     {
-        $this->fields()->add(
+        $this->form()->prompt(
             'name',
             fn ($resolver) => $resolver->fromInput(fn (?string $value) => text(
                 label: 'Domain name',
@@ -48,7 +48,7 @@ class DomainCreate extends BaseCommand
             )),
         );
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'www_redirect',
             fn ($resolver) => $resolver
                 ->fromInput(fn ($value) => select(
@@ -63,7 +63,7 @@ class DomainCreate extends BaseCommand
                 ->nonInteractively(fn () => 'www_to_root'),
         );
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'wildcard_enabled',
             fn ($resolver) => $resolver
                 ->fromInput(fn ($value) => confirm(
@@ -72,7 +72,7 @@ class DomainCreate extends BaseCommand
                 )),
         );
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'verification_method',
             fn ($resolver) => $resolver
                 ->fromInput(fn ($value) => selectWithContext(
@@ -89,10 +89,10 @@ class DomainCreate extends BaseCommand
         return spin(
             fn () => $this->client->domains()->create(new CreateDomainRequestData(
                 environmentId: $environmentId,
-                name: $this->fields()->get('name'),
-                wwwRedirect: $this->fields()->get('www_redirect'),
-                wildcardEnabled: $this->fields()->get('wildcard_enabled'),
-                verificationMethod: $this->fields()->get('verification_method'),
+                name: $this->form()->get('name'),
+                wwwRedirect: $this->form()->get('www_redirect'),
+                wildcardEnabled: $this->form()->get('wildcard_enabled'),
+                verificationMethod: $this->form()->get('verification_method'),
             )),
             'Creating domain...',
         );

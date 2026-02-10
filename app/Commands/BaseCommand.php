@@ -6,7 +6,7 @@ use App\Concerns\HasAClient;
 use App\Concerns\Validates;
 use App\Exceptions\CommandExitException;
 use App\Resolvers\Resolvers;
-use App\Support\CreateFields;
+use App\Support\Form;
 use App\Support\ValueResolver;
 use Illuminate\Contracts\Support\Jsonable;
 use Laravel\Prompts\Concerns\Colors;
@@ -24,13 +24,13 @@ abstract class BaseCommand extends Command
     use HasAClient;
     use Validates;
 
-    protected CreateFields $createFields;
+    protected Form $form;
 
     protected ?Resolvers $resolvers;
 
-    protected function fields(): CreateFields
+    protected function form(): Form
     {
-        return $this->createFields ??= (new CreateFields)
+        return $this->form ??= (new Form)
             ->options($this->options())
             ->arguments($this->arguments())
             ->isInteractive($this->isInteractive());
@@ -89,10 +89,10 @@ abstract class BaseCommand extends Command
         }
     }
 
-    protected function reportChange(string $field, string $oldValue, string $newValue): void
+    protected function reportChange(string $field, ?string $oldValue, ?string $newValue): void
     {
         dataList([
-            $field => $this->dim($this->yellow($oldValue).' →').' '.$this->green($newValue),
+            $field => $this->dim($this->yellow($oldValue ?? '—').' →').' '.$this->green($newValue ?? '—'),
         ]);
     }
 

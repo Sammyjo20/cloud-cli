@@ -6,7 +6,6 @@ use App\Client\Requests\UpdateApplicationRequestData;
 use App\Concerns\HandlesAvatars;
 use App\Dto\Application;
 use App\Git;
-use App\Support\UpdateFields;
 use Imagick;
 
 use function Laravel\Prompts\confirm;
@@ -43,23 +42,17 @@ class ApplicationUpdate extends BaseCommand
 
         $application = $this->resolvers()->application()->from($this->argument('application'));
 
-        $fields = $this->getFieldDefinitions($application);
+        $this->defineFields($application);
 
-        $data = [];
-
-        foreach ($fields as $optionName => $field) {
-            if ($this->option($optionName)) {
-                $data[$field['key']] = $this->option($optionName);
-
-                $this->reportChange(
-                    $field['label'],
-                    $field['current'],
-                    $this->option($optionName),
-                );
-            }
+        foreach ($this->form()->filled() as $key => $value) {
+            $this->reportChange(
+                $value->label(),
+                $value->previousValue(),
+                $value->value(),
+            );
         }
 
-        $updatedApplication = $this->resolveUpdatedApplication($application, $fields, $data);
+        $updatedApplication = $this->resolveUpdatedApplication($application);
 
         $this->outputJsonIfWanted($updatedApplication);
 
@@ -68,21 +61,21 @@ class ApplicationUpdate extends BaseCommand
         outro($updatedApplication->url());
     }
 
-    protected function resolveUpdatedApplication(Application $application, array $fields, array $data): Application
+    protected function resolveUpdatedApplication(Application $application): Application
     {
         if (! $this->isInteractive()) {
-            if (empty($data)) {
+            if (! $this->form()->hasAnyValues()) {
                 $this->outputErrorOrThrow('No fields to update. Provide at least one option.');
 
                 exit(self::FAILURE);
             }
 
-            return $this->updateApplication($application, $data);
+            return $this->updateApplication($application);
         }
 
-        if (empty($data)) {
+        if (! $this->form()->hasAnyValues()) {
             return $this->loopUntilValid(
-                fn () => $this->collectDataAndUpdate($fields, $application),
+                fn () => $this->collectDataAndUpdate($application),
             );
         }
 
@@ -92,20 +85,20 @@ class ApplicationUpdate extends BaseCommand
             exit(self::FAILURE);
         }
 
-        return $this->updateApplication($application, $data);
+        return $this->updateApplication($application);
     }
 
-    protected function updateApplication(Application $application, array $data): Application
+    protected function updateApplication(Application $application): Application
     {
         spin(
             fn () => $this->client->applications()->update(new UpdateApplicationRequestData(
                 applicationId: $application->id,
-                name: $data['name'] ?? null,
-                slug: $data['slug'] ?? null,
-                defaultEnvironmentId: $data['default_environment_id'] ?? null,
-                repository: $data['repository'] ?? null,
-                slackChannel: $data['slack_channel'] ?? null,
-                avatar: $data['avatar'] ?? null,
+                name: $this->form()->get('name'),
+                slug: $this->form()->get('slug'),
+                defaultEnvironmentId: $this->form()->get('default_environment_id'),
+                repository: $this->form()->get('repository'),
+                slackChannel: $this->form()->get('slack_channel'),
+                avatar: $this->form()->get('avatar'),
             )),
             'Updating application...',
         );
@@ -122,26 +115,76 @@ class ApplicationUpdate extends BaseCommand
         return confirm('Update the application?');
     }
 
-    protected function getFieldDefinitions(Application $application): array
+    protected function defineFields(Application $application): void
     {
-        $fields = new UpdateFields;
+        $this->form()->define(
+            'name',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => text(
+                    label: 'Name',
+                    required: true,
+                    default: $value ?? $application->name,
+                    validate: fn ($value) => match (true) {
+                        strlen($value) < 3 => 'Name must be at least 3 characters',
+                        strlen($value) > 40 => 'Name must be less than 40 characters',
+                        ! preg_match('/^[\p{Latin}0-9 _.\'-]+$/u', $value) => 'Name must contain only letters, numbers, spaces, and: _ . \' -',
+                        default => null,
+                    },
+                ),
+            ),
+        );
 
-        $fields->add('name', $this->getNewName(...))->currentValue($application->name);
-        $fields->add('slug', $this->getNewSlug(...))->currentValue($application->slug);
-        $fields->add('repository', $this->getNewRepository(...))->currentValue($application->repositoryFullName ?? '');
-        $fields->add('avatar', $this->getNewAvatar(...));
-        $fields->add('default-environment', fn ($value) => $this->getNewDefaultEnvironmentId($application))->currentValue($application->defaultEnvironmentId)->dataKey('default_environment_id');
-        $fields->add('slack-channel', $this->getNewSlackChannel(...))->currentValue($application->slackChannel)->dataKey('slack_channel');
+        $this->form()->define(
+            'slug',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => text(
+                    label: 'Slug',
+                    required: true,
+                    default: $value ?? $application->slug,
+                    validate: fn ($value) => match (true) {
+                        strlen($value) < 3 => 'Slug must be at least 3 characters',
+                        default => null,
+                    },
+                ),
+            )->setPreviousValue($application->slug),
+        );
 
-        return $fields->get();
+        $this->form()->define(
+            'repository',
+            fn ($resolver) => $resolver->fromInput(fn ($value) => text(
+                label: 'Repository',
+                required: true,
+                default: $value ?? $application->repositoryFullName ?? '',
+            ))->setPreviousValue($application->repositoryFullName),
+        );
+
+        $this->form()->define(
+            'avatar',
+            fn ($resolver) => $resolver->fromInput($this->getNewAvatar(...)),
+        );
+
+        $this->form()->define(
+            'default_environment_id',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => $this->getNewDefaultEnvironmentId($application, $value),
+            ),
+            'default-environment',
+        )->setPreviousValue($application->defaultEnvironmentId);
+
+        $this->form()->define(
+            'slack_channel',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => $this->getNewSlackChannel($value ?? $application->slackChannel),
+            ),
+        )->setPreviousValue($application->slackChannel);
     }
 
-    protected function collectDataAndUpdate(array $fields, Application $application): Application
+    protected function collectDataAndUpdate(Application $application): Application
     {
         $selection = multiselect(
             label: 'What do you want to update?',
-            options: collect($fields)->mapWithKeys(fn ($field, $key) => [
-                $key => $field['label'],
+            options: collect($this->form()->defined())->mapWithKeys(fn ($field, $key) => [
+                $field->key => $field->label(),
             ])->toArray(),
         );
 
@@ -152,51 +195,10 @@ class ApplicationUpdate extends BaseCommand
         }
 
         foreach ($selection as $optionName) {
-            $field = $fields[$optionName];
-
-            $this->fields()->add($field['key'], fn ($resolver) => $resolver->fromInput(
-                fn ($value) => ($field['prompt'])($value ?? $field['current']),
-            ));
+            $this->form()->prompt($optionName);
         }
 
-        return $this->updateApplication($application, $this->fields()->all());
-    }
-
-    protected function getNewName(string $oldName): string
-    {
-        return text(
-            label: 'Name',
-            required: true,
-            default: $oldName,
-            validate: fn ($value) => match (true) {
-                strlen($value) < 3 => 'Name must be at least 3 characters',
-                strlen($value) > 40 => 'Name must be less than 40 characters',
-                ! preg_match('/^[\p{Latin}0-9 _.\'-]+$/u', $value) => 'Name must contain only letters, numbers, spaces, and: _ . \' -',
-                default => null,
-            },
-        );
-    }
-
-    protected function getNewSlug(string $oldSlug): string
-    {
-        return text(
-            label: 'Slug',
-            required: true,
-            default: $oldSlug,
-            validate: fn ($value) => match (true) {
-                strlen($value) < 3 => 'Slug must be at least 3 characters',
-                default => null,
-            },
-        );
-    }
-
-    protected function getNewRepository(string $oldRepository): string
-    {
-        return text(
-            label: 'Repository',
-            required: true,
-            default: $oldRepository,
-        );
+        return $this->updateApplication($application);
     }
 
     protected function getNewAvatar(): array
@@ -248,7 +250,7 @@ class ApplicationUpdate extends BaseCommand
         ];
     }
 
-    protected function getNewDefaultEnvironmentId(Application $application): string
+    protected function getNewDefaultEnvironmentId(Application $application, $value = null): string
     {
         $options = collect($application->environments)
             ->mapWithKeys(fn ($environment) => [
@@ -259,16 +261,7 @@ class ApplicationUpdate extends BaseCommand
             label: 'Default environment',
             options: $options,
             required: true,
-            default: $application->defaultEnvironmentId,
-        );
-    }
-
-    protected function getNewSlackChannel(string $oldSlackChannel): string
-    {
-        return text(
-            label: 'Slack channel',
-            required: true,
-            default: $oldSlackChannel,
+            default: $value ?? $application->defaultEnvironmentId,
         );
     }
 }

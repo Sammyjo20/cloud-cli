@@ -18,14 +18,14 @@ trait CreatesDatabaseCluster
 {
     protected function createDatabaseCluster(array $defaults = []): DatabaseCluster
     {
-        $this->fields()->add(
+        $this->form()->prompt(
             'name',
-            fn ($resolver) => $resolver->fromInput(
-                fn (?string $value) => text(
+            fn($resolver) => $resolver->fromInput(
+                fn(?string $value) => text(
                     label: 'Database cluster name',
                     default: $value ?? $defaults['name'] ?? '',
                     required: true,
-                    validate: fn ($v) => match (true) {
+                    validate: fn($v) => match (true) {
                         ! preg_match('/^[a-z0-9_-]+$/', $v) => 'Must contain only lowercase letters, numbers, hyphens and underscores',
                         strlen($v) < 3 => 'Must be at least 3 characters',
                         strlen($v) > 40 => 'Must be less than 40 characters',
@@ -36,33 +36,33 @@ trait CreatesDatabaseCluster
         );
 
         $types = spin(
-            fn () => $this->client->databaseClusters()->types(),
+            fn() => $this->client->databaseClusters()->types(),
             'Fetching database types...',
         );
 
-        $types = collect($types)->filter(fn (DatabaseType $type) => DatabaseClusterPreset::tryFrom($type->type) !== null)->values();
+        $types = collect($types)->filter(fn(DatabaseType $type) => DatabaseClusterPreset::tryFrom($type->type) !== null)->values();
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'type',
-            fn ($resolver) => $resolver->fromInput(
-                fn (?string $value) => select(
+            fn($resolver) => $resolver->fromInput(
+                fn(?string $value) => select(
                     label: 'Database type',
-                    options: $types->mapWithKeys(fn (DatabaseType $type) => [$type->type => $type->label])->toArray(),
+                    options: $types->mapWithKeys(fn(DatabaseType $type) => [$type->type => $type->label])->toArray(),
                     default: $value ?? $defaults['type'] ?? null,
                     required: true,
                 ),
             ),
         );
 
-        $selectedType = $types->firstWhere('type', $this->fields()->get('type'));
+        $selectedType = $types->firstWhere('type', $this->form()->get('type'));
 
         $regions = spin(
-            fn () => $this->client->meta()->regions(),
+            fn() => $this->client->meta()->regions(),
             'Fetching regions...',
         );
 
         $regionOptions = collect($regions)->filter(
-            fn (Region $region) => in_array($region->value, $selectedType->regions),
+            fn(Region $region) => in_array($region->value, $selectedType->regions),
         );
 
         $defaultRegion = $defaults['region'] ?? null;
@@ -71,12 +71,12 @@ trait CreatesDatabaseCluster
             $defaultRegion = null;
         }
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'region',
-            fn ($resolver) => $resolver->fromInput(
-                fn (?string $value) => select(
+            fn($resolver) => $resolver->fromInput(
+                fn(?string $value) => select(
                     label: 'Region',
-                    options: $regionOptions->mapWithKeys(fn (Region $region) => [
+                    options: $regionOptions->mapWithKeys(fn(Region $region) => [
                         $region->value => $region->label,
                     ])->toArray(),
                     default: $value ?? $defaultRegion ?? $regionOptions->first()?->value,
@@ -88,10 +88,10 @@ trait CreatesDatabaseCluster
         $config = $this->databaseClusterConfigFromPreset($selectedType) ?? $this->promptForDatabaseClusterConfig($selectedType);
 
         return spin(
-            fn () => $this->client->databaseClusters()->create(new CreateDatabaseClusterRequestData(
-                type: $this->fields()->get('type'),
-                name: $this->fields()->get('name'),
-                region: $this->fields()->get('region'),
+            fn() => $this->client->databaseClusters()->create(new CreateDatabaseClusterRequestData(
+                type: $this->form()->get('type'),
+                name: $this->form()->get('name'),
+                region: $this->form()->get('region'),
                 clusterConfig: $config,
             )),
             'Creating database cluster...',
@@ -106,11 +106,11 @@ trait CreatesDatabaseCluster
 
         $selectedPreset = selectWithContext(
             label: 'Configuration',
-            options: collect($presets)->mapWithKeys(fn ($preset, $key) => [
+            options: collect($presets)->mapWithKeys(fn($preset, $key) => [
                 $key => count($preset) > 0 ? [
                     $key,
                     $clusterPreset->description()($preset),
-                ] : [$key, $key.' configuration'],
+                ] : [$key, $key . ' configuration'],
             ])->toArray(),
             default: array_key_first($presets),
             required: true,

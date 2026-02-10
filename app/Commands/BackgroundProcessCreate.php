@@ -47,7 +47,7 @@ class BackgroundProcessCreate extends BaseCommand
     {
         $instanceId = $this->resolvers()->instance()->from($this->argument('instance'))->id;
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'type',
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => select(
@@ -61,8 +61,8 @@ class BackgroundProcessCreate extends BaseCommand
                 )),
         );
 
-        if ($this->fields()->get('type') === 'custom') {
-            $this->fields()->add(
+        if ($this->form()->get('type') === 'custom') {
+            $this->form()->prompt(
                 'command',
                 fn ($resolver) => $resolver->fromInput(
                     fn (?string $value) => text(
@@ -76,7 +76,7 @@ class BackgroundProcessCreate extends BaseCommand
             $this->addWorkerParams();
         }
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'processes',
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => text(
@@ -93,8 +93,8 @@ class BackgroundProcessCreate extends BaseCommand
                 ->nonInteractively(fn () => '1'),
         );
 
-        $type = $this->fields()->get('type');
-        $processes = (int) $this->fields()->get('processes');
+        $type = $this->form()->get('type');
+        $processes = (int) $this->form()->get('processes');
 
         if ($type === 'worker') {
             $config = collect([
@@ -107,10 +107,10 @@ class BackgroundProcessCreate extends BaseCommand
                 'timeout',
                 'force',
             ])->mapWithKeys(fn ($key) => [
-                $key => $this->fields()->get($key, $this->getWorkerDefult($key)),
+                $key => $this->form()->get($key, $this->getWorkerDefult($key)),
             ])->toArray();
         } else {
-            $command = $this->fields()->get('command');
+            $command = $this->form()->get('command');
         }
 
         return spin(
@@ -129,7 +129,7 @@ class BackgroundProcessCreate extends BaseCommand
 
     protected function addWorkerParams(): void
     {
-        $this->fields()->add(
+        $this->form()->prompt(
             'connection',
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => text(
@@ -141,7 +141,7 @@ class BackgroundProcessCreate extends BaseCommand
                 ->shouldPromptOnce(),
         );
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'queue',
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => text(
@@ -154,7 +154,7 @@ class BackgroundProcessCreate extends BaseCommand
                 ->shouldPromptOnce(),
         );
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'tries',
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => text(
@@ -171,7 +171,7 @@ class BackgroundProcessCreate extends BaseCommand
                 ->shouldPromptOnce(),
         );
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'backoff',
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => text(
@@ -188,7 +188,7 @@ class BackgroundProcessCreate extends BaseCommand
                 ->shouldPromptOnce(),
         );
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'sleep',
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => text(
@@ -205,7 +205,7 @@ class BackgroundProcessCreate extends BaseCommand
                 ->shouldPromptOnce(),
         );
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'rest',
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => text(
@@ -222,7 +222,7 @@ class BackgroundProcessCreate extends BaseCommand
                 ->shouldPromptOnce(),
         );
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'timeout',
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => text(
@@ -239,7 +239,7 @@ class BackgroundProcessCreate extends BaseCommand
                 ->shouldPromptOnce(),
         );
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'force',
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => confirm(

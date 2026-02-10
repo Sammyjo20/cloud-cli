@@ -57,7 +57,7 @@ class InstanceCreate extends BaseCommand
 
     protected function createInstance(string $environmentId)
     {
-        $this->fields()->add(
+        $this->form()->prompt(
             'name',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => text(
@@ -68,7 +68,7 @@ class InstanceCreate extends BaseCommand
             ),
         );
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'size',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => search(
@@ -82,7 +82,7 @@ class InstanceCreate extends BaseCommand
             ),
         );
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'scaling_type',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => select(
@@ -98,9 +98,9 @@ class InstanceCreate extends BaseCommand
             ),
         );
 
-        $isCustom = $this->fields()->get('scaling_type') === 'custom';
+        $isCustom = $this->form()->get('scaling_type') === 'custom';
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'min_replicas',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => $isCustom ? number(
@@ -112,20 +112,20 @@ class InstanceCreate extends BaseCommand
             ),
         );
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'max_replicas',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => $isCustom ? number(
                     label: 'Maximum replicas',
-                    default: $value ?? $this->fields()->get('min-replicas'),
-                    min: $this->fields()->get('min-replicas'),
+                    default: $value ?? $this->form()->get('min-replicas'),
+                    min: $this->form()->get('min-replicas'),
                     max: 10,
-                ) : $this->fields()->get('min-replicas'),
+                ) : $this->form()->get('min-replicas'),
             ),
         );
 
         if ($isCustom) {
-            $this->fields()->add(
+            $this->form()->prompt(
                 'scaling_cpu_threshold_percentage',
                 fn ($resolver) => $resolver->fromInput(fn ($value) => number(
                     label: 'Scaling CPU threshold percentage',
@@ -135,7 +135,7 @@ class InstanceCreate extends BaseCommand
                 )),
             );
 
-            $this->fields()->add(
+            $this->form()->prompt(
                 'scaling_memory_threshold_percentage',
                 fn ($resolver) => $resolver->fromInput(fn ($value) => number(
                     label: 'Scaling memory threshold percentage',
@@ -144,12 +144,12 @@ class InstanceCreate extends BaseCommand
             );
         }
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'type',
             fn ($resolver) => $resolver->fromInput(fn () => 'service'),
         );
 
-        $this->fields()->add(
+        $this->form()->prompt(
             'uses_scheduler',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => confirm(
@@ -159,7 +159,7 @@ class InstanceCreate extends BaseCommand
             ),
         );
 
-        $all = $this->fields()->all();
+        $all = $this->form()->all();
 
         return spin(
             fn () => $this->client->instances()->create(new CreateInstanceRequestData(

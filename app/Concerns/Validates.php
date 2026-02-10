@@ -25,7 +25,7 @@ trait Validates
         $result = null;
         $this->errors ??= new ValidationErrors;
         $attempts = 0;
-        $this->fields()->errors($this->errors);
+        $this->form()->errors($this->errors);
 
         while (! $result) {
             if ($attempts >= $maxAttempts) {
@@ -64,7 +64,7 @@ trait Validates
         }
 
         $this->errors->clear();
-        $this->fields()->clear();
+        $this->form()->clear();
 
         return $result;
     }

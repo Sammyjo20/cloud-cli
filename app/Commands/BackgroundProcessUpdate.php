@@ -137,12 +137,12 @@ class BackgroundProcessUpdate extends BaseCommand
         foreach ($selection as $optionName) {
             $field = $fields[$optionName];
 
-            $this->fields()->add($field['key'], fn ($resolver) => $resolver->fromInput(
+            $this->form()->prompt($field['key'], fn ($resolver) => $resolver->fromInput(
                 fn ($value) => ($field['prompt'])($value ?? $field['current']),
             ));
         }
 
-        $params = $this->fields()->all();
+        $params = $this->form()->all();
 
         if (isset($params['instances'])) {
             $params['instances'] = (int) $params['instances'];
