@@ -125,13 +125,27 @@ class DataTable extends Prompt
     public function display(): bool
     {
         $this->capturePreviousNewLines();
-        $this->hideCursor();
+
+        if (static::shouldFallback()) {
+            return false;
+        }
+
+        static::$interactive ??= stream_isatty(STDIN);
+
+        if (! static::$interactive) {
+            return false;
+        }
 
         try {
             static::terminal()->setTty('-icanon -isig -echo');
         } catch (Throwable $e) {
-            //
+            static::output()->writeln("<comment>{$e->getMessage()}</comment>");
+            static::fallbackWhen(true);
+
+            return false;
         }
+
+        $this->hideCursor();
 
         $this->browse();
         $this->addDefaultKeyBindings();
