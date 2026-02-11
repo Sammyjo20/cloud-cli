@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\Deployments;
 
+use App\Client\Resources\Concerns\AcceptsInclude;
 use App\Dto\Deployment;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -10,6 +11,8 @@ use Saloon\PaginationPlugin\Contracts\Paginatable;
 
 class ListDeploymentsRequest extends Request implements Paginatable
 {
+    use AcceptsInclude;
+
     protected Method $method = Method::GET;
 
     public function __construct(

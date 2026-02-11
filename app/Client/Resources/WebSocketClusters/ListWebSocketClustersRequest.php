@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\WebSocketClusters;
 
+use App\Client\Resources\Concerns\AcceptsInclude;
 use App\Dto\WebsocketCluster;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -10,6 +11,8 @@ use Saloon\PaginationPlugin\Contracts\Paginatable;
 
 class ListWebSocketClustersRequest extends Request implements Paginatable
 {
+    use AcceptsInclude;
+
     protected Method $method = Method::GET;
 
     public function resolveEndpoint(): string

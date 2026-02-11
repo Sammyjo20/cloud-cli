@@ -2,6 +2,7 @@
 
 namespace App\Client\Resources\DatabaseClusters;
 
+use App\Client\Resources\Concerns\AcceptsInclude;
 use App\Dto\DatabaseType;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -9,6 +10,8 @@ use Saloon\Http\Response;
 
 class ListDatabaseTypesRequest extends Request
 {
+    use AcceptsInclude;
+
     protected Method $method = Method::GET;
 
     public function resolveEndpoint(): string

@@ -25,7 +25,7 @@ class DeploymentGet extends BaseCommand
 
         $this->outputJsonIfWanted($deployment);
 
-        $data = [
+        dataList([
             'ID' => $deployment->id,
             'Status' => $deployment->status->label(),
             'Branch' => Git::branchUrl($environment->application->repositoryFullName, $deployment->branchName),
@@ -36,8 +36,6 @@ class DeploymentGet extends BaseCommand
             'Finished At' => $deployment->finishedAt?->toIso8601String() ?? '—',
             'Duration' => $deployment->finishedAt ? $deployment->totalTime()->format('%I:%S') : '—',
             'Failure Reason' => $deployment->failureReason,
-        ];
-
-        dataList($data);
+        ]);
     }
 }

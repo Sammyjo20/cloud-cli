@@ -49,7 +49,7 @@ class DeploymentResolver extends Resolver
         $environment = $this->environment();
         $deployments = collect(
             spin(
-                fn () => $this->client->deployments()->list($environment->id)->items(),
+                fn () => $this->client->deployments()->include('environment')->list($environment->id)->items(),
                 'Fetching deployments...',
             ),
         );
