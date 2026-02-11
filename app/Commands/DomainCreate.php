@@ -88,13 +88,15 @@ class DomainCreate extends BaseCommand
         );
 
         return spin(
-            fn () => $this->client->domains()->create(new CreateDomainRequestData(
-                environmentId: $environmentId,
-                name: $this->form()->get('name'),
-                wwwRedirect: $this->form()->get('www_redirect'),
-                wildcardEnabled: $this->form()->get('wildcard_enabled'),
-                verificationMethod: $this->form()->get('verification_method'),
-            )),
+            fn () => $this->client->domains()->create(
+                new CreateDomainRequestData(
+                    environmentId: $environmentId,
+                    name: $this->form()->get('name'),
+                    wwwRedirect: $this->form()->get('www_redirect'),
+                    wildcardEnabled: $this->form()->get('wildcard_enabled'),
+                    verificationMethod: $this->form()->get('verification_method'),
+                ),
+            ),
             'Creating domain...',
         );
     }
