@@ -16,16 +16,18 @@ use function Laravel\Prompts\text;
 
 trait CreatesDatabaseCluster
 {
+    protected ?string $databaseClusterPreset = null;
+
     protected function createDatabaseCluster(array $defaults = []): DatabaseCluster
     {
         $this->form()->prompt(
             'name',
-            fn($resolver) => $resolver->fromInput(
-                fn(?string $value) => text(
-                    label: 'Database cluster name',
+            fn ($resolver) => $resolver->fromInput(
+                fn (?string $value) => text(
+                    label: 'Name',
                     default: $value ?? $defaults['name'] ?? '',
                     required: true,
-                    validate: fn($v) => match (true) {
+                    validate: fn ($v) => match (true) {
                         ! preg_match('/^[a-z0-9_-]+$/', $v) => 'Must contain only lowercase letters, numbers, hyphens and underscores',
                         strlen($v) < 3 => 'Must be at least 3 characters',
                         strlen($v) > 40 => 'Must be less than 40 characters',
@@ -36,18 +38,18 @@ trait CreatesDatabaseCluster
         );
 
         $types = spin(
-            fn() => $this->client->databaseClusters()->types(),
+            fn () => $this->client->databaseClusters()->types(),
             'Fetching database types...',
         );
 
-        $types = collect($types)->filter(fn(DatabaseType $type) => DatabaseClusterPreset::tryFrom($type->type) !== null)->values();
+        $types = collect($types)->filter(fn (DatabaseType $type) => DatabaseClusterPreset::tryFrom($type->type) !== null)->values();
 
         $this->form()->prompt(
             'type',
-            fn($resolver) => $resolver->fromInput(
-                fn(?string $value) => select(
+            fn ($resolver) => $resolver->fromInput(
+                fn (?string $value) => select(
                     label: 'Database type',
-                    options: $types->mapWithKeys(fn(DatabaseType $type) => [$type->type => $type->label])->toArray(),
+                    options: $types->mapWithKeys(fn (DatabaseType $type) => [$type->type => $type->label])->toArray(),
                     default: $value ?? $defaults['type'] ?? null,
                     required: true,
                 ),
@@ -57,12 +59,12 @@ trait CreatesDatabaseCluster
         $selectedType = $types->firstWhere('type', $this->form()->get('type'));
 
         $regions = spin(
-            fn() => $this->client->meta()->regions(),
+            fn () => $this->client->meta()->regions(),
             'Fetching regions...',
         );
 
         $regionOptions = collect($regions)->filter(
-            fn(Region $region) => in_array($region->value, $selectedType->regions),
+            fn (Region $region) => in_array($region->value, $selectedType->regions),
         );
 
         $defaultRegion = $defaults['region'] ?? null;
@@ -73,10 +75,10 @@ trait CreatesDatabaseCluster
 
         $this->form()->prompt(
             'region',
-            fn($resolver) => $resolver->fromInput(
-                fn(?string $value) => select(
+            fn ($resolver) => $resolver->fromInput(
+                fn (?string $value) => select(
                     label: 'Region',
-                    options: $regionOptions->mapWithKeys(fn(Region $region) => [
+                    options: $regionOptions->mapWithKeys(fn (Region $region) => [
                         $region->value => $region->label,
                     ])->toArray(),
                     default: $value ?? $defaultRegion ?? $regionOptions->first()?->value,
@@ -88,36 +90,43 @@ trait CreatesDatabaseCluster
         $config = $this->databaseClusterConfigFromPreset($selectedType) ?? $this->promptForDatabaseClusterConfig($selectedType);
 
         return spin(
-            fn() => $this->client->databaseClusters()->create(new CreateDatabaseClusterRequestData(
-                type: $this->form()->get('type'),
-                name: $this->form()->get('name'),
-                region: $this->form()->get('region'),
-                clusterConfig: $config,
-            )),
+            fn () => $this->client->databaseClusters()->create(
+                new CreateDatabaseClusterRequestData(
+                    type: $this->form()->get('type'),
+                    name: $this->form()->get('name'),
+                    region: $this->form()->get('region'),
+                    config: $config,
+                ),
+            ),
             'Creating database cluster...',
         );
     }
 
     protected function databaseClusterConfigFromPreset(DatabaseType $type): ?array
     {
+
         $clusterPreset = DatabaseClusterPreset::from($type->type);
         $presets = $clusterPreset->presets();
         $presets['Custom'] = [];
 
-        $selectedPreset = selectWithContext(
+        if ($this->databaseClusterPreset) {
+            return $this->databaseClusterPreset === 'Custom' ? null : $presets[$this->databaseClusterPreset];
+        }
+
+        $this->databaseClusterPreset = selectWithContext(
             label: 'Configuration',
-            options: collect($presets)->mapWithKeys(fn($preset, $key) => [
+            options: collect($presets)->mapWithKeys(fn ($preset, $key) => [
                 $key => count($preset) > 0 ? [
                     $key,
                     $clusterPreset->description()($preset),
-                ] : [$key, $key . ' configuration'],
+                ] : [$key, $key.' configuration'],
             ])->toArray(),
             default: array_key_first($presets),
             required: true,
         );
 
-        if ($selectedPreset !== 'Custom') {
-            return $presets[$selectedPreset];
+        if ($this->databaseClusterPreset !== 'Custom') {
+            return $presets[$this->databaseClusterPreset];
         }
 
         return null;
@@ -137,43 +146,71 @@ trait CreatesDatabaseCluster
             $max = $schema['max'] ?? null;
             $enum = $schema['enum'] ?? [];
             $example = $schema['example'] ?? null;
+            $key = 'config.'.$name;
 
-            $label = str_replace('_', ' ', ucfirst($name));
-            $hint = $description;
+            $label = match ($name) {
+                'cu_min' => 'CU min',
+                'cu_max' => 'CU max',
+                default => str_replace('_', ' ', ucfirst($name)),
+            };
 
             if (count($enum) > 0) {
                 $options = is_array($enum) ? array_combine($enum, $enum) : $enum;
-                $config[$name] = select(
-                    label: $label,
-                    options: $options,
-                    default: $example ?? array_key_first($options),
-                    required: $required,
+                $this->form()->prompt(
+                    $key,
+                    fn ($resolver) => $resolver->fromInput(
+                        fn ($value) => select(
+                            label: $label,
+                            options: $options,
+                            default: $value ?? $example ?? array_key_first($options),
+                            required: $required,
+                        ),
+                    ),
                 );
             } elseif ($fieldType === 'boolean') {
-                $config[$name] = confirm(
-                    label: $label,
-                    default: filter_var($example, FILTER_VALIDATE_BOOLEAN),
-                    hint: $hint,
+                $this->form()->prompt(
+                    $key,
+                    fn ($resolver) => $resolver->fromInput(
+                        fn ($value) => confirm(
+                            label: $label,
+                            default: filter_var($value ?? $example, FILTER_VALIDATE_BOOLEAN),
+                            hint: $description,
+                        ),
+                    ),
                 );
             } elseif ($fieldType === 'integer') {
-                $config[$name] = number(
-                    label: $label,
-                    default: $example ?? 0,
-                    required: $required,
-                    hint: $hint,
-                    min: $min,
-                    max: $max,
+                $this->form()->prompt(
+                    $key,
+                    fn ($resolver) => $resolver->fromInput(
+                        fn ($value) => number(
+                            label: $label,
+                            default: $value ?? $example ?? 0,
+                            required: $required,
+                            hint: $description,
+                            min: $min,
+                            max: $max,
+                        ),
+                    ),
                 );
             } else {
-                $config[$name] = text(
-                    label: $label,
-                    default: $example !== null ? (string) $example : '',
-                    required: $required,
-                    hint: $hint,
+                $this->form()->prompt(
+                    $key,
+                    fn ($resolver) => $resolver->fromInput(
+                        fn ($value) => text(
+                            label: $label,
+                            default: $value ?? $example ?? '',
+                            required: $required,
+                            hint: $description,
+                        ),
+                    ),
                 );
             }
         }
 
-        return $config;
+        return collect($this->form()->filled())
+            ->filter(fn ($value) => str_starts_with($value->key, 'config.'))
+            ->mapWithKeys(fn ($value) => [
+                str_replace('config.', '', $value->key) => $value->value(),
+            ])->toArray();
     }
 }

@@ -27,14 +27,8 @@ class DatabaseClusterCreate extends BaseCommand
 
         intro('Create Database Cluster');
 
-        $defaults = array_filter([
-            'name' => $this->option('name'),
-            'type' => $this->option('type'),
-            'region' => $this->option('region') ?: $this->getDefaultRegion(),
-        ]);
-
         $database = $this->loopUntilValid(
-            fn () => $this->createDatabaseCluster($defaults),
+            fn () => $this->createDatabaseCluster(),
         );
 
         $this->outputJsonIfWanted($database);
