@@ -34,7 +34,13 @@ class EnvironmentCreate extends BaseCommand
 
         $this->outputJsonIfWanted($environment);
 
-        outro("Environment created: {$environment->name}");
+        $environment = $this->client->environments()->include('application')->get($environment->id);
+        $application = $this->client->applications()->get($application->id);
+
+        success($environment->url);
+        success($application->url($environment));
+
+        outro('Environment created');
     }
 
     protected function createEnvironment(string $applicationId)
@@ -60,11 +66,13 @@ class EnvironmentCreate extends BaseCommand
         );
 
         return spin(
-            fn () => $this->client->environments()->create(new CreateEnvironmentRequestData(
-                applicationId: $applicationId,
-                name: $this->form()->get('name'),
-                branch: $this->form()->get('branch'),
-            )),
+            fn () => $this->client->environments()->create(
+                new CreateEnvironmentRequestData(
+                    applicationId: $applicationId,
+                    name: $this->form()->get('name'),
+                    branch: $this->form()->get('branch'),
+                ),
+            ),
             'Creating environment...',
         );
     }

@@ -89,9 +89,9 @@ class Application extends Data
         return self::from($transformed);
     }
 
-    public function url(): string
+    public function url(?Environment $environment = null): string
     {
-        $environment = collect($this->environments)->firstWhere('id', $this->defaultEnvironmentId);
+        $environment ??= collect($this->environments)->firstWhere('id', $this->defaultEnvironmentId);
 
         $parts = [
             config('app.base_url'),
