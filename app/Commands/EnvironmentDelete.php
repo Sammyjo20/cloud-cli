@@ -6,14 +6,13 @@ use Illuminate\Http\Client\RequestException;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
-use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
 class EnvironmentDelete extends BaseCommand
 {
     protected $signature = 'environment:delete
-                            {environment : The environment ID}
+                            {environment? : The environment ID}
                             {--force : Skip confirmation}';
 
     protected $description = 'Delete an environment';
@@ -24,24 +23,17 @@ class EnvironmentDelete extends BaseCommand
 
         intro('Deleting Environment');
 
-        $environmentId = $this->argument('environment');
+        $environment = $this->resolvers()->environment()->from($this->argument('environment'));
 
-        if (! $this->option('force')) {
-            $environment = spin(
-                fn () => $this->client->environments()->get($environmentId),
-                'Fetching environment...',
-            );
+        if (! $this->option('force') && ! confirm("Delete environment '{$environment->name}'?")) {
+            error('Cancelled.');
 
-            if (! confirm("Delete environment '{$environment->name}'?")) {
-                info('Cancelled.');
-
-                return;
-            }
+            return self::FAILURE;
         }
 
         try {
             spin(
-                fn () => $this->client->environments()->delete($environmentId),
+                fn () => $this->client->environments()->delete($environment->id),
                 'Deleting environment...',
             );
 
@@ -49,7 +41,7 @@ class EnvironmentDelete extends BaseCommand
         } catch (RequestException $e) {
             error('Failed to delete environment: '.$e->getMessage());
 
-            return 1;
+            return self::FAILURE;
         }
     }
 }
