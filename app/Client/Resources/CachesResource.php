@@ -11,6 +11,7 @@ use App\Client\Resources\Caches\ListCachesRequest;
 use App\Client\Resources\Caches\ListCacheTypesRequest;
 use App\Client\Resources\Caches\UpdateCacheRequest;
 use App\Dto\Cache;
+use App\Dto\CacheType;
 use Saloon\PaginationPlugin\Paginator;
 
 class CachesResource extends Resource
@@ -51,10 +52,14 @@ class CachesResource extends Resource
         $this->send(new DeleteCacheRequest($cacheId));
     }
 
+    /**
+     * @return array<CacheType>
+     */
     public function types(): array
     {
-        $response = $this->send(new ListCacheTypesRequest);
+        $request = new ListCacheTypesRequest;
+        $response = $this->send($request);
 
-        return $response->json()['data'] ?? [];
+        return $request->createDtoFromResponse($response);
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Commands;
 
+use App\Dto\CacheType;
+
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
@@ -33,9 +35,9 @@ class CacheTypes extends BaseCommand
             return self::FAILURE;
         }
 
-        $rows = collect($types)->map(fn ($type) => [
-            $type['type'] ?? $type['id'] ?? '-',
-            $type['label'] ?? $type['name'] ?? '-',
+        $rows = collect($types)->map(fn (CacheType $type) => [
+            $type->type,
+            $type->label,
         ])->toArray();
 
         dataTable(

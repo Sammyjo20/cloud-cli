@@ -4,6 +4,7 @@ namespace App\Resolvers;
 
 use App\Dto\Cache;
 use Illuminate\Support\Collection;
+use Illuminate\Support\LazyCollection;
 
 use function Laravel\Prompts\spin;
 
@@ -64,7 +65,7 @@ class CacheResolver extends Resolver
         return $caches->firstWhere('id', $selected);
     }
 
-    public function fromCollection(Collection $caches, string $identifier): ?Cache
+    public function fromCollection(Collection|LazyCollection $caches, string $identifier): ?Cache
     {
         return $caches->firstWhere('id', $identifier)
             ?? $caches->firstWhere('name', $identifier);
@@ -75,7 +76,7 @@ class CacheResolver extends Resolver
         return $this->fromCollection($this->fetchAll(), $identifier);
     }
 
-    protected function fetchAll(): Collection
+    protected function fetchAll(): LazyCollection
     {
         return spin(
             fn () => $this->client->caches()->list()->collect(),

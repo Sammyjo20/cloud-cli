@@ -8,7 +8,7 @@ class CreateCacheRequestData extends RequestData
         public readonly string $type,
         public readonly string $name,
         public readonly string $region,
-        public readonly array $size,
+        public readonly string $size,
         public readonly bool $autoUpgradeEnabled,
         public readonly bool $isPublic,
         public readonly ?string $evictionPolicy = null,
