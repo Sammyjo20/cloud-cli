@@ -21,7 +21,7 @@ class DeploymentGet extends BaseCommand
         intro('Deployment Details');
 
         $deployment = $this->resolvers()->deployment()->from($this->argument('deployment'));
-        $environment = $this->resolvers()->environment()->include('application')->from($deployment->environment->id);
+        $environment = $this->client->environments()->include('application')->get($deployment->environment->id);
 
         $this->outputJsonIfWanted($deployment);
 
