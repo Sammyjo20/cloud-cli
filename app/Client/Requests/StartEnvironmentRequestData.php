@@ -6,12 +6,15 @@ class StartEnvironmentRequestData extends RequestData
 {
     public function __construct(
         public readonly string $environmentId,
+        public readonly ?bool $redeploy = null,
     ) {
         //
     }
 
     public function toRequestData(): array
     {
-        return [];
+        return $this->filter([
+            'redeploy' => $this->redeploy,
+        ]);
     }
 }

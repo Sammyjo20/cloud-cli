@@ -12,7 +12,6 @@ use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\outro;
-use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
@@ -87,10 +86,8 @@ class BucketKeyUpdate extends BaseCommand
     {
         spin(
             fn () => $this->client->bucketKeys()->update(new UpdateBucketKeyRequestData(
-                bucketId: $bucket->id,
-                keyId: $key->id,
+                filesystemKey: $key->id,
                 name: $this->form()->get('name'),
-                permission: $this->form()->get('permission'),
             )),
             'Updating key...',
         );
@@ -119,21 +116,6 @@ class BucketKeyUpdate extends BaseCommand
                 ),
             ),
         )->setPreviousValue($key->name);
-
-        $this->form()->define(
-            'permission',
-            fn ($resolver) => $resolver->fromInput(
-                fn ($value) => select(
-                    label: 'Permission',
-                    options: [
-                        'read_only' => 'Read only',
-                        'read_write' => 'Read write',
-                    ],
-                    default: $value ?? $key->permission,
-                    required: true,
-                ),
-            ),
-        )->setPreviousValue($key->permission);
     }
 
     protected function collectDataAndUpdate(ObjectStorageBucket $bucket, BucketKey $key): BucketKey

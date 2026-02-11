@@ -7,6 +7,7 @@ class ReplaceEnvironmentVariablesRequestData extends RequestData
     public function __construct(
         public readonly string $environmentId,
         public readonly ?string $content = null,
+        /** @var array<string, string> */
         public readonly array $variables = [],
     ) {
         //

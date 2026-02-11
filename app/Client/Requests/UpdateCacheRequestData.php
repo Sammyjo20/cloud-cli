@@ -10,6 +10,7 @@ class UpdateCacheRequestData extends RequestData
         public readonly ?string $size = null,
         public readonly ?bool $autoUpgradeEnabled = null,
         public readonly ?bool $isPublic = null,
+        public readonly ?string $evictionPolicy = null,
     ) {
         //
     }
@@ -21,6 +22,7 @@ class UpdateCacheRequestData extends RequestData
             'size' => $this->size,
             'auto_upgrade_enabled' => $this->autoUpgradeEnabled,
             'is_public' => $this->isPublic,
+            'eviction_policy' => $this->evictionPolicy,
         ]);
     }
 }

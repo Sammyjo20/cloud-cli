@@ -24,7 +24,7 @@ class UpdateBucketKeyRequest extends Request implements HasBody
 
     public function resolveEndpoint(): string
     {
-        return "/buckets/{$this->data->bucketId}/keys/{$this->data->keyId}";
+        return "/bucket-keys/{$this->data->filesystemKey}";
     }
 
     protected function defaultBody(): array

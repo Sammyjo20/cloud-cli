@@ -7,6 +7,7 @@ class UpdateWebSocketClusterRequestData extends RequestData
     public function __construct(
         public readonly string $clusterId,
         public readonly ?string $name = null,
+        public readonly ?int $maxConnections = null,
     ) {
         //
     }
@@ -15,6 +16,7 @@ class UpdateWebSocketClusterRequestData extends RequestData
     {
         return $this->filter([
             'name' => $this->name,
+            'max_connections' => $this->maxConnections,
         ]);
     }
 }

@@ -30,7 +30,7 @@ class UpdateEnvironmentRequestData extends RequestData
         public readonly ?string $responseHeadersFrame = null,
         public readonly ?string $responseHeadersContentType = null,
         public readonly ?string $responseHeadersRobotsTag = null,
-        /** @var array{max_age?: int|null, include_subdomains?: bool, preload?: bool}|null */
+        /** @var array{max_age:int|null, include_subdomains: bool, preload: bool}|null */
         public readonly ?array $responseHeadersHsts = null,
         /** @var array<int, array{id: string, disk: string, is_default_disk: bool}>|null */
         public readonly ?array $filesystemKeys = null,

@@ -5,7 +5,7 @@ namespace App\Client\Requests;
 class CreateBucketKeyRequestData extends RequestData
 {
     public function __construct(
-        public readonly string $bucketId,
+        public readonly string $filesystemId,
         public readonly string $name,
         public readonly string $permission,
     ) {

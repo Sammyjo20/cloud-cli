@@ -25,18 +25,20 @@ class BackgroundProcessGet extends BaseCommand
 
         dataList([
             'ID' => $process->id,
-            'Command' => $process->command,
-            'Instances' => $process->instances,
             'Type' => $process->type,
-            'Queue' => $process->queue,
+            'Processes' => $process->processes,
+            'Command' => $process->command,
+            'Strategy Type' => $process->strategyType,
+            'Strategy Threshold' => $process->strategyThreshold,
             'Connection' => $process->connection,
-            'Timeout' => $process->timeout,
-            'Sleep' => $process->sleep,
+            'Queue' => $process->queue,
             'Tries' => $process->tries,
-            'Max Processes' => $process->maxProcesses,
-            'Min Processes' => $process->minProcesses,
+            'Backoff' => $process->backoff,
+            'Sleep' => $process->sleep,
+            'Rest' => $process->rest,
+            'Timeout' => $process->timeout,
+            'Force (maintenance mode)' => $process->force !== null ? ($process->force ? 'Yes' : 'No') : '—',
             'Created At' => $process->createdAt?->format('Y-m-d H:i:s') ?? '—',
-            'Updated At' => $process->updatedAt?->format('Y-m-d H:i:s') ?? '—',
             'Instance ID' => $process->instanceId,
         ]);
     }

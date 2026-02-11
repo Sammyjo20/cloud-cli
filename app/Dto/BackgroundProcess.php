@@ -11,21 +11,24 @@ class BackgroundProcess extends Data
 {
     public function __construct(
         public readonly string $id,
-        public readonly string $command,
-        public readonly int $instances,
         public readonly string $type,
+        public readonly int $processes,
+        public readonly string $command,
+        /** @var array<string, mixed>|null */
+        public readonly ?array $config = null,
+        public readonly ?string $strategyType = null,
+        public readonly ?int $strategyThreshold = null,
+        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
+        public readonly ?CarbonImmutable $createdAt = null,
+        public readonly ?string $instanceId = null,
         public readonly ?string $queue = null,
         public readonly ?string $connection = null,
         public readonly ?int $timeout = null,
         public readonly ?int $sleep = null,
         public readonly ?int $tries = null,
-        public readonly ?int $maxProcesses = null,
-        public readonly ?int $minProcesses = null,
-        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
-        public readonly ?CarbonImmutable $createdAt = null,
-        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
-        public readonly ?CarbonImmutable $updatedAt = null,
-        public readonly ?string $instanceId = null,
+        public readonly ?int $backoff = null,
+        public readonly ?int $rest = null,
+        public readonly ?bool $force = null,
     ) {
         //
     }
@@ -35,21 +38,26 @@ class BackgroundProcess extends Data
         $data = $response['data'] ?? [];
         $attributes = $data['attributes'] ?? [];
         $relationships = $data['relationships'] ?? [];
+        $config = $attributes['config'] ?? [];
+        $config = is_array($config) ? $config : [];
 
         $transformed = [
             'id' => $data['id'],
+            'type' => $attributes['type'] ?? 'worker',
+            'processes' => $attributes['processes'] ?? 1,
             'command' => $attributes['command'] ?? '',
-            'instances' => $attributes['instances'] ?? 1,
-            'type' => $attributes['type'] ?? '',
-            'queue' => $attributes['queue'] ?? null,
-            'connection' => $attributes['connection'] ?? null,
-            'timeout' => $attributes['timeout'] ?? null,
-            'sleep' => $attributes['sleep'] ?? null,
-            'tries' => $attributes['tries'] ?? null,
-            'maxProcesses' => $attributes['max_processes'] ?? null,
-            'minProcesses' => $attributes['min_processes'] ?? null,
+            'config' => $config ?: null,
+            'strategyType' => $attributes['strategy_type'] ?? null,
+            'strategyThreshold' => $attributes['strategy_threshold'] ?? null,
             'createdAt' => $attributes['created_at'] ?? null,
-            'updatedAt' => $attributes['updated_at'] ?? null,
+            'queue' => $config['queue'] ?? null,
+            'connection' => $config['connection'] ?? null,
+            'timeout' => isset($config['timeout']) ? (int) $config['timeout'] : null,
+            'sleep' => isset($config['sleep']) ? (int) $config['sleep'] : null,
+            'tries' => isset($config['tries']) ? (int) $config['tries'] : null,
+            'backoff' => isset($config['backoff']) ? (int) $config['backoff'] : null,
+            'rest' => isset($config['rest']) ? (int) $config['rest'] : null,
+            'force' => isset($config['force']) ? (bool) $config['force'] : null,
         ];
 
         if (isset($relationships['instance']['data']['id'])) {

@@ -6,8 +6,9 @@ class CreateDatabaseRestoreRequestData extends RequestData
 {
     public function __construct(
         public readonly string $clusterId,
-        public readonly ?string $snapshotId = null,
-        public readonly ?string $pointInTime = null,
+        public readonly string $name,
+        public readonly ?string $restoreTime = null,
+        public readonly ?string $databaseSnapshotId = null,
     ) {
         //
     }
@@ -15,8 +16,9 @@ class CreateDatabaseRestoreRequestData extends RequestData
     public function toRequestData(): array
     {
         return $this->filter([
-            'snapshot_id' => $this->snapshotId,
-            'point_in_time' => $this->pointInTime,
+            'name' => $this->name,
+            'restore_time' => $this->restoreTime,
+            'database_snapshot_id' => $this->databaseSnapshotId,
         ]);
     }
 }

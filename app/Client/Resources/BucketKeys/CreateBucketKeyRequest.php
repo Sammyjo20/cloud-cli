@@ -24,7 +24,7 @@ class CreateBucketKeyRequest extends Request implements HasBody
 
     public function resolveEndpoint(): string
     {
-        return "/buckets/{$this->data->bucketId}/keys";
+        return "/buckets/{$this->data->filesystemId}/keys";
     }
 
     protected function defaultBody(): array

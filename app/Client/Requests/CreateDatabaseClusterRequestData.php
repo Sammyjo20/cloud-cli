@@ -8,7 +8,7 @@ class CreateDatabaseClusterRequestData extends RequestData
         public readonly string $type,
         public readonly string $name,
         public readonly string $region,
-        public readonly array $clusterConfig,
+        public readonly array $config,
         public readonly ?int $clusterId = null,
     ) {
         //
@@ -20,7 +20,7 @@ class CreateDatabaseClusterRequestData extends RequestData
             'type' => $this->type,
             'name' => $this->name,
             'region' => $this->region,
-            'config' => $this->clusterConfig,
+            'config' => $this->config,
             'cluster_id' => $this->clusterId,
         ]);
     }

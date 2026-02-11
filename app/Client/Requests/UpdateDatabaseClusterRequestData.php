@@ -9,15 +9,15 @@ class UpdateDatabaseClusterRequestData extends RequestData
      */
     public function __construct(
         public readonly string $clusterId,
-        public readonly ?array $config = null,
+        public readonly array $config,
     ) {
         //
     }
 
     public function toRequestData(): array
     {
-        return $this->filter([
+        return [
             'config' => $this->config,
-        ]);
+        ];
     }
 }

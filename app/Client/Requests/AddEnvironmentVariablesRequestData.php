@@ -2,15 +2,15 @@
 
 namespace App\Client\Requests;
 
-/**
- * @param  'append'|'set'  $action
- */
 class AddEnvironmentVariablesRequestData extends RequestData
 {
+    /**
+     * @param  'append'|'set'  $method
+     */
     public function __construct(
         public readonly string $environmentId,
         public readonly array $variables,
-        public readonly string $action = 'append',
+        public readonly string $method = 'append',
     ) {
         //
     }
@@ -18,7 +18,7 @@ class AddEnvironmentVariablesRequestData extends RequestData
     public function toRequestData(): array
     {
         return [
-            'method' => $this->action,
+            'method' => $this->method,
             'variables' => collect($this->variables)->map(fn ($value, $key) => [
                 'key' => $key,
                 'value' => $value,

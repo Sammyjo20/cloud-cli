@@ -6,12 +6,12 @@ class CreateInstanceRequestData extends RequestData
 {
     public function __construct(
         public readonly string $environmentId,
-        public readonly ?string $name = null,
-        public readonly ?string $type = null,
-        public readonly ?string $size = null,
-        public readonly ?string $scalingType = null,
-        public readonly ?int $minReplicas = null,
-        public readonly ?int $maxReplicas = null,
+        public readonly string $name,
+        public readonly string $type,
+        public readonly string $size,
+        public readonly string $scalingType,
+        public readonly int $minReplicas,
+        public readonly int $maxReplicas,
         public readonly ?bool $usesScheduler = null,
         public readonly ?int $scalingCpuThresholdPercentage = null,
         public readonly ?int $scalingMemoryThresholdPercentage = null,

@@ -8,7 +8,10 @@ class CreateCacheRequestData extends RequestData
         public readonly string $type,
         public readonly string $name,
         public readonly string $region,
-        public readonly array $configData,
+        public readonly array $size,
+        public readonly bool $autoUpgradeEnabled,
+        public readonly bool $isPublic,
+        public readonly ?string $evictionPolicy = null,
     ) {
         //
     }
@@ -19,7 +22,10 @@ class CreateCacheRequestData extends RequestData
             'type' => $this->type,
             'name' => $this->name,
             'region' => $this->region,
-            'config' => $this->configData,
+            'size' => $this->size,
+            'auto_upgrade_enabled' => $this->autoUpgradeEnabled,
+            'is_public' => $this->isPublic,
+            'eviction_policy' => $this->evictionPolicy,
         ];
     }
 }

@@ -41,7 +41,7 @@ class BucketKeyCreate extends BaseCommand
 
         $key = spin(
             fn () => $this->client->bucketKeys()->create(new CreateBucketKeyRequestData(
-                bucketId: $bucket->id,
+                filesystemId: $bucket->id,
                 name: $name,
                 permission: $permission,
             )),
