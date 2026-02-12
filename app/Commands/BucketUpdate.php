@@ -34,7 +34,7 @@ class BucketUpdate extends BaseCommand
 
         $this->defineFields($bucket);
 
-        foreach ($this->form()->filled() as $key => $value) {
+        foreach ($this->form()->filled() as $value) {
             $this->reportChange(
                 $value->label(),
                 $value->previousValue(),
