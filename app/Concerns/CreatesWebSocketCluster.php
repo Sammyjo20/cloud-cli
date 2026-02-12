@@ -6,7 +6,6 @@ use App\Client\Requests\CreateWebSocketClusterRequestData;
 use App\Dto\Region;
 use App\Dto\WebsocketCluster;
 
-use function Laravel\Prompts\number;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
@@ -43,23 +42,28 @@ trait CreatesWebSocketCluster
             ),
         );
 
+        $maxConnectionOptions = [100, 200, 500, 2000, 5000, 10000];
+
         $this->form()->prompt(
             'max_connections',
             fn ($resolver) => $resolver->fromInput(
-                fn ($value) => number(
+                fn ($value) => select(
                     label: 'Max connections',
-                    default: $value ?? $defaults['max_connections'] ?? 100,
+                    options: $maxConnectionOptions,
+                    default: $value ?? $defaults['max_connections'] ?? $maxConnectionOptions[0],
                     required: true,
                 ),
             ),
         );
 
         return spin(
-            fn () => $this->client->websocketClusters()->create(new CreateWebSocketClusterRequestData(
-                name: $this->form()->get('name'),
-                region: $this->form()->get('region'),
-                maxConnections: (int) $this->form()->get('max_connections'),
-            )),
+            fn () => $this->client->websocketClusters()->create(
+                new CreateWebSocketClusterRequestData(
+                    name: $this->form()->get('name'),
+                    region: $this->form()->get('region'),
+                    maxConnections: $this->form()->integer('max_connections'),
+                ),
+            ),
             'Creating WebSocket cluster...',
         );
     }
