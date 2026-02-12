@@ -4,17 +4,15 @@ namespace App\Commands;
 
 use App\Client\Requests\UpdateInstanceRequestData;
 use App\Dto\EnvironmentInstance;
+use App\Enums\InstanceSize;
 use App\Exceptions\CommandExitException;
 
-use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\number;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\text;
 
 class InstanceUpdate extends BaseCommand
 {
@@ -39,7 +37,7 @@ class InstanceUpdate extends BaseCommand
 
         $this->defineFields($instance);
 
-        foreach ($this->form()->filled() as $key => $value) {
+        foreach ($this->form()->filled() as $value) {
             $this->reportChange(
                 $value->label(),
                 $value->previousValue(),
@@ -47,40 +45,14 @@ class InstanceUpdate extends BaseCommand
             );
         }
 
-        $updatedInstance = $this->resolveUpdatedInstance($instance);
+        $updatedInstance = $this->runUpdate(
+            fn () => $this->updateInstance($instance),
+            fn () => $this->collectDataAndUpdate($instance),
+        );
 
         $this->outputJsonIfWanted($updatedInstance);
 
-        success('Instance updated');
-
-        outro("Instance updated: {$updatedInstance->name}");
-    }
-
-    protected function resolveUpdatedInstance(EnvironmentInstance $instance): EnvironmentInstance
-    {
-        if (! $this->isInteractive()) {
-            if (! $this->form()->hasAnyValues()) {
-                $this->outputErrorOrThrow('No fields to update. Provide at least one option.');
-
-                throw new CommandExitException(self::FAILURE);
-            }
-
-            return $this->updateInstance($instance);
-        }
-
-        if (! $this->form()->hasAnyValues()) {
-            return $this->loopUntilValid(
-                fn () => $this->collectDataAndUpdate($instance),
-            );
-        }
-
-        if (! $this->shouldRunUpdateFromOptions()) {
-            error('Update cancelled');
-
-            throw new CommandExitException(self::FAILURE);
-        }
-
-        return $this->updateInstance($instance);
+        outro('Instance updated.');
     }
 
     protected function updateInstance(EnvironmentInstance $instance): EnvironmentInstance
@@ -102,22 +74,14 @@ class InstanceUpdate extends BaseCommand
         return $this->client->instances()->get($instance->id);
     }
 
-    protected function shouldRunUpdateFromOptions(): bool
-    {
-        if ($this->option('force')) {
-            return true;
-        }
-
-        return confirm('Update the instance?');
-    }
-
     protected function defineFields(EnvironmentInstance $instance): void
     {
         $this->form()->define(
             'size',
             fn ($resolver) => $resolver->fromInput(
-                fn ($value) => text(
+                fn ($value) => select(
                     label: 'Size',
+                    options: collect(InstanceSize::cases())->map(fn ($size) => $size->value)->toArray(),
                     required: true,
                     default: $value ?? $instance->size,
                 ),
