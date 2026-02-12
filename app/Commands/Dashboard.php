@@ -24,9 +24,10 @@ class Dashboard extends BaseCommand
         $this->ensureClient();
         $this->ensureRemoteGitRepo();
 
-        // TODO: Deal with the correct environment
-        $app = $this->resolvers()->application()->from($this->argument('application'));
-        $url = $app->url();
+        $environment = $this->resolvers()->environment()->include('application')->resolve();
+        $application = $this->client->applications()->get($environment->application->id);
+
+        $url = $application->url($environment);
 
         Process::run('open '.$url);
 
