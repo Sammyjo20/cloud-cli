@@ -18,27 +18,36 @@ class InstanceSizes extends BaseCommand
 
         intro('Instance Sizes');
 
-        $data = spin(
+        $sizes = spin(
             fn () => $this->client->instances()->sizes(),
             'Fetching instance sizes...',
         );
 
-        $this->outputJsonIfWanted($data);
+        $this->outputJsonIfWanted($sizes->toArray());
 
-        if (empty($data)) {
+        if (count($sizes->all()) === 0) {
             warning('No instance sizes found.');
 
             return self::FAILURE;
         }
 
-        $rows = collect($data)->map(fn ($size) => [
-            $size['id'] ?? $size['value'] ?? '-',
-            $size['label'] ?? $size['name'] ?? '-',
-        ])->toArray();
-
         dataTable(
-            headers: ['Size', 'Label'],
-            rows: $rows,
+            headers: [
+                'Name',
+                'Label',
+                'CPU Type',
+                'Compute Class',
+                'CPU Count',
+                'Memory (MiB)',
+            ],
+            rows: collect($sizes->all())->map(fn ($size) => [
+                $size->name,
+                $size->label,
+                $size->cpuType,
+                $size->computeClass,
+                $size->cpuCount,
+                $size->memoryMib,
+            ])->toArray(),
         );
     }
 }

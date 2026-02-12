@@ -11,6 +11,7 @@ use App\Client\Resources\Instances\ListInstanceSizesRequest;
 use App\Client\Resources\Instances\ListInstancesRequest;
 use App\Client\Resources\Instances\UpdateInstanceRequest;
 use App\Dto\EnvironmentInstance;
+use App\Dto\InstanceSizes;
 use Saloon\PaginationPlugin\Paginator;
 
 class InstancesResource extends Resource
@@ -51,10 +52,11 @@ class InstancesResource extends Resource
         $this->send(new DeleteInstanceRequest($instanceId));
     }
 
-    public function sizes(): array
+    public function sizes(): InstanceSizes
     {
-        $response = $this->send(new ListInstanceSizesRequest);
+        $request = new ListInstanceSizesRequest;
+        $response = $this->send($request);
 
-        return $response->json()['data'] ?? [];
+        return $request->createDtoFromResponse($response);
     }
 }

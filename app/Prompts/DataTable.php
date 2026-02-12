@@ -60,6 +60,8 @@ class DataTable extends Prompt
             $headers = [];
         }
 
+        $this->required = false;
+        $this->validate = null;
         $this->headers = $headers instanceof Collection ? $headers->all() : $headers;
         $this->rows = $rows instanceof Collection ? $rows->all() : $rows;
         $this->keyBindingsHelp = new KeyBindingsHelp;
@@ -213,6 +215,10 @@ class DataTable extends Prompt
         foreach ($this->actions as $key => [$action, $description]) {
             $this->listener->on($key, fn () => $this->runCustomAction($action));
             $this->keyBindingsHelp->add($key, $description);
+        }
+
+        if (! in_array(Key::ENTER, array_keys($this->actions))) {
+            $this->listener->on(Key::ENTER, fn () => false);
         }
     }
 
