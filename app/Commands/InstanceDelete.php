@@ -8,11 +8,12 @@ use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
+use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 
 class InstanceDelete extends BaseCommand
 {
-    protected $signature = 'instance:delete {instance : The instance ID} {--force : Skip confirmation}';
+    protected $signature = 'instance:delete {instance? : The instance ID} {--force : Skip confirmation}';
 
     protected $description = 'Delete an instance';
 
@@ -22,28 +23,23 @@ class InstanceDelete extends BaseCommand
 
         intro('Deleting Instance');
 
-        $instanceId = $this->argument('instance');
+        $instance = $this->resolvers()->instance()->resolve($this->argument('instance'));
 
         if (! $this->option('force')) {
-            $instance = spin(
-                fn () => $this->client->instances()->get($instanceId),
-                'Fetching instance...',
-            );
-
             if (! confirm("Delete instance '{$instance->name}'?")) {
                 info('Cancelled.');
 
-                return;
+                return self::FAILURE;
             }
         }
 
         try {
             spin(
-                fn () => $this->client->instances()->delete($instanceId),
+                fn () => $this->client->instances()->delete($instance->id),
                 'Deleting instance...',
             );
 
-            success('Instance deleted.');
+            outro('Instance deleted.');
         } catch (RequestException $e) {
             error('Failed to delete instance: '.$e->getMessage());
 
