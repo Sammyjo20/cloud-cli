@@ -24,7 +24,7 @@ class UpdateWebSocketApplicationRequest extends Request implements HasBody
 
     public function resolveEndpoint(): string
     {
-        return "/websocket-servers/{$this->data->clusterId}/applications/{$this->data->applicationId}";
+        return "/websocket-applications/{$this->data->applicationId}";
     }
 
     protected function defaultBody(): array

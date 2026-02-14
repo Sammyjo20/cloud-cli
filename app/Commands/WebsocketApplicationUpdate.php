@@ -4,21 +4,19 @@ namespace App\Commands;
 
 use App\Client\Requests\UpdateWebSocketApplicationRequestData;
 use App\Dto\WebsocketApplication;
-use App\Dto\WebsocketCluster;
 use App\Exceptions\CommandExitException;
 
-use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
+use function Laravel\Prompts\number;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
+use function Laravel\Prompts\textarea;
 
 class WebsocketApplicationUpdate extends BaseCommand
 {
     protected $signature = 'websocket-application:update
-                            {cluster? : The WebSocket cluster ID or name}
                             {application? : The application ID or name}
                             {--name= : Application name}
                             {--force : Force update without confirmation}
@@ -32,12 +30,11 @@ class WebsocketApplicationUpdate extends BaseCommand
 
         intro('Updating WebSocket Application');
 
-        $cluster = $this->resolvers()->websocketCluster()->from($this->argument('cluster'));
-        $app = $this->resolvers()->websocketApplication()->from($cluster, $this->argument('application'));
+        $app = $this->resolvers()->websocketApplication()->from($this->argument('application'));
 
         $this->defineFields($app);
 
-        foreach ($this->form()->filled() as $fieldKey => $resolver) {
+        foreach ($this->form()->filled() as $resolver) {
             $this->reportChange(
                 $resolver->label(),
                 $resolver->previousValue(),
@@ -45,7 +42,10 @@ class WebsocketApplicationUpdate extends BaseCommand
             );
         }
 
-        $updatedApp = $this->resolveUpdatedApplication($cluster, $app);
+        $updatedApp = $this->runUpdate(
+            fn () => $this->updateApplication($app),
+            fn () => $this->collectDataAndUpdate($app),
+        );
 
         $this->outputJsonIfWanted($updatedApp);
 
@@ -54,34 +54,7 @@ class WebsocketApplicationUpdate extends BaseCommand
         outro("WebSocket application updated: {$updatedApp->name}");
     }
 
-    protected function resolveUpdatedApplication(WebsocketCluster $cluster, WebsocketApplication $app): WebsocketApplication
-    {
-        if (! $this->isInteractive()) {
-            if (! $this->form()->hasAnyValues()) {
-                $this->outputErrorOrThrow('Provide --name to update.');
-
-                throw new CommandExitException(self::FAILURE);
-            }
-
-            return $this->updateApplication($cluster, $app);
-        }
-
-        if (! $this->form()->hasAnyValues()) {
-            return $this->loopUntilValid(
-                fn () => $this->collectDataAndUpdate($cluster, $app),
-            );
-        }
-
-        if (! $this->shouldRunUpdateFromOptions()) {
-            error('Update cancelled');
-
-            throw new CommandExitException(self::FAILURE);
-        }
-
-        return $this->updateApplication($cluster, $app);
-    }
-
-    protected function updateApplication(WebsocketCluster $cluster, WebsocketApplication $app): WebsocketApplication
+    protected function updateApplication(WebsocketApplication $app): WebsocketApplication
     {
         spin(
             fn () => $this->client->websocketApplications()->update(
@@ -96,15 +69,6 @@ class WebsocketApplicationUpdate extends BaseCommand
         return $this->client->websocketApplications()->get($app->id);
     }
 
-    protected function shouldRunUpdateFromOptions(): bool
-    {
-        if ($this->option('force')) {
-            return true;
-        }
-
-        return confirm('Update the WebSocket application?');
-    }
-
     protected function defineFields(WebsocketApplication $app): void
     {
         $this->form()->define(
@@ -117,9 +81,46 @@ class WebsocketApplicationUpdate extends BaseCommand
                 ),
             ),
         )->setPreviousValue($app->name);
+
+        $this->form()->define(
+            'allowed_origins',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => textarea(
+                    label: 'Allowed origins',
+                    default: $value ?? implode(PHP_EOL, $app->allowedOrigins ?? []),
+                    hint: 'Origins that are allowed to connect to the application, separated by new lines, prefixed with the protocol (https://)',
+                ),
+            ),
+        )->setPreviousValue($app->allowedOrigins ? implode(PHP_EOL, $app->allowedOrigins) : null);
+
+        $this->form()->define(
+            'ping_interval',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => number(
+                    label: 'Ping interval',
+                    default: $value ?? $app->pingInterval,
+                    min: 1,
+                    max: 60,
+                    required: true,
+                ),
+            ),
+        )->setPreviousValue($app->pingInterval);
+
+        $this->form()->define(
+            'activity_timeout',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => number(
+                    label: 'Activity timeout',
+                    default: $value ?? $app->activityTimeout,
+                    min: 1,
+                    max: 60,
+                    required: true,
+                ),
+            ),
+        )->setPreviousValue($app->activityTimeout);
     }
 
-    protected function collectDataAndUpdate(WebsocketCluster $cluster, WebsocketApplication $app): WebsocketApplication
+    protected function collectDataAndUpdate(WebsocketApplication $app): WebsocketApplication
     {
         $selection = multiselect(
             label: 'What do you want to update?',
@@ -138,6 +139,6 @@ class WebsocketApplicationUpdate extends BaseCommand
             $this->form()->prompt($optionName);
         }
 
-        return $this->updateApplication($cluster, $app);
+        return $this->updateApplication($app);
     }
 }
