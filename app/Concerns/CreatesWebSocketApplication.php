@@ -6,8 +6,10 @@ use App\Client\Requests\CreateWebSocketApplicationRequestData;
 use App\Dto\WebsocketApplication;
 use App\Dto\WebsocketCluster;
 
+use function Laravel\Prompts\number;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
+use function Laravel\Prompts\textarea;
 
 trait CreatesWebSocketApplication
 {
@@ -24,11 +26,61 @@ trait CreatesWebSocketApplication
             ),
         );
 
+        $this->form()->prompt(
+            'allowed_origins',
+            fn ($resolver) => $resolver->fromInput(
+                fn (?string $value) => textarea(
+                    label: 'Allowed origins',
+                    default: $value ?? $defaults['allowed_origins'] ?? '',
+                    hint: 'Origins that are allowed to connect to the application, separated by new lines, prefixed with the protocol (https://)',
+                ),
+            ),
+        );
+
+        $this->form()->prompt(
+            'ping_interval',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => number(
+                    label: 'Ping interval',
+                    default: $value ?? $defaults['ping_interval'] ?? 60,
+                    min: 1,
+                    max: 60,
+                    required: true,
+                ),
+            ),
+        );
+
+        $this->form()->prompt(
+            'activity_timeout',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => number(
+                    label: 'Activity timeout',
+                    default: $value ?? $defaults['activity_timeout'] ?? 30,
+                    min: 1,
+                    max: 60,
+                    required: true,
+                ),
+            ),
+        );
+
+        $allowedOrigins = $this->form()->get('allowed_origins');
+
+        if ($allowedOrigins !== null && $allowedOrigins !== '') {
+            $allowedOrigins = collect(explode(PHP_EOL, $allowedOrigins))->filter(fn ($origin) => $origin !== '')->values()->toArray();
+        } else {
+            $allowedOrigins = null;
+        }
+
         return spin(
-            fn () => $this->client->websocketApplications()->create(new CreateWebSocketApplicationRequestData(
-                clusterId: $cluster->id,
-                name: $this->form()->get('name'),
-            )),
+            fn () => $this->client->websocketApplications()->create(
+                new CreateWebSocketApplicationRequestData(
+                    clusterId: $cluster->id,
+                    name: $this->form()->get('name'),
+                    pingInterval: $this->form()->get('ping_interval'),
+                    activityTimeout: $this->form()->get('activity_timeout'),
+                    allowedOrigins: $allowedOrigins,
+                ),
+            ),
             'Creating WebSocket application...',
         );
     }

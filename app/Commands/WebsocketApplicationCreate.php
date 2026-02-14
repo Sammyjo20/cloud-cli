@@ -36,8 +36,6 @@ class WebsocketApplicationCreate extends BaseCommand
 
         $this->outputJsonIfWanted($app);
 
-        success('WebSocket application created');
-
-        outro("Application created: {$app->name}");
+        outro("WebSocket application created: {$app->name}");
     }
 }
