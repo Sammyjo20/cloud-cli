@@ -9,14 +9,15 @@ use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\note;
 use function Laravel\Prompts\select;
 
-class Complete extends BaseCommand implements NoAuthRequired
+class Completions extends BaseCommand implements NoAuthRequired
 {
-    protected $signature = 'complete
+    protected $signature = 'completions
                             {shell? : The shell type (bash, zsh, fish)}
                             {--print : Print the completion script to stdout}';
 
