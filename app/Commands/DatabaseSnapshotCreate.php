@@ -3,15 +3,17 @@
 namespace App\Commands;
 
 use App\Client\Requests\CreateDatabaseSnapshotRequestData;
+use App\Dto\DatabaseCluster;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
+use function Laravel\Prompts\text;
+use function Laravel\Prompts\textarea;
 
 class DatabaseSnapshotCreate extends BaseCommand
 {
     protected $signature = 'database-snapshot:create
-                            {database-cluster? : The database cluster ID or name}
+                            {cluster? : The database cluster ID or name}
                             {--json : Output as JSON}';
 
     protected $description = 'Create a database snapshot';
@@ -22,17 +24,47 @@ class DatabaseSnapshotCreate extends BaseCommand
 
         intro('Creating Database Snapshot');
 
-        $cluster = $this->resolvers()->databaseCluster()->from($this->argument('database-cluster'));
+        $cluster = $this->resolvers()->databaseCluster()->from($this->argument('cluster'));
 
-        $snapshot = spin(
-            fn () => $this->client->databaseSnapshots()->create(new CreateDatabaseSnapshotRequestData($cluster->id)),
-            'Creating snapshot...',
-        );
+        $snapshot = $this->loopUntilValid(fn () => $this->createSnapshot($cluster));
 
         $this->outputJsonIfWanted($snapshot);
 
         success('Database snapshot created');
+    }
 
-        outro("Snapshot created: {$snapshot->name}");
+    protected function createSnapshot(DatabaseCluster $cluster)
+    {
+        $this->form()->prompt(
+            'name',
+            fn ($resolver) => $resolver->fromInput(
+                fn (?string $value) => text(
+                    label: 'Name',
+                    default: $value ?? '',
+                    required: true,
+                ),
+            ),
+        );
+
+        $this->form()->prompt(
+            'description',
+            fn ($resolver) => $resolver->fromInput(
+                fn (?string $value) => textarea(
+                    label: 'Description',
+                    default: $value ?? '',
+                ),
+            ),
+        );
+
+        return spin(
+            fn () => $this->client->databaseSnapshots()->create(
+                new CreateDatabaseSnapshotRequestData(
+                    $cluster->id,
+                    $this->form()->get('name'),
+                    $this->form()->get('description'),
+                ),
+            ),
+            'Creating snapshot...',
+        );
     }
 }
