@@ -11,6 +11,8 @@ class SuppressOutputIfJson implements CommandMiddleware
     public function handle($command, callable $next)
     {
         if ($command === 'list') {
+            Renderer::$suppressOutput = true;
+
             return $next();
         }
 
