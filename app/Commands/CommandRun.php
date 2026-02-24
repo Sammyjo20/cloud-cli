@@ -47,7 +47,7 @@ class CommandRun extends BaseCommand
             if ($this->option('no-monitor')) {
                 warning('Output cannot be copied when monitoring is disabled');
 
-                return;
+                return self::SUCCESS;
             }
 
             $command = $this->client->commands()->get($command->id);
