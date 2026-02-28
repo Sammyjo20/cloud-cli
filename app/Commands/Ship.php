@@ -156,12 +156,10 @@ class Ship extends BaseCommand
             }
         }
 
-        if ($this->isInteractive()) {
-            $this->call(Deploy::class, array_filter([
-                'application' => $application->id,
-                '--no-interaction' => ! $this->isInteractive(),
-            ]));
-        }
+        $this->call(Deploy::class, array_filter([
+            'application' => $application->id,
+            '--no-interaction' => ! $this->isInteractive(),
+        ]));
 
         $environment = $this->client->environments()->include('instances')->get($application->defaultEnvironmentId ?? '');
 
