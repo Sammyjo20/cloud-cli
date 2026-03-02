@@ -28,10 +28,27 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $renderers = collect(glob(app_path('Prompts/*.php')))
-            ->filter(fn ($file) => str_ends_with($file, 'Renderer.php'))
-            ->map(fn ($file) => str(basename($file))->replace('.php', '')->toString())
-            ->filter(fn ($class) => $class !== 'Renderer')
+        $renderers = collect([
+            'ConfirmPromptRenderer',
+            'DataListRenderer',
+            'DataTableRenderer',
+            'EnvironmentLogsPromptRenderer',
+            'HybRenderer',
+            'MonitorCommandRenderer',
+            'MonitorDeploymentsRenderer',
+            'MultiSelectPromptRenderer',
+            'NoteRenderer',
+            'NumberPromptRenderer',
+            'PasswordPromptRenderer',
+            'SearchPromptRenderer',
+            'SelectPromptRenderer',
+            'SelectWithContextPromptRenderer',
+            'SlideInRenderer',
+            'SpinnerRenderer',
+            'TableRenderer',
+            'TextareaPromptRenderer',
+            'TextPromptRenderer',
+        ])
             ->mapWithKeys(function ($class) {
                 $promptClass = str_replace('Renderer', '', $class);
                 $promptClass = collect([
