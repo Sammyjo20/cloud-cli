@@ -23,6 +23,8 @@ class EnvironmentResolver extends Resolver
 
     public function from(?string $idOrName = null): ?Environment
     {
+        $this->include('application', 'branch', 'deployments', 'currentDeployment', 'primaryDomain', 'instances');
+
         $identifier = $idOrName ?? $this->localConfig->environmentId();
         $environment = ($identifier ? $this->fromIdentifier($identifier) : null) ?? $this->fromBranch() ?? $this->fromInput();
 
@@ -42,7 +44,7 @@ class EnvironmentResolver extends Resolver
 
     public function fromBranch()
     {
-        $envs = $this->client->environments()->include('branch')->list($this->application()->id)->collect();
+        $envs = $this->client->environments()->include(...($this->includes ?? []))->list($this->application()->id)->collect();
         $localbranch = app(Git::class)->currentBranch();
 
         return $envs->firstWhere('branch', $localbranch);
