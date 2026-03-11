@@ -264,7 +264,7 @@ class Ship extends BaseCommand
                         fn (Region $region) => [
                             $region->value => $region->label,
                         ],
-                    ),
+                    )->toArray(),
                     default: $value ?? $defaultRegion,
                 );
             }),
@@ -645,7 +645,7 @@ class Ship extends BaseCommand
         $cluster = select(
             label: 'Websocket cluster',
             options: $options->toArray(),
-            default: $clusters->first()?->id ?? null,
+            default: $clusters->first()->id ?? null,
             required: true,
         );
 
@@ -673,8 +673,8 @@ class Ship extends BaseCommand
 
         $schema = select(
             label: 'Database',
-            options: $options,
-            default: $database->schemas[0]?->id ?? null,
+            options: $options->toArray(),
+            default: $database->schemas[0]->id ?? null,
             required: true,
         );
 
@@ -712,7 +712,7 @@ class Ship extends BaseCommand
         $database = select(
             label: 'Database cluster',
             options: $options->toArray(),
-            default: $databases->first()?->id ?? null,
+            default: $databases->first()->id ?? null,
             required: true,
         );
 
@@ -759,7 +759,7 @@ class Ship extends BaseCommand
 
         $varsToAdd = multiselect(
             label: 'Add local environment variables to Cloud environment?',
-            options: $varOptions,
+            options: $varOptions->toArray(),
         );
 
         if (count($varsToAdd) === 0) {
